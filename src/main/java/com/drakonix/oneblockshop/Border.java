@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.border.WorldBorder;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -48,6 +49,10 @@ public final class Border
         WorldBorder border = overworld.getWorldBorder();
         border.setCenter(player.getX(), player.getZ());
         border.setSize(1.0);
+
+        // Fairness: a 1-block border means spawning over lava/void is a real risk the player
+        // never chose. keepInventory softens that without touching difficulty/mob damage.
+        overworld.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, overworld.getServer());
     }
 
     // How many expansions have already been bought, derived from the border's current size

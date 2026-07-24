@@ -2,6 +2,8 @@ Welcome to Drakonix One Block Shop!
 
 You start on a single block with an iron pickaxe and a Drakonix Block Shop. Place the shop, then start breaking and growing.
 
+Keep Inventory is on by default in this world. A 1-block start means you can land somewhere rough - lava, void, whatever's below spawn - and that's not a risk you signed up for. Dying still costs you the run, just not your items.
+
 Right-click the shop to sell items by hand. It also buys rare items at a high price if you can't produce them yet, like lava buckets or sugarcane.
 
 Feed a hopper into the shop to auto-sell. Every item has a price - raw resources are hand-set, anything craftable is priced off its cheapest recipe.
