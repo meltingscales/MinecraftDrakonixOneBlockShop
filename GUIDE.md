@@ -4,7 +4,7 @@ You start on a single block with an iron pickaxe and a Drakonix Block Shop. Plac
 
 Right-click the shop to sell items by hand. It also buys rare items at a high price if you can't produce them yet, like lava buckets or sugarcane.
 
-Feed a hopper into the shop to auto-sell. Anything without a price just sits in the slot untouched.
+Feed a hopper into the shop to auto-sell. Every item has a price - raw resources are hand-set, anything craftable is priced off its cheapest recipe.
 
 Sell enough and your border expands outward, giving you more room to build farms.
 

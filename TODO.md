@@ -15,14 +15,10 @@ Nothing currently - see README.md's feature list, everything there is implemente
 - `Pricing` derives recipe-based prices as ingredient-sum-over-yield only - no fuel cost,
   mining difficulty, or drop rarity modeling. The ~40-item seed table (raw resources with no
   recipe) is still hand-set and may need tuning/expansion as gaps get noticed.
-- No recipe-unlock advancement for the shop block recipe — it's craftable, just doesn't
-  auto-unlock in the recipe book.
 - Shop GUI background is a plain fill, no custom panel art (the block itself has a texture).
 - Pricing wasn't verified with an automated test (no practical way to unit-test against live
   registries/RecipeManager outside a running client) - only compiled and boot-tested. Actual
   sell-price correctness across a range of items still wants a manual in-game pass.
-- `Config.java`'s `defineListAllowEmpty` call is a deprecated NeoForge config API - compiles
-  fine, pre-existing, unrelated to anything touched this round. Cosmetic, low priority.
 - Buy/Border/Sell tab buttons and the sell-slot highlight are laid out by hand-tuned pixel
   constants in `ShopScreen` (no layout system) - fine at 176x166 with 4 buy offers, would need
   re-tuning if the offer list or image size grows much.
@@ -72,3 +68,17 @@ Nothing currently - see README.md's feature list, everything there is implemente
   only hopper/dropper automation ever calls `canPlaceItemThroughFace` (a plain `Slot`'s default
   `mayPlace` never does), so it's a reliable one-shot marker consumed by the very next
   `setItem`/`trySell` call.
+- ~~No recipe-unlock advancement for the shop block recipe~~ — added
+  `data/drakonixoneblockshop/advancement/recipes/drakonix_block_shop.json`, same pattern as
+  vanilla's own recipe-unlock advancements (unlocks on picking up a gold ingot or already
+  knowing the recipe).
+- ~~`Config.java`'s deprecated `defineListAllowEmpty` call~~ — that whole class was unmodified
+  MDK example boilerplate (dirt-block logging, a magic number) that nothing in the mod actually
+  used except registering its (otherwise pointless) config spec. Deleted it instead of patching
+  the deprecated call - removes the dead code and the warning together.
+- README.md and GUIDE.md cleaned up to match what's actually implemented (was rough scaffold
+  notes; GUIDE.md also had a stale line claiming unpriced items "just sit in the slot," no
+  longer true since `Pricing` prices everything).
+- Added `.github/workflows/release.yml`: tag push (`vX.Y.Z`) builds the jar and publishes a
+  GitHub Release, after verifying the tag matches `gradle.properties`' `mod_version` (single
+  source of truth for versioning). The existing `build.yml` still runs on every push/PR.
