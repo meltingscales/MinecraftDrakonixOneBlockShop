@@ -3,6 +3,10 @@
 A NeoForge 1.21.1 challenge mod. You start on a single block inside a 1x1 vertical world
 border. Sell items at your shop block to earn money, then spend it to expand the border.
 
+## Links
+
+- CurseForge: https://www.curseforge.com/minecraft/mc-mods/drakonix-one-block-shop
+
 ## How it works
 
 - You start with an iron pickaxe, a Drakonix Block Shop item, a guide book, and 4 oak logs,
@@ -44,3 +48,7 @@ a release:
 Every push and PR also runs `.github/workflows/build.yml` (compile + build, no release).
 
 See `TODO.md` for known shortcuts and polish items.
+
+## License
+
+Public domain — [CC0 1.0](LICENSE).
