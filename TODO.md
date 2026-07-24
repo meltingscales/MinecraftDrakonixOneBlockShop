@@ -61,3 +61,8 @@ Nothing currently - see README.md's feature list, everything there is implemente
 - ~~Deprecation warning in `ShopBlockEntity.java`~~ — root-caused: `EnchantmentHelper.getItemEnchantmentLevel`
   is deprecated in favor of `ItemStack.getEnchantmentLevel(Holder)` for gameplay checks. Swapped
   over, warning's gone (confirmed via a temporary `-Xlint:deprecation` build).
+- ~~Buy/sell GUI didn't show prices~~ — buy tab already labeled each button with its price; sell
+  tab now shows a "Sell price: N each" (or "Not sellable" for cursed items) tooltip on hover,
+  via `ShopScreen.getTooltipFromContainerItem` - same vanilla tooltip mechanism used for
+  enchantment/durability lines, reuses `Pricing.priceOf` client-side (recipe manager and
+  registry access are both synced to the client already).

@@ -3,11 +3,13 @@ package com.drakonix.oneblockshop;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.border.WorldBorder;
 
 // ponytail: plain fill instead of a custom background texture, swap for real panel art later.
@@ -115,6 +117,25 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
             for (int i = 0; i < this.buyButtons.size() && i < offers.size(); i++)
                 this.buyButtons.get(i).active = this.menu.getBalance() >= offers.get(i).price();
         }
+    }
+
+    // Sell tab: show what an item would fetch when hovered, same tooltip mechanism vanilla
+    // uses for enchantment/durability info lines.
+    @Override
+    protected List<Component> getTooltipFromContainerItem(ItemStack stack)
+    {
+        List<Component> tooltip = new ArrayList<>(super.getTooltipFromContainerItem(stack));
+        if (this.menu.getActiveTab() == ShopMenu.Tab.SELL && this.minecraft.level != null)
+        {
+            if (stack.getEnchantmentLevel(this.minecraft.level.registryAccess().holderOrThrow(OneBlockShopMod.UNSELLABLE)) > 0)
+                tooltip.add(Component.literal("Not sellable").withStyle(ChatFormatting.RED));
+            else
+            {
+                long price = Pricing.priceOf(stack.getItem(), this.minecraft.level.getRecipeManager(), this.minecraft.level.registryAccess());
+                tooltip.add(Component.literal("Sell price: " + price + " each").withStyle(ChatFormatting.GREEN));
+            }
+        }
+        return tooltip;
     }
 
     @Override
