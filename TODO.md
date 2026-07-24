@@ -196,3 +196,11 @@ Tracked against README.md's feature list.
   `HOTBAR_Y` are now derived from `BUY_OFFERS.size()` instead of hardcoded, and `ShopMenu`'s
   player-inventory slot positions reference those same constants, so the drawn grid and the
   actual slots can't drift apart. `PricingSeedTest` extended to cover this file too.
+- Added Mekanism as a dev-only `localRuntime` dependency (see `build.gradle`) so `runClient`/
+  `runServer` actually have a real tech mod loaded to playtest the tag-based pricing against -
+  it supplies osmium, already in `seed_prices_by_tag.json`. Not a compile dependency, never
+  published as a required mod dependency, boots clean alongside our mod. Pinned to `10.7.14.79`
+  specifically (not latest) - that's the newest build that only needs `neoforge>=21.1.133`;
+  everything from `10.7.15.81` on needs `>=21.1.194`, above this project's pinned `neo_version`
+  (21.1.176). Bump the pin only alongside a real `neo_version` upgrade. (Thermal Expansion, the
+  mod originally asked for, has no NeoForge release at all - last release is 1.20.1 Forge only.)

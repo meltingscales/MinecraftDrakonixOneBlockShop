@@ -21,6 +21,12 @@ group = mod_group_id
 repositories {
     mavenLocal()
     mavenCentral()
+    exclusiveContent {
+        forRepository {
+            maven { url = 'https://api.modrinth.com/maven' }
+        }
+        filter { includeGroup 'maven.modrinth' }
+    }
 }
 
 base {
@@ -116,6 +122,17 @@ dependencies {
     // compileOnly "mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}"
     // We add the full version to localRuntime, not runtimeOnly, so that we do not publish a dependency on it
     // localRuntime "mezz.jei:jei-${mc_version}-neoforge:${jei_version}"
+
+    // Dev-only: loaded in runClient/runServer so Pricing's tag-based tech-mod prices
+    // (pricing/seed_prices_by_tag.json) have something real to resolve against - Mekanism
+    // supplies osmium, which is already seeded. localRuntime (not implementation/runtimeOnly)
+    // so this is never a compile dependency and never gets published as a required dependency
+    // of this mod - purely a local playtesting aid. Remove or bump the version freely; nothing
+    // in our own code references Mekanism's classes.
+    // Pinned to 10.7.14.79, not latest: it's the newest build that only needs
+    // neoforge>=21.1.133 - everything from 10.7.15.81 on needs >=21.1.194, above our
+    // neo_version (21.1.176). Bump this only alongside a real neo_version upgrade.
+    localRuntime "maven.modrinth:mekanism:10.7.14.79"
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
