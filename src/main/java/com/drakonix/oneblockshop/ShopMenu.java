@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -21,6 +22,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 // see ShopBlockEntity.setItem, shared by this GUI and hopper insertion alike.
 public class ShopMenu extends AbstractContainerMenu
 {
+    public static final int EXPAND_BORDER_BUTTON = 0;
+
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, OneBlockShopMod.MODID);
     public static final DeferredHolder<MenuType<?>, MenuType<ShopMenu>> TYPE = MENUS.register(
             "shop", () -> new MenuType<>(ShopMenu::new, FeatureFlags.VANILLA_SET));
@@ -114,5 +117,13 @@ public class ShopMenu extends AbstractContainerMenu
     public boolean stillValid(Player player)
     {
         return this.container.stillValid(player);
+    }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id)
+    {
+        if (id == EXPAND_BORDER_BUTTON && player instanceof ServerPlayer serverPlayer)
+            return Border.tryExpand(serverPlayer);
+        return super.clickMenuButton(player, id);
     }
 }
