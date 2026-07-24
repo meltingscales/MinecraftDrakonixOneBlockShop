@@ -8,10 +8,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
@@ -79,7 +82,18 @@ public class ShopBlockEntity extends BlockEntity implements WorldlyContainer, Me
 
         if (viaHopper)
             HopperSalesTracker.recordSale(this.ownerUUID, stack.getItem(), stack.getCount());
+        playSaleFeedback(serverLevel);
         this.items.set(0, ItemStack.EMPTY);
+    }
+
+    // Cheap juice: a sale should feel like a sale. Broadcasts to everyone nearby, not just the
+    // owner - fine for a single block's worth of noise/sparkle.
+    private void playSaleFeedback(ServerLevel serverLevel)
+    {
+        serverLevel.playSound(null, this.getBlockPos(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS, 0.6F, 1.2F);
+        serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER,
+                this.getBlockPos().getX() + 0.5, this.getBlockPos().getY() + 1.0, this.getBlockPos().getZ() + 0.5,
+                8, 0.3, 0.3, 0.3, 0.0);
     }
 
     private boolean isUnsellable(ItemStack stack)

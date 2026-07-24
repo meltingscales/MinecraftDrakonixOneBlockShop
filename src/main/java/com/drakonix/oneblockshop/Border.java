@@ -1,11 +1,22 @@
 package com.drakonix.oneblockshop;
 
+import java.util.List;
+
 import com.mojang.serialization.Codec;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -20,7 +31,8 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 // it is a deliberate purchase from the shop GUI's Border tab - see ShopMenu.clickMenuButton -
 // each expansion costing more than the last.
 // ponytail: one shared world border for the whole overworld, not per-player. Fine for
-// singleplayer; real multiplayer would need virtual per-player borders (a packet-level trick).
+// singleplayer; real multiplayer would need virtual per-player borders (a packet-level trick,
+// attempted once and reverted - see TODO.md).
 @EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class Border
 {
@@ -32,10 +44,25 @@ public final class Border
     private static final long BASE_COST = 25L;
     private static final double GROWTH_FACTOR = 1.2;
 
+    // Rate-limits spam-clicking the expand button, independent of affordability.
+    private static final long EXPANSION_COOLDOWN_TICKS = 30L * 20L;
+
+    // Every expansion after the very first (1x1 -> 3x3, which a brand-new player has no way to
+    // prepare for) calls in a monster wave scaled to how many expansions have already happened -
+    // border growth stops being free real estate and starts being a real risk to defend.
+    private static final int WAVE_BASE_SIZE = 2;
+    private static final int WAVE_SIZE_PER_PURCHASE = 1;
+    private static final int WAVE_MAX_SIZE = 12;
+    private static final double WAVE_RING_MARGIN = 3.0;
+    private static final List<EntityType<? extends Monster>> WAVE_MOBS =
+            List.of(EntityType.ZOMBIE, EntityType.SKELETON, EntityType.SPIDER);
+
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, OneBlockShopMod.MODID);
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Boolean>> INITIALIZED = ATTACHMENTS.register(
             "border_initialized", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Long>> LAST_EXPANSION_TICK = ATTACHMENTS.register(
+            "last_expansion_tick", () -> AttachmentType.builder(() -> Long.MIN_VALUE).serialize(Codec.LONG).build());
 
     private Border() {}
 
@@ -67,17 +94,63 @@ public final class Border
         return Math.round(BASE_COST * Math.pow(GROWTH_FACTOR, purchaseCount(border)));
     }
 
-    // Returns whether the purchase went through (false if the player couldn't afford it).
+    // Whole seconds left before this player can expand again, 0 if they're free to. Exposed for
+    // the GUI (ShopMenu/ShopScreen) to show a countdown instead of a button that silently fails.
+    public static long cooldownRemainingSeconds(Player player)
+    {
+        long last = player.getData(LAST_EXPANSION_TICK);
+        long elapsed = player.level().getGameTime() - last;
+        long remainingTicks = Math.max(0L, EXPANSION_COOLDOWN_TICKS - elapsed);
+        return (remainingTicks + 19L) / 20L; // ceil to whole seconds
+    }
+
+    // Returns whether the purchase went through (false if the player couldn't afford it, or is
+    // still on cooldown from their last purchase).
     public static boolean tryExpand(ServerPlayer player)
     {
+        if (cooldownRemainingSeconds(player) > 0)
+            return false;
+
         WorldBorder border = player.serverLevel().getServer().overworld().getWorldBorder();
         long cost = costForNextExpansion(border);
         if (Wallet.get(player) < cost)
             return false;
 
+        int purchaseCountBefore = purchaseCount(border);
         Wallet.add(player, -cost);
         border.setSize(border.getSize() + 2.0);
+        player.setData(LAST_EXPANSION_TICK, player.level().getGameTime());
+
+        // Skip the very first expansion (1x1 -> 3x3) - a brand-new player with nothing built
+        // yet has no way to defend against a wave.
+        if (purchaseCountBefore > 0)
+            spawnMobWave(player, border, purchaseCountBefore);
+
         return true;
+    }
+
+    private static void spawnMobWave(ServerPlayer player, WorldBorder border, int purchaseCountBefore)
+    {
+        if (!(player.level() instanceof ServerLevel level))
+            return;
+
+        int waveSize = Math.min(WAVE_MAX_SIZE, WAVE_BASE_SIZE + purchaseCountBefore * WAVE_SIZE_PER_PURCHASE);
+        double radius = border.getSize() / 2.0 + WAVE_RING_MARGIN;
+        RandomSource random = level.getRandom();
+
+        for (int i = 0; i < waveSize; i++)
+        {
+            double angle = random.nextDouble() * Math.PI * 2.0;
+            int x = (int) Math.round(border.getCenterX() + Math.cos(angle) * radius);
+            int z = (int) Math.round(border.getCenterZ() + Math.sin(angle) * radius);
+            BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(x, 0, z));
+
+            EntityType<? extends Monster> type = WAVE_MOBS.get(random.nextInt(WAVE_MOBS.size()));
+            type.spawn(level, surface, MobSpawnType.EVENT);
+        }
+
+        player.sendSystemMessage(Component.literal(
+                "A wave of " + waveSize + " monsters closes in on your new border!").withStyle(ChatFormatting.RED));
     }
 
     // Safety net against straying past the border (bugs, other mods, admin teleports) - vanilla

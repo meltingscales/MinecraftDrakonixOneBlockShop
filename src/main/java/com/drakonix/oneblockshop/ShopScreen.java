@@ -23,6 +23,10 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     private static final int BUY_COLS = 2;
     private static final int BUY_ROW_HEIGHT = 16;
     private static final int BUY_COL_WIDTH = 82;
+    // Border tab needs an extra warning line the buy grid doesn't, so its button sits lower
+    // than ACTION_Y (which the buy grid still uses unchanged).
+    private static final int BORDER_WARNING_Y = 46;
+    private static final int BORDER_ACTION_Y = 58;
 
     private Button sellTabButton;
     private Button borderTabButton;
@@ -51,7 +55,7 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
                 .bounds(this.leftPos + 112, this.topPos + TAB_Y, 50, TAB_HEIGHT).build());
 
         this.expandButton = addRenderableWidget(Button.builder(Component.literal("Buy expansion"), b -> pressButton(ShopMenu.EXPAND_BORDER_BUTTON))
-                .bounds(this.leftPos + 8, this.topPos + ACTION_Y, 160, 20).build());
+                .bounds(this.leftPos + 8, this.topPos + BORDER_ACTION_Y, 160, 20).build());
 
         this.buyButtons.clear();
         List<ShopMenu.BuyOffer> offers = ShopMenu.BUY_OFFERS;
@@ -117,8 +121,17 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
         {
             WorldBorder border = this.minecraft.level.getWorldBorder();
             long cost = Border.costForNextExpansion(border);
-            this.expandButton.setMessage(Component.literal("Buy expansion: " + cost));
-            this.expandButton.active = this.menu.getBalance() >= cost;
+            int cooldown = this.menu.getExpandCooldownSeconds();
+            if (cooldown > 0)
+            {
+                this.expandButton.setMessage(Component.literal("Wait " + cooldown + "s..."));
+                this.expandButton.active = false;
+            }
+            else
+            {
+                this.expandButton.setMessage(Component.literal("Buy expansion: " + cost));
+                this.expandButton.active = this.menu.getBalance() >= cost;
+            }
         }
 
         if (tab == ShopMenu.Tab.BUY)
@@ -167,7 +180,10 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
         if (this.menu.getActiveTab() == ShopMenu.Tab.SELL)
             graphics.drawString(this.font, "Drop items to sell", 8, SELL_INFO_Y, 0xA0A0A0, false);
         else if (this.menu.getActiveTab() == ShopMenu.Tab.BORDER && this.minecraft.level != null)
+        {
             graphics.drawString(this.font, "Border size: " + (int) this.minecraft.level.getWorldBorder().getSize(), 8, INFO_Y, 0xFFFFFF, false);
+            graphics.drawString(this.font, "Warning: expanding summons a monster wave!", 8, BORDER_WARNING_Y, 0xFF5555, false);
+        }
         else if (this.menu.getActiveTab() == ShopMenu.Tab.BUY)
             graphics.drawString(this.font, "Buy what you can't produce yet", 8, INFO_Y, 0xA0A0A0, false);
     }

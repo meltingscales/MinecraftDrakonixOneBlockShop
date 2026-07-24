@@ -51,6 +51,10 @@ Tracked against README.md's feature list.
   mining difficulty, or drop rarity modeling. The seed table (`pricing/seed_prices.json`) is
   still hand-set and may need tuning/expansion as gaps get noticed.
 - Shop GUI background is a plain fill, no custom panel art (the block itself has a texture).
+- Border-expansion mob wave is a fixed mob pool (zombie/skeleton/spider) and a flat linear size
+  curve (`WAVE_BASE_SIZE + purchaseCount`, capped) - no scaling by world difficulty, day count,
+  or distance from spawn, and no variety beyond those three types. Fine as a first pass; revisit
+  if waves feel same-y at higher expansion counts.
 - `PricingSeedTest` only validates `seed_prices.json`'s structure (parses, item-ID-shaped keys,
   positive prices) - it can't confirm those IDs actually resolve to real items, and it doesn't
   touch the recursive recipe-derived pricing at all. Both need a live `RecipeManager` +
@@ -166,3 +170,17 @@ Tracked against README.md's feature list.
   (re-issues the kit; extracted `StarterKit.giveItems` out of the login handler so both paths
   share it, doesn't touch the `GIVEN` flag so it can't accidentally suppress a real first-login
   grant).
+- ~~Border expansion had no cost beyond coins, and could be spam-clicked~~ — every expansion
+  after the first (1x1 -> 3x3 is exempt - a brand-new player has nothing to defend with yet)
+  now calls in a monster wave (zombies/skeletons/spiders in a ring just past the new edge,
+  `Border.spawnMobWave`), sized to how many expansions have already happened
+  (`WAVE_BASE_SIZE + purchaseCount`, capped at `WAVE_MAX_SIZE`). Also added a 30-second cooldown
+  between expansions (`Border.cooldownRemainingSeconds`, tracked per the *clicking* player, not
+  necessarily the shop's owner - matches who `tryExpand` actually charges). The Border tab shows
+  a standing "summons a monster wave" warning and swaps the expand button's label/`active` state
+  to a live countdown while on cooldown, synced via a new `ShopMenu` `DataSlot` refreshed every
+  tick alongside balance.
+- ~~Selling had no audio/visual feedback~~ — `ShopBlockEntity.playSaleFeedback` plays
+  `EXPERIENCE_ORB_PICKUP` and pops a small `HAPPY_VILLAGER` particle burst at the block on every
+  successful sale (GUI or hopper), broadcast to everyone nearby like any other level sound/
+  particle.

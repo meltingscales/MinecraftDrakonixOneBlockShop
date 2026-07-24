@@ -18,7 +18,9 @@ border. Sell items at your shop block to earn money, then spend it to expand the
   - **Sell** — drop an item in to sell it instantly. Every item is sellable: raw resources use
     a hand-set price, crafted items derive their price recursively from their cheapest recipe.
     Hover an item for its sell price.
-  - **Border** — spend your balance to expand the world border. Cost grows ~20% per purchase.
+  - **Border** — spend your balance to expand the world border. Cost grows ~20% per purchase,
+    there's a 30-second cooldown between purchases, and every expansion after the first calls
+    in a monster wave sized to how many you've already bought.
   - **Buy** — buy a short list of items you can't easily produce early on (sugarcane, cactus,
     lava bucket, water bucket) at a flat price.
 - Hopper items into the shop block to auto-sell them. Every 5 minutes you get a chat report of

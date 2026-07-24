@@ -51,8 +51,13 @@ public class ShopMenu extends AbstractContainerMenu
     private final Container container;
     @Nullable
     private final ShopBlockEntity blockEntity;
+    private final Player viewingPlayer;
     private final DataSlot balance = DataSlot.standalone();
     private final DataSlot activeTab = DataSlot.standalone();
+    // Whoever's clicking the expand button pays and waits out the cooldown (see
+    // Border.tryExpand) - not necessarily this block's owner, so this tracks the viewing
+    // player specifically rather than reusing the owner-scoped balance display.
+    private final DataSlot expandCooldownSeconds = DataSlot.standalone();
 
     // Client-side reconstruction from the network packet; slot 0's real contents get synced
     // over automatically regardless of which Container backs this local placeholder.
@@ -61,8 +66,10 @@ public class ShopMenu extends AbstractContainerMenu
         super(TYPE.get(), containerId);
         this.container = new SimpleContainer(1);
         this.blockEntity = null;
+        this.viewingPlayer = playerInventory.player;
         this.addDataSlot(this.balance);
         this.addDataSlot(this.activeTab);
+        this.addDataSlot(this.expandCooldownSeconds);
         addSlots(this.container, playerInventory);
     }
 
@@ -71,18 +78,22 @@ public class ShopMenu extends AbstractContainerMenu
         super(TYPE.get(), containerId);
         this.container = blockEntity;
         this.blockEntity = blockEntity;
+        this.viewingPlayer = playerInventory.player;
         this.addDataSlot(this.balance);
         this.addDataSlot(this.activeTab);
+        this.addDataSlot(this.expandCooldownSeconds);
         refreshBalance();
+        refreshCooldown();
         addSlots(blockEntity, playerInventory);
     }
 
-    // Balance isn't a slot, so nothing pushes it to the client on its own - refresh it every
+    // Neither is a slot, so nothing pushes them to the client on their own - refresh every
     // tick the menu's open. Cheap: this only runs server-side, once per open menu per tick.
     @Override
     public void broadcastChanges()
     {
         refreshBalance();
+        refreshCooldown();
         super.broadcastChanges();
     }
 
@@ -90,6 +101,12 @@ public class ShopMenu extends AbstractContainerMenu
     {
         if (this.blockEntity != null && this.blockEntity.getLevel() instanceof ServerLevel serverLevel)
             this.balance.set((int) Math.min(Integer.MAX_VALUE, Wallet.get(serverLevel.getServer(), this.blockEntity.getOwnerUUID())));
+    }
+
+    private void refreshCooldown()
+    {
+        if (this.viewingPlayer instanceof ServerPlayer)
+            this.expandCooldownSeconds.set((int) Math.min(Integer.MAX_VALUE, Border.cooldownRemainingSeconds(this.viewingPlayer)));
     }
 
     private void addSlots(Container sellContainer, Inventory playerInventory)
@@ -114,6 +131,11 @@ public class ShopMenu extends AbstractContainerMenu
     public int getBalance()
     {
         return this.balance.get();
+    }
+
+    public int getExpandCooldownSeconds()
+    {
+        return this.expandCooldownSeconds.get();
     }
 
     public Tab getActiveTab()
