@@ -23,6 +23,11 @@ public final class Wallet
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<Long>> BALANCE = ATTACHMENTS.register(
             "balance", () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG).build());
 
+    // Lifetime earnings, never reduced by spending - this is what grows the border, so a sale
+    // still counts toward it even after the coin gets spent elsewhere.
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<Long>> TOTAL_EARNED = ATTACHMENTS.register(
+            "total_earned", () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG).build());
+
     private Wallet() {}
 
     public static long get(Player player)
@@ -34,6 +39,12 @@ public final class Wallet
     {
         long newBalance = get(player) + amount;
         player.setData(BALANCE, newBalance);
+
+        long totalEarned = player.getData(TOTAL_EARNED) + amount;
+        player.setData(TOTAL_EARNED, totalEarned);
+        if (player instanceof ServerPlayer serverPlayer)
+            Border.onEarned(serverPlayer, totalEarned);
+
         return newBalance;
     }
 

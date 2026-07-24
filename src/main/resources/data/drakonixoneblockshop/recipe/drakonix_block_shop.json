@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": { "item": "minecraft:gold_ingot" },
+    "H": { "item": "minecraft:hopper" }
+  },
+  "pattern": [
+    "GGG",
+    "GHG",
+    "GGG"
+  ],
+  "result": {
+    "count": 1,
+    "id": "drakonixoneblockshop:drakonix_block_shop"
+  }
+}

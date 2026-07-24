@@ -50,6 +50,8 @@ public class OneBlockShopMod
         BLOCK_ENTITIES.register(modEventBus);
         ShopMenu.MENUS.register(modEventBus);
         Wallet.ATTACHMENTS.register(modEventBus);
+        StarterKit.ATTACHMENTS.register(modEventBus);
+        Border.ATTACHMENTS.register(modEventBus);
 
         modEventBus.addListener(this::addCreative);
 
