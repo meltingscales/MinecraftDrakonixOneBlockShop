@@ -45,6 +45,17 @@ Tracked against README.md's feature list.
     capability-based insertion - it's a third path, neither hopper nor GUI. Sales report would
     need a broader "automated insertion" category, or a separate one for capability-driven
     sales, to still catch these.
+- **More dev-only tech mods for playtesting** — Mekanism's already added (`build.gradle`,
+  `localRuntime`) so there's something real to test the tag-based pricing and (eventually) pipe
+  compatibility against. Add a few more of the mods actually named in the tech-mod TODO items
+  above - AE2 first (it's the one with the import-bus/pipe-equivalent story), then whichever of
+  IC2/GregTech/EnderIO have current NeoForge 1.21.1 releases. Same process as Mekanism each time:
+  check Modrinth's API for the mod's actual NeoForge/1.21.1 availability before assuming it
+  exists (Thermal Expansion didn't - last release is 1.20.1 Forge only), then download and
+  inspect the candidate version's `neoforge.mods.toml` for its `neoforge` dependency range
+  against this project's pinned `neo_version` (21.1.176) rather than guessing compatibility -
+  pick the newest version that still satisfies it, same as `10.7.14.79` was picked for Mekanism.
+
 ## Known shortcuts (fine for now, revisit if they bite)
 
 - Buy tab button labels ("Mangrove Propagule (3)", "Dark Oak Sapling (3)") are longer than the
