@@ -1,5 +1,7 @@
 package com.drakonix.oneblockshop;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
@@ -24,6 +26,8 @@ public class ShopMenu extends AbstractContainerMenu
             "shop", () -> new MenuType<>(ShopMenu::new, FeatureFlags.VANILLA_SET));
 
     private final Container container;
+    @Nullable
+    private final ShopBlockEntity blockEntity;
     private final DataSlot balance = DataSlot.standalone();
 
     // Client-side reconstruction from the network packet; slot 0's real contents get synced
@@ -32,6 +36,7 @@ public class ShopMenu extends AbstractContainerMenu
     {
         super(TYPE.get(), containerId);
         this.container = new SimpleContainer(1);
+        this.blockEntity = null;
         this.addDataSlot(this.balance);
         addSlots(this.container, playerInventory);
     }
@@ -40,10 +45,25 @@ public class ShopMenu extends AbstractContainerMenu
     {
         super(TYPE.get(), containerId);
         this.container = blockEntity;
+        this.blockEntity = blockEntity;
         this.addDataSlot(this.balance);
-        if (playerInventory.player.level() instanceof ServerLevel serverLevel)
-            this.balance.set((int) Math.min(Integer.MAX_VALUE, Wallet.get(serverLevel.getServer(), blockEntity.getOwnerUUID())));
+        refreshBalance();
         addSlots(blockEntity, playerInventory);
+    }
+
+    // Balance isn't a slot, so nothing pushes it to the client on its own - refresh it every
+    // tick the menu's open. Cheap: this only runs server-side, once per open menu per tick.
+    @Override
+    public void broadcastChanges()
+    {
+        refreshBalance();
+        super.broadcastChanges();
+    }
+
+    private void refreshBalance()
+    {
+        if (this.blockEntity != null && this.blockEntity.getLevel() instanceof ServerLevel serverLevel)
+            this.balance.set((int) Math.min(Integer.MAX_VALUE, Wallet.get(serverLevel.getServer(), this.blockEntity.getOwnerUUID())));
     }
 
     private void addSlots(Container sellContainer, Inventory playerInventory)
