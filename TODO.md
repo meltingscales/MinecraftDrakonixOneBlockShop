@@ -19,11 +19,12 @@ Tracked against README.md's feature list.
   auto-unlock in the recipe book.
 - Shop GUI background is a plain fill, no custom panel art (the block itself has a texture).
 
+## Fixed
 
-## other
-
-❯ i noticed the player spawned outside of the 1x1 border - make sure that: 1. they start inside it, and 2. if they leave it by >5 blocks, they get teleported to the center
-
-❯ i also noticed that "Balance" in the GUI doesn't automatically update, you need to close and re-open the GUI
-
-❯ also, make the Drakonix Block Shop block breakable with an iron pickaxe.
+- ~~Player could spawn outside the 1x1 border~~ — border now centers on the player's actual
+  spawn position instead of the world's nominal spawn point.
+- ~~No safety net for leaving the border~~ — straying more than 5 blocks past the edge now
+  teleports the player back to center.
+- ~~Balance in the shop GUI didn't update live~~ — `ShopMenu` now refreshes it every tick.
+- ~~Shop block wasn't breakable with an iron pickaxe~~ — added to `mineable/pickaxe` and
+  `needs_iron_tool` tags.
