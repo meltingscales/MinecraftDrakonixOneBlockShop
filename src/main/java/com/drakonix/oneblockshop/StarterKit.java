@@ -57,7 +57,14 @@ public final class StarterKit
         if (player.getData(GIVEN))
             return;
         player.setData(GIVEN, true);
+        giveItems(player);
+    }
 
+    // Also callable directly (see AdminCommands' "starterkit give") to re-issue the kit without
+    // waiting for a fresh login - doesn't touch the GIVEN flag, so it can't skip a first-login
+    // grant, only add extra.
+    public static void giveItems(Player player)
+    {
         player.getInventory().add(cursedUnsellable(new ItemStack(Items.IRON_PICKAXE), player));
         player.getInventory().add(cursedUnsellable(new ItemStack(OneBlockShopMod.SHOP_BLOCK_ITEM.get()), player));
         player.getInventory().add(cursedUnsellable(guideBook(), player));

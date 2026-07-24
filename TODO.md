@@ -4,7 +4,6 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
-- /drakonixoneblockshop commands that let you cheat or modify the game state
 - **Per-player world borders** — so multiple people can play together, each starting ~10 blocks
   apart and merging once their individually-grown borders touch. Attempted once this session and
   reverted - broke the client (hung at the title screen instead of joining a world) for a reason
@@ -161,3 +160,9 @@ Tracked against README.md's feature list.
   from their raw material in any mod that registers one, so the existing recursive pricer
   already reaches them without duplicating a second price table for the same tier.
   `PricingSeedTest` extended (now parameterized) to structurally validate this file too.
+- ~~No admin/cheat commands~~ — added `/drakonixoneblockshop` (op level 2, same gate as
+  `/gamemode`): `balance get/set/add <target> [amount]`, `border get/set/expand` (the shared
+  border - `set`/`expand` bypass the shop's purchase cost entirely), `starterkit give <target>`
+  (re-issues the kit; extracted `StarterKit.giveItems` out of the login handler so both paths
+  share it, doesn't touch the `GIVEN` flag so it can't accidentally suppress a real first-login
+  grant).
