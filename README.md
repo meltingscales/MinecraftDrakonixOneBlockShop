@@ -5,7 +5,8 @@ border. Sell items at your shop block to earn money, then spend it to expand the
 
 ## Links
 
-- CurseForge: https://www.curseforge.com/minecraft/mc-mods/drakonix-one-block-shop
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/drakonix-one-block-shop)
+- [Download the mod from GitHub releases](https://github.com/meltingscales/MinecraftDrakonixOneBlockShop/releases)
 
 ## How it works
 
