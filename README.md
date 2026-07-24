@@ -1,5 +1,6 @@
 # Minecraft: Drakonix One Block Shop
 
+## Overview
 challenge mod where you start in a 1x1 block vertical border
 
 you have to sell items to expand your vertical border
@@ -13,3 +14,8 @@ lets you sell items) and an iron pickaxe
 
 you start with a guide (a written book) populated from GUIDE.md
 - it suggests auto farms like mob farms, fishing, sugarcane redstone, and cactus redstone
+
+
+## Running
+
+    ./gradlew runClient
