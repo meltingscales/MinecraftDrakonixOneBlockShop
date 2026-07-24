@@ -17,15 +17,16 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-// Structural validation of pricing/seed_prices*.json only - no Minecraft classes involved, on
-// purpose. Plain JUnit (this project's `test` task) can't touch net.minecraft.world.level.block
-// classes: NeoForge patches BlockBehaviour.Properties to consult FML's LoadingModList, which is
-// only populated when the game is actually launched through ModLauncher (runClient/runServer/
-// runGameTestServer) - Bootstrap.bootStrap() throws NPE outside that environment. So this test
-// can't confirm "minecraft:dirt" resolves to a real Item, or that a tag ID is spelled the way
-// the mod that owns it actually spells it; it catches the failure modes a hand-edited JSON file
-// actually has - malformed JSON, bad ID shape, non-positive prices - which is still real
-// coverage for files with no other validation today.
+// Structural validation of every hand-edited pricing/*.json file (sell seed prices, tag-based
+// seed prices, buy offers) - no Minecraft classes involved, on purpose. Plain JUnit (this
+// project's `test` task) can't touch net.minecraft.world.level.block classes: NeoForge patches
+// BlockBehaviour.Properties to consult FML's LoadingModList, which is only populated when the
+// game is actually launched through ModLauncher (runClient/runServer/runGameTestServer) -
+// Bootstrap.bootStrap() throws NPE outside that environment. So this test can't confirm
+// "minecraft:dirt" resolves to a real Item, or that a tag ID is spelled the way the mod that
+// owns it actually spells it; it catches the failure modes a hand-edited JSON file actually
+// has - malformed JSON, bad ID shape, non-positive prices - which is still real coverage for
+// files with no other validation today.
 class PricingSeedTest
 {
     // Covers both plain item IDs (minecraft:dirt) and tag IDs (c:ores/copper) - tags just allow
@@ -42,7 +43,7 @@ class PricingSeedTest
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "/pricing/seed_prices.json", "/pricing/seed_prices_by_tag.json" })
+    @ValueSource(strings = { "/pricing/seed_prices.json", "/pricing/seed_prices_by_tag.json", "/pricing/buy_offers.json" })
     void fileParsesAndIsNonEmpty(String resourcePath) throws IOException
     {
         JsonObject json = loadJson(resourcePath);
@@ -50,7 +51,7 @@ class PricingSeedTest
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "/pricing/seed_prices.json", "/pricing/seed_prices_by_tag.json" })
+    @ValueSource(strings = { "/pricing/seed_prices.json", "/pricing/seed_prices_by_tag.json", "/pricing/buy_offers.json" })
     void everyKeyLooksLikeAResourceId(String resourcePath) throws IOException
     {
         for (Map.Entry<String, JsonElement> entry : loadJson(resourcePath).entrySet())
@@ -59,7 +60,7 @@ class PricingSeedTest
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "/pricing/seed_prices.json", "/pricing/seed_prices_by_tag.json" })
+    @ValueSource(strings = { "/pricing/seed_prices.json", "/pricing/seed_prices_by_tag.json", "/pricing/buy_offers.json" })
     void everyPriceIsAPositiveWholeNumber(String resourcePath) throws IOException
     {
         for (Map.Entry<String, JsonElement> entry : loadJson(resourcePath).entrySet())

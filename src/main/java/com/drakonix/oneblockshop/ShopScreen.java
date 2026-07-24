@@ -22,11 +22,19 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     private static final int ACTION_Y = 50;
     private static final int BUY_COLS = 2;
     private static final int BUY_ROW_HEIGHT = 16;
-    private static final int BUY_COL_WIDTH = 82;
+    private static final int BUY_COL_WIDTH = 92;
     // Border tab needs an extra warning line the buy grid doesn't, so its button sits lower
     // than ACTION_Y (which the buy grid still uses unchanged).
     private static final int BORDER_WARNING_Y = 46;
     private static final int BORDER_ACTION_Y = 58;
+
+    // The buy grid's row count depends on however many offers are in pricing/buy_offers.json,
+    // so the player inventory (and the whole GUI) is sized to fit it rather than a fixed guess -
+    // ShopMenu.addSlots reads these same two Y values so the slots and the drawn grid never
+    // drift apart.
+    private static final int BUY_GRID_ROWS = (ShopMenu.BUY_OFFERS.size() + BUY_COLS - 1) / BUY_COLS;
+    static final int PLAYER_INVENTORY_Y = ACTION_Y + BUY_GRID_ROWS * BUY_ROW_HEIGHT + 4;
+    static final int HOTBAR_Y = PLAYER_INVENTORY_Y + 3 * 18 + 4;
 
     private Button sellTabButton;
     private Button borderTabButton;
@@ -37,9 +45,9 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     public ShopScreen(ShopMenu menu, Inventory playerInventory, Component title)
     {
         super(menu, playerInventory, title);
-        this.imageWidth = 176;
-        this.imageHeight = 166;
-        this.inventoryLabelY = this.imageHeight - 94;
+        this.imageWidth = 8 + BUY_COLS * BUY_COL_WIDTH + 8;
+        this.imageHeight = HOTBAR_Y + 18 + 6;
+        this.inventoryLabelY = PLAYER_INVENTORY_Y - 12;
     }
 
     @Override
@@ -95,9 +103,11 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
         this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, buttonId);
     }
 
+    // No "Buy " prefix - the tab it's on already says that, and several offer names (Mangrove
+    // Propagule, Dark Oak Sapling) are long enough that every character counts in a ~88px button.
     private static Component buyLabel(ShopMenu.BuyOffer offer)
     {
-        return Component.literal("Buy " + offer.item().getDescription().getString() + " (" + offer.price() + ")");
+        return Component.literal(offer.item().getDescription().getString() + " (" + offer.price() + ")");
     }
 
     @Override

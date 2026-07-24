@@ -47,6 +47,10 @@ Tracked against README.md's feature list.
     sales, to still catch these.
 ## Known shortcuts (fine for now, revisit if they bite)
 
+- Buy tab button labels ("Mangrove Propagule (3)", "Dark Oak Sapling (3)") are longer than the
+  ~88px button width comfortably fits - vanilla `Button` just center-clips long text rather than
+  erroring, so it's cosmetic, not broken. Would need shorter labels (icons instead of full names?)
+  or a wider GUI to fix properly.
 - `Pricing` derives recipe-based prices as ingredient-sum-over-yield only - no fuel cost,
   mining difficulty, or drop rarity modeling. The seed table (`pricing/seed_prices.json`) is
   still hand-set and may need tuning/expansion as gaps get noticed.
@@ -184,3 +188,11 @@ Tracked against README.md's feature list.
   `EXPERIENCE_ORB_PICKUP` and pops a small `HAPPY_VILLAGER` particle burst at the block on every
   successful sale (GUI or hopper), broadcast to everyone nearby like any other level sound/
   particle.
+- ~~Buy tab offers were a hardcoded Java list~~ — extracted to `pricing/buy_offers.json` (item
+  ID -> price, same load-and-skip-unknown pattern as `Pricing`'s seed tables), and expanded from
+  4 items to 15: all 8 sapling types + mangrove propagule, both mushrooms, and dirt, alongside
+  the original sugarcane/cactus/lava bucket/water bucket. The Buy tab's grid grew from 2 rows to
+  8 to fit them, so the whole GUI got taller to make room - `ShopScreen.PLAYER_INVENTORY_Y`/
+  `HOTBAR_Y` are now derived from `BUY_OFFERS.size()` instead of hardcoded, and `ShopMenu`'s
+  player-inventory slot positions reference those same constants, so the drawn grid and the
+  actual slots can't drift apart. `PricingSeedTest` extended to cover this file too.

@@ -1,0 +1,17 @@
+{
+  "minecraft:sugar_cane": 5,
+  "minecraft:cactus": 5,
+  "minecraft:lava_bucket": 40,
+  "minecraft:water_bucket": 10,
+  "minecraft:oak_sapling": 3,
+  "minecraft:spruce_sapling": 3,
+  "minecraft:birch_sapling": 3,
+  "minecraft:jungle_sapling": 3,
+  "minecraft:acacia_sapling": 3,
+  "minecraft:dark_oak_sapling": 3,
+  "minecraft:cherry_sapling": 3,
+  "minecraft:mangrove_propagule": 3,
+  "minecraft:brown_mushroom": 4,
+  "minecraft:red_mushroom": 4,
+  "minecraft:dirt": 1
+}

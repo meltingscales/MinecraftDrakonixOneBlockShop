@@ -1,10 +1,25 @@
 package com.drakonix.oneblockshop;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.slf4j.Logger;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.mojang.logging.LogUtils;
+
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -18,7 +33,6 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -26,6 +40,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 // see ShopBlockEntity.setItem, shared by this GUI and hopper insertion alike.
 public class ShopMenu extends AbstractContainerMenu
 {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     public enum Tab { SELL, BORDER, BUY }
 
     public static final int TAB_SELL_BUTTON = 0;
@@ -36,13 +52,38 @@ public class ShopMenu extends AbstractContainerMenu
 
     public record BuyOffer(Item item, int count, long price) {}
 
-    // README frames this as a short curated list of things you can't easily produce early on,
-    // not a dynamic market - flat prices, hand-picked.
-    public static final List<BuyOffer> BUY_OFFERS = List.of(
-            new BuyOffer(Items.SUGAR_CANE, 1, 5),
-            new BuyOffer(Items.CACTUS, 1, 5),
-            new BuyOffer(Items.LAVA_BUCKET, 1, 40),
-            new BuyOffer(Items.WATER_BUCKET, 1, 10));
+    // README frames this as a curated list of things you can't easily produce early on, not a
+    // dynamic market - flat prices, hand-picked, one each per purchase. JSON (not a hardcoded
+    // Java list) for the same reason as Pricing's seed tables: editable without recompiling,
+    // and an unknown item ID just gets skipped rather than crashing.
+    public static final List<BuyOffer> BUY_OFFERS = loadBuyOffers();
+
+    private static List<BuyOffer> loadBuyOffers()
+    {
+        List<BuyOffer> offers = new ArrayList<>();
+        try (InputStream stream = ShopMenu.class.getResourceAsStream("/pricing/buy_offers.json"))
+        {
+            if (stream == null)
+            {
+                LOGGER.warn("pricing/buy_offers.json missing from jar - no buy offers loaded");
+                return offers;
+            }
+            JsonObject json = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
+            for (Map.Entry<String, JsonElement> entry : json.entrySet())
+            {
+                ResourceLocation id = ResourceLocation.parse(entry.getKey());
+                if (BuiltInRegistries.ITEM.containsKey(id))
+                    offers.add(new BuyOffer(BuiltInRegistries.ITEM.get(id), 1, entry.getValue().getAsLong()));
+                else
+                    LOGGER.warn("Unknown item '{}' in pricing/buy_offers.json - skipped", entry.getKey());
+            }
+        }
+        catch (IOException | RuntimeException e)
+        {
+            LOGGER.error("Failed to load pricing/buy_offers.json - no buy offers loaded", e);
+        }
+        return offers;
+    }
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, OneBlockShopMod.MODID);
     public static final DeferredHolder<MenuType<?>, MenuType<ShopMenu>> TYPE = MENUS.register(
@@ -120,12 +161,15 @@ public class ShopMenu extends AbstractContainerMenu
             }
         });
 
+        // Pushed down from vanilla's usual 84/142 to leave room above for the Buy tab's grid,
+        // which now has enough offers (see pricing/buy_offers.json) to need real vertical space -
+        // see PLAYER_INVENTORY_Y/HOTBAR_Y in ShopScreen for the matching background sizing.
         for (int row = 0; row < 3; row++)
             for (int col = 0; col < 9; col++)
-                this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
+                this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, ShopScreen.PLAYER_INVENTORY_Y + row * 18));
 
         for (int col = 0; col < 9; col++)
-            this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
+            this.addSlot(new Slot(playerInventory, col, 8 + col * 18, ShopScreen.HOTBAR_Y));
     }
 
     public int getBalance()
