@@ -69,6 +69,16 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
         syncWidgets();
     }
 
+    // AbstractContainerScreen.render() no longer calls renderTooltip itself (every vanilla
+    // screen - ContainerScreen, InventoryScreen, etc - calls it explicitly after super.render());
+    // without this override, no tooltip (vanilla or ours) ever showed.
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderTooltip(graphics, mouseX, mouseY);
+    }
+
     private void pressTab(int buttonId)
     {
         this.menu.clickMenuButton(this.minecraft.player, buttonId);
