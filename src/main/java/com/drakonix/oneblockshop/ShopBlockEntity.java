@@ -10,6 +10,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -23,10 +24,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 // Backs both the right-click GUI slot and hopper insertion, so an item dropped in from either
-// path sells through the same logic. Owner is whoever placed the block; hopper sales are
-// credited to them even while they're elsewhere, as long as they're still online.
-// ponytail: if the owner is offline, hopper insertion is refused (item stays put upstream)
-// rather than sold to nobody or queued; fine for singleplayer, revisit for dedicated servers.
+// path sells through the same logic. Owner is whoever placed the block; sales are credited to
+// them whether they're online or not - see Wallet.creditOffline/flushPendingCredits.
 //
 // Implements WorldlyContainer (not just Container) so we can tell hopper-driven sales apart
 // from GUI ones for HopperSalesTracker: only hopper/dropper automation ever calls
@@ -64,17 +63,20 @@ public class ShopBlockEntity extends BlockEntity implements WorldlyContainer, Me
         boolean viaHopper = this.pendingHopperInsertion;
         this.pendingHopperInsertion = false;
 
-        if (stack.isEmpty() || this.level == null || this.level.isClientSide || this.ownerUUID == null)
+        if (stack.isEmpty() || !(this.level instanceof ServerLevel serverLevel) || this.ownerUUID == null)
             return;
         if (isUnsellable(stack))
             return;
 
-        ServerPlayer owner = this.level.getServer() == null ? null : this.level.getServer().getPlayerList().getPlayer(this.ownerUUID);
-        if (owner == null)
-            return;
-
         long unitPrice = Pricing.priceOf(stack.getItem(), this.level.getRecipeManager(), this.level.registryAccess());
-        Wallet.add(owner, unitPrice * stack.getCount());
+        long total = unitPrice * stack.getCount();
+
+        ServerPlayer owner = serverLevel.getServer().getPlayerList().getPlayer(this.ownerUUID);
+        if (owner != null)
+            Wallet.add(owner, total);
+        else
+            Wallet.creditOffline(serverLevel, this.ownerUUID, total);
+
         if (viaHopper)
             HopperSalesTracker.recordSale(this.ownerUUID, stack.getItem(), stack.getCount());
         this.items.set(0, ItemStack.EMPTY);

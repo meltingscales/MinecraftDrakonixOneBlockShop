@@ -34,15 +34,19 @@ Tracked against README.md's feature list.
 
 - World border is one shared border for the whole overworld, not per-player. Fine for
   singleplayer/LAN; real multiplayer would need virtual per-player borders.
-- Hopper auto-sell refuses to sell if the block's owner is offline (item just stays put
-  upstream) rather than crediting them anyway or queuing the sale.
 - `Pricing` derives recipe-based prices as ingredient-sum-over-yield only - no fuel cost,
-  mining difficulty, or drop rarity modeling. The ~40-item seed table (raw resources with no
-  recipe) is still hand-set and may need tuning/expansion as gaps get noticed.
+  mining difficulty, or drop rarity modeling. The seed table (`pricing/seed_prices.json`) is
+  still hand-set and may need tuning/expansion as gaps get noticed.
 - Shop GUI background is a plain fill, no custom panel art (the block itself has a texture).
-- Pricing wasn't verified with an automated test (no practical way to unit-test against live
-  registries/RecipeManager outside a running client) - only compiled and boot-tested. Actual
-  sell-price correctness across a range of items still wants a manual in-game pass.
+- `PricingSeedTest` only validates `seed_prices.json`'s structure (parses, item-ID-shaped keys,
+  positive prices) - it can't confirm those IDs actually resolve to real items, and it doesn't
+  touch the recursive recipe-derived pricing at all. Both need a live `RecipeManager` +
+  populated item registry, which plain JUnit can't get here: NeoForge patches
+  `BlockBehaviour.Properties` to consult FML's `LoadingModList`, which is only populated when
+  the game is launched through ModLauncher (`runClient`/`runServer`/`runGameTestServer`) -
+  `Bootstrap.bootStrap()` throws NPE outside that. NeoGradle exposes a `testJunit` task/
+  `writeMinecraftClasspathJunit` that looks built for exactly this, but its sourceSet wiring
+  wasn't obvious from a quick look - worth another pass if this bites.
 - Buy/Border/Sell tab buttons and the sell-slot highlight are laid out by hand-tuned pixel
   constants in `ShopScreen` (no layout system) - fine at 176x166 with 4 buy offers, would need
   re-tuning if the offer list or image size grows much.
@@ -107,3 +111,22 @@ Tracked against README.md's feature list.
 - Added `.github/workflows/release.yml`: tag push (`vX.Y.Z`) builds the jar and publishes a
   GitHub Release, after verifying the tag matches `gradle.properties`' `mod_version` (single
   source of truth for versioning). The existing `build.yml` still runs on every push/PR.
+- ~~No fairness net for a rough 1-block spawn (lava, void, etc.)~~ — `Border.initIfNeeded` now
+  sets `keepInventory` true on the overworld the first time a world's border is set up. Only
+  softens item loss, not the run itself - dying still costs you the challenge. Documented in
+  `GUIDE.md`.
+- ~~Sell prices were a hardcoded Java `Item` map~~ — extracted to `pricing/seed_prices.json`
+  (item ID string -> price), resolved at load against `BuiltInRegistries.ITEM` with an unknown-
+  ID skipped rather than crashing. Same design the tech-mod-sell-prices TODO item above already
+  called for - modded item IDs can now be added to the same file without a compile dependency
+  on those mods. Also expanded the table itself (obsidian, ancient debris, nether star, raw
+  meats/fish, mob drops, etc. that had no recipe and were quietly falling back to the 1-coin
+  default).
+- ~~Pricing had no automated test~~ — added `PricingSeedTest` (plain JUnit, `./gradlew test`,
+  already part of `./gradlew build` so both CI workflows run it). Validates `seed_prices.json`
+  structurally; see the "Known shortcuts" entry above for what it can't cover and why.
+- ~~Hopper auto-sell refused to sell to an offline owner~~ — sale now always goes through.
+  If the owner's offline, the amount is stashed in a level-scoped `Wallet.PENDING_CREDITS`
+  map (not a raw playerdata file write - safer) and paid out via `Wallet.flushPendingCredits`
+  the next time they log in, through the same live-object `Wallet.add` path as any other
+  credit.

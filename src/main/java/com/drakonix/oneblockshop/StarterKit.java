@@ -50,7 +50,10 @@ public final class StarterKit
         if (player.level().isClientSide)
             return;
         if (player instanceof ServerPlayer serverPlayer)
+        {
             Border.initIfNeeded(serverPlayer);
+            Wallet.flushPendingCredits(serverPlayer);
+        }
         if (player.getData(GIVEN))
             return;
         player.setData(GIVEN, true);

@@ -70,3 +70,8 @@ implemented, not aspirational.
 Only commit when explicitly asked. Prefer small, separately-reviewable commits over one big
 one when a turn touches unrelated concerns (e.g. docs/CI vs. code changes go in separate
 commits). Never `--no-verify`, never force-push, never amend a commit that's already pushed.
+
+Bump `mod_version` in `gradle.properties` when committing real changes (features, fixes,
+content) - it's the single source of truth `release.yml` checks a pushed tag against (see
+README.md's Releasing section). Skip the bump for changes that don't affect the mod itself
+(this file, CI config tweaks, typo fixes in comments).
