@@ -19,6 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.WrittenBookContent;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -54,9 +55,19 @@ public final class StarterKit
             return;
         player.setData(GIVEN, true);
 
-        player.getInventory().add(new ItemStack(Items.IRON_PICKAXE));
-        player.getInventory().add(new ItemStack(OneBlockShopMod.SHOP_BLOCK_ITEM.get()));
-        player.getInventory().add(guideBook());
+        player.getInventory().add(cursedUnsellable(new ItemStack(Items.IRON_PICKAXE), player));
+        player.getInventory().add(cursedUnsellable(new ItemStack(OneBlockShopMod.SHOP_BLOCK_ITEM.get()), player));
+        player.getInventory().add(cursedUnsellable(guideBook(), player));
+        player.getInventory().add(new ItemStack(Items.OAK_LOG, 4));
+    }
+
+    // Marked with the Unsellable curse so a stray hopper (or an absent-minded drop into the
+    // shop's GUI slot) can't vanish your only pickaxe, guide, or shop block.
+    private static ItemStack cursedUnsellable(ItemStack stack, Player player)
+    {
+        EnchantmentHelper.updateEnchantments(stack, mutable ->
+                mutable.set(player.level().registryAccess().holderOrThrow(OneBlockShopMod.UNSELLABLE), 1));
+        return stack;
     }
 
     private static ItemStack guideBook()

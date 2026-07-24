@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -52,6 +53,8 @@ public class ShopBlockEntity extends BlockEntity implements Container, MenuProvi
     {
         if (stack.isEmpty() || this.level == null || this.level.isClientSide || this.ownerUUID == null)
             return;
+        if (isUnsellable(stack))
+            return;
 
         ServerPlayer owner = this.level.getServer() == null ? null : this.level.getServer().getPlayerList().getPlayer(this.ownerUUID);
         if (owner == null)
@@ -60,6 +63,12 @@ public class ShopBlockEntity extends BlockEntity implements Container, MenuProvi
         long unitPrice = Pricing.priceOf(stack.getItem(), this.level.getRecipeManager(), this.level.registryAccess());
         Wallet.add(owner, unitPrice * stack.getCount());
         this.items.set(0, ItemStack.EMPTY);
+    }
+
+    private boolean isUnsellable(ItemStack stack)
+    {
+        return EnchantmentHelper.getItemEnchantmentLevel(
+                this.level.registryAccess().holderOrThrow(OneBlockShopMod.UNSELLABLE), stack) > 0;
     }
 
     @Override
@@ -105,7 +114,7 @@ public class ShopBlockEntity extends BlockEntity implements Container, MenuProvi
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack)
     {
-        return true;
+        return this.level == null || !isUnsellable(stack);
     }
 
     @Override

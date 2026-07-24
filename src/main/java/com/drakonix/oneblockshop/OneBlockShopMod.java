@@ -5,8 +5,11 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -42,6 +45,11 @@ public class OneBlockShopMod
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShopBlockEntity>> SHOP_BLOCK_ENTITY = BLOCK_ENTITIES.register(
             "drakonix_block_shop", () -> BlockEntityType.Builder.of(ShopBlockEntity::new, SHOP_BLOCK.get()).build(null));
+
+    // Data-driven (see data/drakonixoneblockshop/enchantment/unsellable.json) - not registered
+    // in code, just referenced by key and resolved against registry access where needed.
+    public static final ResourceKey<Enchantment> UNSELLABLE = ResourceKey.create(
+            Registries.ENCHANTMENT, ResourceLocation.fromNamespaceAndPath(MODID, "unsellable"));
 
     public OneBlockShopMod(IEventBus modEventBus, ModContainer modContainer)
     {
