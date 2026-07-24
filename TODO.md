@@ -6,7 +6,6 @@ Tracked against README.md's feature list.
 
 - **Buy GUI** — README says the shop should let you buy items at a high price when you can't
   produce them yet (sugarcane, lava buckets, etc). Only the sell side exists right now.
-- Literally every item is sellable (and craftable items' prices are derived dynamically from their recipes, so we don't need to hardcode them)
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
@@ -14,11 +13,15 @@ Tracked against README.md's feature list.
   singleplayer/LAN; real multiplayer would need virtual per-player borders.
 - Hopper auto-sell refuses to sell if the block's owner is offline (item just stays put
   upstream) rather than crediting them anyway or queuing the sale.
-- Sell prices are a hardcoded map in `ShopBlockEntity`. Move to a data-driven JSON/tag list
-  if the sellable item list keeps growing.
+- `Pricing` derives recipe-based prices as ingredient-sum-over-yield only - no fuel cost,
+  mining difficulty, or drop rarity modeling. The ~40-item seed table (raw resources with no
+  recipe) is still hand-set and may need tuning/expansion as gaps get noticed.
 - No recipe-unlock advancement for the shop block recipe — it's craftable, just doesn't
   auto-unlock in the recipe book.
 - Shop GUI background is a plain fill, no custom panel art (the block itself has a texture).
+- Pricing wasn't verified with an automated test (no practical way to unit-test against live
+  registries/RecipeManager outside a running client) - only compiled and boot-tested. Actual
+  sell-price correctness across a range of items still wants a manual in-game pass.
 
 ## Fixed
 
@@ -29,3 +32,7 @@ Tracked against README.md's feature list.
 - ~~Balance in the shop GUI didn't update live~~ — `ShopMenu` now refreshes it every tick.
 - ~~Shop block wasn't breakable with an iron pickaxe~~ — added to `mineable/pickaxe` and
   `needs_iron_tool` tags.
+- ~~Sell prices were a hardcoded 6-item map~~ — `Pricing` now sells any item: raw resources
+  from a seed table, everything craftable derived recursively from its cheapest recipe.
+- ~~Border grew automatically from lifetime earnings~~ — replaced by a purchasable Border tab
+  in the shop GUI (see previous commit).

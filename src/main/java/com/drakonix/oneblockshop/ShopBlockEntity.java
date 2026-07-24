@@ -1,6 +1,5 @@
 package com.drakonix.oneblockshop;
 
-import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -17,9 +16,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -30,17 +27,6 @@ import net.minecraft.world.level.block.state.BlockState;
 // rather than sold to nobody or queued; fine for singleplayer, revisit for dedicated servers.
 public class ShopBlockEntity extends BlockEntity implements Container, MenuProvider
 {
-    // ponytail: prices hardcoded here; upgrade path is a data-driven (JSON/tag) price list
-    // once the sellable item list grows past a handful of entries.
-    static final Map<Item, Integer> SELL_PRICES = Map.of(
-            Items.SUGAR_CANE, 2,
-            Items.CACTUS, 2,
-            Items.COBBLESTONE, 1,
-            Items.IRON_INGOT, 10,
-            Items.GOLD_INGOT, 15,
-            Items.DIAMOND, 50
-    );
-
     private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
     @Nullable
     private UUID ownerUUID;
@@ -64,15 +50,15 @@ public class ShopBlockEntity extends BlockEntity implements Container, MenuProvi
 
     private void trySell(ItemStack stack)
     {
-        Integer unitPrice = SELL_PRICES.get(stack.getItem());
-        if (unitPrice == null || this.level == null || this.level.isClientSide || this.ownerUUID == null)
+        if (stack.isEmpty() || this.level == null || this.level.isClientSide || this.ownerUUID == null)
             return;
 
         ServerPlayer owner = this.level.getServer() == null ? null : this.level.getServer().getPlayerList().getPlayer(this.ownerUUID);
         if (owner == null)
             return;
 
-        Wallet.add(owner, (long) unitPrice * stack.getCount());
+        long unitPrice = Pricing.priceOf(stack.getItem(), this.level.getRecipeManager(), this.level.registryAccess());
+        Wallet.add(owner, unitPrice * stack.getCount());
         this.items.set(0, ItemStack.EMPTY);
     }
 
@@ -119,7 +105,7 @@ public class ShopBlockEntity extends BlockEntity implements Container, MenuProvi
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack)
     {
-        return SELL_PRICES.containsKey(stack.getItem());
+        return true;
     }
 
     @Override
