@@ -5,6 +5,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -13,6 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -25,11 +27,20 @@ import net.minecraft.world.level.block.state.BlockState;
 // credited to them even while they're elsewhere, as long as they're still online.
 // ponytail: if the owner is offline, hopper insertion is refused (item stays put upstream)
 // rather than sold to nobody or queued; fine for singleplayer, revisit for dedicated servers.
-public class ShopBlockEntity extends BlockEntity implements Container, MenuProvider
+//
+// Implements WorldlyContainer (not just Container) so we can tell hopper-driven sales apart
+// from GUI ones for HopperSalesTracker: only hopper/dropper automation ever calls
+// canPlaceItemThroughFace (Slot's default mayPlace never does), so it's a reliable one-shot
+// marker consumed by the very next setItem/trySell call - safe since the server is single-
+// threaded and nothing else can interleave between the two calls.
+public class ShopBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider
 {
+    private static final int[] SLOTS = { 0 };
+
     private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
     @Nullable
     private UUID ownerUUID;
+    private boolean pendingHopperInsertion;
 
     public ShopBlockEntity(BlockPos pos, BlockState state)
     {
@@ -50,6 +61,9 @@ public class ShopBlockEntity extends BlockEntity implements Container, MenuProvi
 
     private void trySell(ItemStack stack)
     {
+        boolean viaHopper = this.pendingHopperInsertion;
+        this.pendingHopperInsertion = false;
+
         if (stack.isEmpty() || this.level == null || this.level.isClientSide || this.ownerUUID == null)
             return;
         if (isUnsellable(stack))
@@ -61,6 +75,8 @@ public class ShopBlockEntity extends BlockEntity implements Container, MenuProvi
 
         long unitPrice = Pricing.priceOf(stack.getItem(), this.level.getRecipeManager(), this.level.registryAccess());
         Wallet.add(owner, unitPrice * stack.getCount());
+        if (viaHopper)
+            HopperSalesTracker.recordSale(this.ownerUUID, stack.getItem(), stack.getCount());
         this.items.set(0, ItemStack.EMPTY);
     }
 
@@ -113,6 +129,25 @@ public class ShopBlockEntity extends BlockEntity implements Container, MenuProvi
     public boolean canPlaceItem(int slot, ItemStack stack)
     {
         return this.level == null || !isUnsellable(stack);
+    }
+
+    @Override
+    public int[] getSlotsForFace(Direction side)
+    {
+        return SLOTS;
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction direction)
+    {
+        this.pendingHopperInsertion = true;
+        return canPlaceItem(slot, stack);
+    }
+
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction direction)
+    {
+        return true;
     }
 
     @Override

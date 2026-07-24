@@ -66,3 +66,9 @@ Nothing currently - see README.md's feature list, everything there is implemente
   via `ShopScreen.getTooltipFromContainerItem` - same vanilla tooltip mechanism used for
   enchantment/durability lines, reuses `Pricing.priceOf` client-side (recipe manager and
   registry access are both synced to the client already).
+- ~~No periodic hopper-sales report~~ — `HopperSalesTracker` chats every online player a
+  per-item summary every 5 minutes ("No hopper automation" if nothing sold via hopper that
+  window). Hopper vs GUI sales are told apart by making `ShopBlockEntity` a `WorldlyContainer`:
+  only hopper/dropper automation ever calls `canPlaceItemThroughFace` (a plain `Slot`'s default
+  `mayPlace` never does), so it's a reliable one-shot marker consumed by the very next
+  `setItem`/`trySell` call.
