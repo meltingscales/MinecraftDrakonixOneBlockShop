@@ -4,35 +4,7 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
-- **Buy GUI tab** — README says the shop should let you buy items at a high price when you
-  can't produce them yet (sugarcane, lava buckets, etc). Design decided, not yet coded:
-  - Small fixed `BUY_OFFERS` list in `ShopMenu` (record of `Item` + flat price) - unlike the
-    sell side, this doesn't need to be dynamic/recipe-derived, README frames it as a short
-    curated list. Seed with sugarcane, cactus, lava bucket, water bucket.
-  - Button IDs via `clickMenuButton`: one per offer (`BUY_ITEM_BUTTON_BASE + index`), handled
-    server-side (`tryBuy`: check `Wallet.get(player) >= price`, deduct, `player.getInventory().add(stack)`,
-    drop at feet if inventory full).
-- **GUI tab-switching rework** (blocks the buy tab, do this first): current tabs are hand-rolled
-  text hitboxes in `ShopScreen.mouseClicked`, and tab state (`borderTabActive`) only lives
-  client-side in the Screen - so the sell slot underneath is still a real, always-active
-  `Slot` regardless of which tab is showing. That's the reported bug: switch to Border/Buy
-  tab, the Sell tab's slot is still clickable/interactable, just visually unhighlighted.
-  Planned fix (confirmed against decompiled vanilla source, not yet implemented):
-  - Move tab state into `ShopMenu` itself (`enum Tab { SELL, BORDER, BUY }`, `activeTab` field),
-    switched via `clickMenuButton` (client predicts + sends packet, server confirms - same
-    dual-execution idiom vanilla's `EnchantmentScreen` uses for its selectable slots, no new
-    DataSlot needed since both sides run the same button handler).
-  - Override `Slot.isActive()` on the sell slot (anonymous subclass) to return
-    `activeTab == Tab.SELL`. `AbstractContainerScreen` already gates rendering, hover, and
-    click routing on `Slot.isActive()` (verified in `AbstractContainerScreen.mouseClicked`/
-    `findSlot`) - this is the actual native mechanism, no manual hit-testing needed.
-  - Replace the hand-rolled tab/buy-button hitboxes with real `net.minecraft.client.gui.components.Button`
-    widgets added via `Screen.addRenderableWidget` in `init()`, toggling `.visible` per tab.
-    `AbstractContainerScreen.containerTick()` (called every client tick while the menu's open)
-    is the right place to sync button visibility/label/color off `this.menu` state (balance,
-    border size, current tab) - same idiom other multi-state vanilla screens use.
-  - This directly answers "shouldn't we use native GUI libs" - yes, this was the ad-hoc part
-    of the implementation, not a fundamental design compromise.
+Nothing currently - see README.md's feature list, everything there is implemented.
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
@@ -49,6 +21,11 @@ Tracked against README.md's feature list.
 - Pricing wasn't verified with an automated test (no practical way to unit-test against live
   registries/RecipeManager outside a running client) - only compiled and boot-tested. Actual
   sell-price correctness across a range of items still wants a manual in-game pass.
+- `Config.java`'s `defineListAllowEmpty` call is a deprecated NeoForge config API - compiles
+  fine, pre-existing, unrelated to anything touched this round. Cosmetic, low priority.
+- Buy/Border/Sell tab buttons and the sell-slot highlight are laid out by hand-tuned pixel
+  constants in `ShopScreen` (no layout system) - fine at 176x166 with 4 buy offers, would need
+  re-tuning if the offer list or image size grows much.
 
 ## Fixed
 
@@ -70,3 +47,17 @@ Tracked against README.md's feature list.
   even hopper-accept a cursed stack (`isUnsellable`/`canPlaceItem`). Not obtainable through
   normal enchanting/trading (deliberately left out of `in_enchanting_table`/`treasure` tags).
 - ~~Player only started with pickaxe/block/book~~ — also gets 4 oak logs now.
+- ~~Buy GUI tab~~ — README's "buy items you can't produce yet" is in: a `BUY_OFFERS` list in
+  `ShopMenu` (sugarcane, cactus, lava bucket, water bucket, flat prices), one button per offer,
+  `tryBuy` checks balance/deducts/adds to inventory (drops at feet if full).
+- ~~GUI tab-switching bug (other tabs' elements stayed clickable)~~ — tab state moved server-
+  authoritative into `ShopMenu` (`enum Tab`, synced `DataSlot`); the sell `Slot` now overrides
+  `isActive()` to gate on the active tab, which `AbstractContainerScreen` already uses to block
+  rendering/hover/clicks on inactive slots - no more manual hitbox testing.
+- ~~Hand-rolled text-hitbox tabs/buttons~~ — replaced with real
+  `net.minecraft.client.gui.components.Button` widgets (`Screen.addRenderableWidget`), synced
+  every client tick via `AbstractContainerScreen.containerTick()`. Answers "shouldn't we use
+  native GUI libs" - yes, and now we do.
+- ~~Deprecation warning in `ShopBlockEntity.java`~~ — root-caused: `EnchantmentHelper.getItemEnchantmentLevel`
+  is deprecated in favor of `ItemStack.getEnchantmentLevel(Holder)` for gameplay checks. Swapped
+  over, warning's gone (confirmed via a temporary `-Xlint:deprecation` build).
