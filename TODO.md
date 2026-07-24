@@ -4,7 +4,31 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
-Nothing currently - see README.md's feature list, everything there is implemented.
+- **Tech-mod item pipe/pipe-equivalent compatibility** (AE2, IC2, GregTech, Thermal Expansion,
+  EnderIO, etc.) - `ShopBlockEntity` only implements vanilla `WorldlyContainer`, which covers
+  hoppers/droppers. Most modern tech mods push items via the NeoForge Capabilities API
+  (`IItemHandler`) instead of touching `Container` directly - an AE2 import bus, EnderIO
+  conduit, or Thermal/GregTech pipe likely can't see the shop block at all right now. Would
+  need:
+  - Register an `IItemHandler` capability for the block via `RegisterCapabilitiesEvent`,
+    wrapping the existing single-slot `Container` (e.g. via `InvWrapper` or a small custom
+    handler) so those mods' pipes/buses/conduits can insert automatically.
+  - `HopperSalesTracker`'s hopper-vs-GUI detection (`canPlaceItemThroughFace`) won't fire for
+    capability-based insertion - it's a third path, neither hopper nor GUI. Sales report would
+    need a broader "automated insertion" category, or a separate one for capability-driven
+    sales, to still catch these.
+- **Tech-mod sell prices** (AE2, IC2, GregTech, Thermal Expansion, EnderIO, etc.) - separate
+  from the pipe compatibility above. Craftable items from these mods already price correctly
+  today: `Pricing` derives a price recursively from whatever recipe made them, and
+  `RecipeManager` includes every loaded mod's recipes for free. The gap is their *raw*/base
+  items with no recipe (ores, raw dusts, resources unique to a tech mod) - those fall back to
+  `DEFAULT_PRICE` (1), which will feel wrong for anything meant to be a mid/late-game resource.
+  Can't just add `Items.SOME_GREGTECH_ORE` to `SEED_PRICES` like the vanilla entries - these
+  mods are optional, not a compile dependency, so their `Item` classes may not exist at all.
+  Needs a data-driven seed table instead: a JSON mapping item ID strings (e.g.
+  `"gregtech:copper_ore"`) to a price, resolved at runtime via
+  `BuiltInRegistries.ITEM.get(ResourceLocation)` - an ID for an absent mod's item just resolves
+  to nothing/air and is skipped, no hard dependency, no crash if the mod isn't installed.
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
@@ -22,6 +46,7 @@ Nothing currently - see README.md's feature list, everything there is implemente
 - Buy/Border/Sell tab buttons and the sell-slot highlight are laid out by hand-tuned pixel
   constants in `ShopScreen` (no layout system) - fine at 176x166 with 4 buy offers, would need
   re-tuning if the offer list or image size grows much.
+  - Idea: ShopScreen should scroll or resize dynamically to fit the offer list and image size.
 
 ## Fixed
 
