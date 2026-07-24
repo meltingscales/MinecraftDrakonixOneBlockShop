@@ -20,7 +20,9 @@ import com.mojang.logging.LogUtils;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -45,6 +47,17 @@ public final class Pricing
     // can be seeded by ID string later without a compile-time dependency on that mod - an ID
     // for a mod that isn't installed just fails containsKey() and gets skipped, no crash.
     static final Map<Item, Long> SEED_PRICES = loadSeedPrices();
+
+    // Tag-based seed prices (pricing/seed_prices_by_tag.json) - the modern replacement for
+    // OreDictionary. Covers raw ores/materials/dusts for tech-mod metals (copper, tin, lead,
+    // etc): those are the recipe-less root of a mod's ore-processing chain, so recursive
+    // pricing can't reach them at all without this. Deliberately NOT seeding ingots/nuggets/
+    // storage blocks by tag - those are almost always a plain crafting/smelting recipe away
+    // from their raw material in any mod that registers one, so the existing recursive pricer
+    // already handles them correctly without duplicating the same number here. Unlike exact
+    // item IDs, a TagKey never needs an existence check - an unpopulated tag (mod not
+    // installed) just never matches anything, same effect as being skipped.
+    static final Map<TagKey<Item>, Long> SEED_TAG_PRICES = loadSeedTagPrices();
 
     private static Map<Item, Long> loadSeedPrices()
     {
@@ -71,6 +84,47 @@ public final class Pricing
             LOGGER.error("Failed to load pricing/seed_prices.json - no seed prices loaded", e);
         }
         return prices;
+    }
+
+    private static Map<TagKey<Item>, Long> loadSeedTagPrices()
+    {
+        Map<TagKey<Item>, Long> prices = new HashMap<>();
+        try (InputStream stream = Pricing.class.getResourceAsStream("/pricing/seed_prices_by_tag.json"))
+        {
+            if (stream == null)
+            {
+                LOGGER.warn("pricing/seed_prices_by_tag.json missing from jar - no tag seed prices loaded");
+                return prices;
+            }
+            JsonObject json = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
+            for (Map.Entry<String, JsonElement> entry : json.entrySet())
+            {
+                TagKey<Item> tag = TagKey.create(Registries.ITEM, ResourceLocation.parse(entry.getKey()));
+                prices.put(tag, entry.getValue().getAsLong());
+            }
+        }
+        catch (IOException | RuntimeException e)
+        {
+            LOGGER.error("Failed to load pricing/seed_prices_by_tag.json - no tag seed prices loaded", e);
+        }
+        return prices;
+    }
+
+    // Cheapest matching tag price, or null if the item isn't in any priced tag. A tech mod's
+    // item can plausibly carry more than one of these (e.g. a modded "raw_materials" item that
+    // also ends up in a mod-specific catch-all tag) - cheapest wins, same tie-break the
+    // recursive recipe pricer already uses for ingredient options.
+    private static Long tagPriceOf(Item item)
+    {
+        Long best = null;
+        for (Map.Entry<TagKey<Item>, Long> entry : SEED_TAG_PRICES.entrySet())
+        {
+            if (!BuiltInRegistries.ITEM.wrapAsHolder(item).is(entry.getKey()))
+                continue;
+            if (best == null || entry.getValue() < best)
+                best = entry.getValue();
+        }
+        return best;
     }
 
     // Rebuilt whenever the RecipeManager instance changes (world load / datapack reload).
@@ -108,6 +162,10 @@ public final class Pricing
         Long seeded = SEED_PRICES.get(item);
         if (seeded != null)
             return seeded;
+
+        Long tagPrice = tagPriceOf(item);
+        if (tagPrice != null)
+            return tagPrice;
 
         Long cached = priceCache.get(item);
         if (cached != null)

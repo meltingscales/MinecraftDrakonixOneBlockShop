@@ -4,6 +4,7 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
+- /drakonixoneblockshop commands that let you cheat or modify the game state
 - **Per-player world borders** — so multiple people can play together, each starting ~10 blocks
   apart and merging once their individually-grown borders touch. Attempted once this session and
   reverted - broke the client (hung at the title screen instead of joining a world) for a reason
@@ -45,19 +46,6 @@ Tracked against README.md's feature list.
     capability-based insertion - it's a third path, neither hopper nor GUI. Sales report would
     need a broader "automated insertion" category, or a separate one for capability-driven
     sales, to still catch these.
-- **Tech-mod sell prices** (AE2, IC2, GregTech, Thermal Expansion, EnderIO, etc.) - separate
-  from the pipe compatibility above. Craftable items from these mods already price correctly
-  today: `Pricing` derives a price recursively from whatever recipe made them, and
-  `RecipeManager` includes every loaded mod's recipes for free. The gap is their *raw*/base
-  items with no recipe (ores, raw dusts, resources unique to a tech mod) - those fall back to
-  `DEFAULT_PRICE` (1), which will feel wrong for anything meant to be a mid/late-game resource.
-  Can't just add `Items.SOME_GREGTECH_ORE` to `SEED_PRICES` like the vanilla entries - these
-  mods are optional, not a compile dependency, so their `Item` classes may not exist at all.
-  Needs a data-driven seed table instead: a JSON mapping item ID strings (e.g.
-  `"gregtech:copper_ore"`) to a price, resolved at runtime via
-  `BuiltInRegistries.ITEM.get(ResourceLocation)` - an ID for an absent mod's item just resolves
-  to nothing/air and is skipped, no hard dependency, no crash if the mod isn't installed.
-
 ## Known shortcuts (fine for now, revisit if they bite)
 
 - `Pricing` derives recipe-based prices as ingredient-sum-over-yield only - no fuel cost,
@@ -77,6 +65,13 @@ Tracked against README.md's feature list.
   constants in `ShopScreen` (no layout system) - fine at 176x166 with 4 buy offers, would need
   re-tuning if the offer list or image size grows much.
   - Idea: ShopScreen should scroll or resize dynamically to fit the offer list and image size.
+- Tag-based tech-mod pricing (`pricing/seed_prices_by_tag.json`) only covers `c:raw_materials`,
+  `c:ores`, and `c:dusts` for a bounded list of common metals (copper, tin, zinc, aluminum,
+  lead, nickel, silver, osmium, platinum, uranium, iridium) - not gems, and not every metal a
+  given tech mod might add. Deliberately narrow: those three tag families are the recipe-less
+  root of an ore-processing chain (nothing crafts them), so they're the one tier the recursive
+  pricer genuinely can't reach on its own. Expand the metal list or add gem tags if a real gap
+  shows up in practice.
 
 ## Fixed
 
@@ -156,3 +151,13 @@ Tracked against README.md's feature list.
   map (not a raw playerdata file write - safer) and paid out via `Wallet.flushPendingCredits`
   the next time they log in, through the same live-object `Wallet.add` path as any other
   credit.
+- ~~Tech-mod sell prices~~ — added `pricing/seed_prices_by_tag.json`, priced by NeoForge's
+  common (`c:`) item tags instead of exact item IDs (the modern replacement for the old Forge
+  OreDictionary). Covers raw ores/materials/dusts for a bounded list of common tech-mod metals
+  (copper, tin, lead, nickel, silver, platinum, osmium, iridium, uranium, zinc, aluminum) -
+  whichever mod actually supplies a given metal, its items just need to carry the shared tag to
+  price correctly, no compile dependency on any specific mod needed. Deliberately didn't seed
+  ingots/nuggets/storage blocks by tag - those are normally one crafting/smelting recipe away
+  from their raw material in any mod that registers one, so the existing recursive pricer
+  already reaches them without duplicating a second price table for the same tier.
+  `PricingSeedTest` extended (now parameterized) to structurally validate this file too.
