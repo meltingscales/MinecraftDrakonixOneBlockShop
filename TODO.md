@@ -4,6 +4,34 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
+- **Per-player world borders** — so multiple people can play together, each starting ~10 blocks
+  apart and merging once their individually-grown borders touch. Attempted once this session and
+  reverted - broke the client (hung at the title screen instead of joining a world) for a reason
+  not yet root-caused, so treat the design below as unverified, not a safe starting point.
+  Vanilla only has one real `WorldBorder` per level, so "per-player" can't just reuse it as-is.
+  What was tried:
+  - Each player gets their own center/size (a `Player` attachment, growing via the existing
+    purchase-cost curve), rather than the one `ServerLevel`-scoped border used today.
+  - New players are placed on a square spiral (world spawn + `SPAWN_SPACING` per ring step) so
+    they don't all land on the same point - teleported once at
+    `PlayerEvent.PlayerLoggedInEvent`, landing on the heightmap surface.
+  - For the client to actually *see* their own border (fog/wall rendering, `ShopScreen`'s
+    border-tab math), the server-side real border is left alone (huge/inert) and each player is
+    sent a fake `ClientboundInitializeBorderPacket` built from a throwaway `WorldBorder` holding
+    their personal center/size - confirmed `ClientPacketListener` mutates the client's local
+    `WorldBorder` object in place on receipt, so `Minecraft.level.getWorldBorder()` client-side
+    needs zero code changes and just reflects whatever a player was personally sent.
+  - Vanilla's actual push-back/damage is hardwired to the level's one real `WorldBorder`
+    (`Entity.collectColliders`, `LivingEntity`'s damage tick) - not reachable per-player without
+    mixins (this mod has none). So containment would have to be fully custom: per-tick, a
+    player is "safe" if standing inside *any* currently-online player's border box, not just
+    their own - which is what would make separate borders merge for free once they overlap, no
+    extra bookkeeping needed.
+  - Suspect areas for the hang, if picked back up: the mid-`PlayerLoggedInEvent` teleport (entity
+    may not be fully ready for `teleportTo` at that exact point), or something about sending a
+    raw packet via `player.connection.send(...)` outside the normal broadcast path. Worth testing
+    each piece (spiral placement, then packet-send, then containment) in isolation rather than
+    landing all three at once.
 - **Tech-mod item pipe/pipe-equivalent compatibility** (AE2, IC2, GregTech, Thermal Expansion,
   EnderIO, etc.) - `ShopBlockEntity` only implements vanilla `WorldlyContainer`, which covers
   hoppers/droppers. Most modern tech mods push items via the NeoForge Capabilities API
@@ -32,8 +60,6 @@ Tracked against README.md's feature list.
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
-- World border is one shared border for the whole overworld, not per-player. Fine for
-  singleplayer/LAN; real multiplayer would need virtual per-player borders.
 - `Pricing` derives recipe-based prices as ingredient-sum-over-yield only - no fuel cost,
   mining difficulty, or drop rarity modeling. The seed table (`pricing/seed_prices.json`) is
   still hand-set and may need tuning/expansion as gaps get noticed.
