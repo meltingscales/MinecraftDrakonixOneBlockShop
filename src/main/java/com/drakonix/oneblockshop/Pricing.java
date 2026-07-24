@@ -1,5 +1,9 @@
 package com.drakonix.oneblockshop;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,52 +11,66 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.mojang.logging.LogUtils;
+
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 
 // Literally every item is sellable. Raw/base resources (things nothing crafts) get a
-// hand-set seed price; everything else derives its price from its cheapest known recipe
-// (crafting-table or furnace-family - anything that overrides Recipe.getIngredients()),
-// recursively, so we don't hand-maintain a price for every item in the game.
+// hand-set seed price (pricing/seed_prices.json); everything else derives its price from its
+// cheapest known recipe (crafting-table or furnace-family - anything that overrides
+// Recipe.getIngredients()), recursively, so we don't hand-maintain a price for every item in
+// the game.
 // ponytail: ingredient-sum-over-yield only - no fuel cost, mining difficulty, or drop rarity
 // modeling. Fine for a shop economy, not a market simulation. Unrecognized/unpriceable items
 // (no seed, no usable recipe) fall back to DEFAULT_PRICE rather than refusing the sale.
 public final class Pricing
 {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final long DEFAULT_PRICE = 1L;
 
-    private static final Map<Item, Long> SEED_PRICES = new HashMap<>();
-    static
+    // JSON (not a hardcoded Item map) specifically so an optional/soft-dependency mod's items
+    // can be seeded by ID string later without a compile-time dependency on that mod - an ID
+    // for a mod that isn't installed just fails containsKey() and gets skipped, no crash.
+    static final Map<Item, Long> SEED_PRICES = loadSeedPrices();
+
+    private static Map<Item, Long> loadSeedPrices()
     {
-        seed(Items.DIRT, 1); seed(Items.COBBLESTONE, 1); seed(Items.SAND, 1); seed(Items.GRAVEL, 1);
-        seed(Items.NETHERRACK, 1); seed(Items.SOUL_SAND, 1); seed(Items.OAK_LOG, 2); seed(Items.SPRUCE_LOG, 2);
-        seed(Items.BIRCH_LOG, 2); seed(Items.JUNGLE_LOG, 2); seed(Items.ACACIA_LOG, 2); seed(Items.DARK_OAK_LOG, 2);
-        seed(Items.MANGROVE_LOG, 2); seed(Items.CHERRY_LOG, 2);
-
-        seed(Items.SUGAR_CANE, 2); seed(Items.CACTUS, 2); seed(Items.WHEAT, 2); seed(Items.CARROT, 2);
-        seed(Items.POTATO, 2); seed(Items.BEETROOT, 2); seed(Items.PUMPKIN, 3); seed(Items.MELON_SLICE, 1);
-        seed(Items.NETHER_WART, 3);
-
-        seed(Items.RAW_IRON, 6); seed(Items.RAW_GOLD, 10); seed(Items.RAW_COPPER, 3); seed(Items.COAL, 3);
-        seed(Items.DIAMOND, 50); seed(Items.EMERALD, 40); seed(Items.LAPIS_LAZULI, 3); seed(Items.REDSTONE, 2);
-        seed(Items.QUARTZ, 3); seed(Items.AMETHYST_SHARD, 4);
-
-        seed(Items.STRING, 2); seed(Items.BONE, 2); seed(Items.GUNPOWDER, 3); seed(Items.ROTTEN_FLESH, 1);
-        seed(Items.SPIDER_EYE, 2); seed(Items.ENDER_PEARL, 15); seed(Items.SLIME_BALL, 3); seed(Items.FEATHER, 1);
-        seed(Items.LEATHER, 3);
-
-        seed(Items.LAVA_BUCKET, 20); seed(Items.WATER_BUCKET, 5); seed(Items.MILK_BUCKET, 5);
-    }
-
-    private static void seed(Item item, long price)
-    {
-        SEED_PRICES.put(item, price);
+        Map<Item, Long> prices = new HashMap<>();
+        try (InputStream stream = Pricing.class.getResourceAsStream("/pricing/seed_prices.json"))
+        {
+            if (stream == null)
+            {
+                LOGGER.warn("pricing/seed_prices.json missing from jar - no seed prices loaded");
+                return prices;
+            }
+            JsonObject json = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
+            for (Map.Entry<String, JsonElement> entry : json.entrySet())
+            {
+                ResourceLocation id = ResourceLocation.parse(entry.getKey());
+                if (BuiltInRegistries.ITEM.containsKey(id))
+                    prices.put(BuiltInRegistries.ITEM.get(id), entry.getValue().getAsLong());
+                else
+                    LOGGER.warn("Unknown item '{}' in pricing/seed_prices.json - skipped", entry.getKey());
+            }
+        }
+        catch (IOException | RuntimeException e)
+        {
+            LOGGER.error("Failed to load pricing/seed_prices.json - no seed prices loaded", e);
+        }
+        return prices;
     }
 
     // Rebuilt whenever the RecipeManager instance changes (world load / datapack reload).
