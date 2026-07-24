@@ -45,23 +45,6 @@ Tracked against README.md's feature list.
     capability-based insertion - it's a third path, neither hopper nor GUI. Sales report would
     need a broader "automated insertion" category, or a separate one for capability-driven
     sales, to still catch these.
-- **More dev-only tech mods for playtesting** — Mekanism's already added (`build.gradle`,
-  `localRuntime`) so there's something real to test the tag-based pricing and (eventually) pipe
-  compatibility against. Add a few more, one at a time, in this order:
-  - **AE2** (Applied Energistics 2) - top priority, has the import-bus/pipe-equivalent story
-    that matters for the tech-mod item-pipe TODO above.
-  - **EnderIO** - conduits are the other named pipe-equivalent case.
-  - **IC2** (Industrial Craft 2) - check NeoForge/1.21.1 availability first, may still be
-    Forge-only like Thermal Expansion was.
-  - **GregTech** (GT: New Horizons/GT5u/GT6, whichever is current) - check availability first,
-    historically slow to track new MC versions.
-  Same process as Mekanism each time, don't guess: query Modrinth's API
-  (`https://api.modrinth.com/v2/project/<slug>/version`) for real NeoForge/1.21.1 releases first
-  (Thermal Expansion turned out not to have one - last release is 1.20.1 Forge only), then
-  download the candidate version and inspect its `neoforge.mods.toml` for the `neoforge`
-  dependency range against this project's pinned `neo_version` (21.1.176), and pick the newest
-  version that still satisfies it - same as `10.7.14.79` was picked for Mekanism over the latest
-  `10.7.19.85` (which needed `neoforge>=21.1.194`).
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
@@ -222,3 +205,21 @@ Tracked against README.md's feature list.
   everything from `10.7.15.81` on needs `>=21.1.194`, above this project's pinned `neo_version`
   (21.1.176). Bump the pin only alongside a real `neo_version` upgrade. (Thermal Expansion, the
   mod originally asked for, has no NeoForge release at all - last release is 1.20.1 Forge only.)
+- Added AE2, EnderIO, and GregTech CEu Modern as more dev-only `localRuntime` deps alongside
+  Mekanism (see `build.gradle`), same reasoning and same verify-via-Modrinth-API-then-inspect
+  process. Boot-tested clean to the title screen with all four loaded together (no FATAL, no
+  missing-dependency errors) - proves boot-safety only, not that AE2's import bus or EnderIO's
+  conduits actually interact with the shop block yet (that's the still-open item-pipe TODO
+  above). Specifics:
+  - `maven.modrinth:ae2:19.2.17` (latest) - needs `neoforge>=21.1.169`, satisfied as-is.
+  - `maven.modrinth:guideme:21.1.17` - AE2 hard-requires this (its in-game guide book library)
+    as a `REQUIRED` mod dependency; not obvious from AE2's own listing, only surfaced as a
+    boot-time FATAL "requires guideme" until added.
+  - `maven.modrinth:enderio:7.1.8-alpha` - NOT latest (`8.2.11-beta` needs
+    `neoforge==21.1.216`, above our `neo_version`); pinned to the newest version whose
+    `neoforge.mods.toml` only needs `neoforge>=21.1.58`.
+  - `maven.modrinth:gregtechceu-modern:mc1.21.1-7.0.2` (latest) - needs `neoforge>=21.1`,
+    satisfied as-is; its other required deps (`ldlib`, `configuration`) are embedded in the jar.
+  - IC2 skipped, same as Thermal Expansion: no NeoForge/1.21.1 release exists on Modrinth for
+    any of the IC2-lineage mods checked (`ic2classic`, `industrial-craft`) - both Forge-only,
+    older MC versions.

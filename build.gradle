@@ -134,6 +134,26 @@ dependencies {
     // neo_version (21.1.176). Bump this only alongside a real neo_version upgrade.
     localRuntime "maven.modrinth:mekanism:10.7.14.79"
 
+    // Dev-only, same reasoning as Mekanism above - AE2's import bus is the case the tech-mod
+    // item-pipe TODO cares about most. 19.2.17 (latest at time of writing) needs
+    // neoforge>=21.1.169, satisfied by our neo_version (21.1.176), so latest works as-is.
+    localRuntime "maven.modrinth:ae2:19.2.17"
+    // AE2 hard-requires GuideMe (its in-game guide book library) - not obvious from AE2's own
+    // page, only surfaced as a boot-time FATAL "requires guideme" until added. 21.1.17 (latest)
+    // only needs neoforge>=21.1.1, compatible.
+    localRuntime "maven.modrinth:guideme:21.1.17"
+
+    // Dev-only, same reasoning - EnderIO conduits are the other named pipe-equivalent case.
+    // NOT latest (8.2.11-beta needs neoforge==21.1.216, above our neo_version): pinned to
+    // 7.1.8-alpha, the newest version whose neoforge.mods.toml only needs neoforge>=21.1.58.
+    localRuntime "maven.modrinth:enderio:7.1.8-alpha"
+
+    // Dev-only, same reasoning - GregTech CEu Modern is the actively-maintained GregTech line
+    // for 1.21.1/neoforge (the classic IC2/GT5u/GT6 lines have no neoforge or 1.21.1 release).
+    // mc1.21.1-7.0.2 (latest) needs neoforge>=21.1, satisfied by our neo_version; its other
+    // required deps (ldlib, configuration) are embedded in the jar, nothing else to add.
+    localRuntime "maven.modrinth:gregtechceu-modern:mc1.21.1-7.0.2"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
