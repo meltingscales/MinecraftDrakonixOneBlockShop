@@ -27,6 +27,17 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      # See build.yml for why - NeoGradle's project-local decompile cache isn't covered by
+      # setup-gradle's automatic ~/.gradle caching.
+      - name: Cache NeoGradle project caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            .gradle
+            build/neoForm
+            build/jars
+          key: neogradle-${{ runner.os }}-${{ hashFiles('gradle.properties') }}
+
       - name: Verify tag matches mod_version
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"

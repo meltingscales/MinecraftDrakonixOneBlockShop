@@ -21,5 +21,19 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      # setup-gradle already caches ~/.gradle (Gradle User Home) automatically. This covers
+      # NeoGradle's project-local caches instead - the decompiled/patched/recompiled Minecraft
+      # sources under build/neoForm, which are what actually make a from-scratch build slow.
+      # Keyed on gradle.properties since that's what pins the MC/NeoForge/mappings versions -
+      # no restore-keys fallback, so a version bump can't partially restore a stale cache.
+      - name: Cache NeoGradle project caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            .gradle
+            build/neoForm
+            build/jars
+          key: neogradle-${{ runner.os }}-${{ hashFiles('gradle.properties') }}
+
       - name: Build with Gradle
         run: ./gradlew build
