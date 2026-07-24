@@ -47,14 +47,21 @@ Tracked against README.md's feature list.
     sales, to still catch these.
 - **More dev-only tech mods for playtesting** — Mekanism's already added (`build.gradle`,
   `localRuntime`) so there's something real to test the tag-based pricing and (eventually) pipe
-  compatibility against. Add a few more of the mods actually named in the tech-mod TODO items
-  above - AE2 first (it's the one with the import-bus/pipe-equivalent story), then whichever of
-  IC2/GregTech/EnderIO have current NeoForge 1.21.1 releases. Same process as Mekanism each time:
-  check Modrinth's API for the mod's actual NeoForge/1.21.1 availability before assuming it
-  exists (Thermal Expansion didn't - last release is 1.20.1 Forge only), then download and
-  inspect the candidate version's `neoforge.mods.toml` for its `neoforge` dependency range
-  against this project's pinned `neo_version` (21.1.176) rather than guessing compatibility -
-  pick the newest version that still satisfies it, same as `10.7.14.79` was picked for Mekanism.
+  compatibility against. Add a few more, one at a time, in this order:
+  - **AE2** (Applied Energistics 2) - top priority, has the import-bus/pipe-equivalent story
+    that matters for the tech-mod item-pipe TODO above.
+  - **EnderIO** - conduits are the other named pipe-equivalent case.
+  - **IC2** (Industrial Craft 2) - check NeoForge/1.21.1 availability first, may still be
+    Forge-only like Thermal Expansion was.
+  - **GregTech** (GT: New Horizons/GT5u/GT6, whichever is current) - check availability first,
+    historically slow to track new MC versions.
+  Same process as Mekanism each time, don't guess: query Modrinth's API
+  (`https://api.modrinth.com/v2/project/<slug>/version`) for real NeoForge/1.21.1 releases first
+  (Thermal Expansion turned out not to have one - last release is 1.20.1 Forge only), then
+  download the candidate version and inspect its `neoforge.mods.toml` for the `neoforge`
+  dependency range against this project's pinned `neo_version` (21.1.176), and pick the newest
+  version that still satisfies it - same as `10.7.14.79` was picked for Mekanism over the latest
+  `10.7.19.85` (which needed `neoforge>=21.1.194`).
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
