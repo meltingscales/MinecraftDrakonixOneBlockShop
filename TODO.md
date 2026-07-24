@@ -6,6 +6,7 @@ Tracked against README.md's feature list.
 
 - **Buy GUI** — README says the shop should let you buy items at a high price when you can't
   produce them yet (sugarcane, lava buckets, etc). Only the sell side exists right now.
+- Literally every item is sellable (and craftable items' prices are derived dynamically from their recipes, so we don't need to hardcode them)
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
