@@ -169,6 +169,12 @@ dependencies {
     // neoforge>=21.0.118-beta, satisfied by our neo_version (21.1.176).
     localRuntime "maven.modrinth:jei:zHNxmOqp"
 
+    // Dev-only, fells a whole tree in one hit - handy while playtesting since Sell/Explore
+    // loops both want a lot of logs fast. No version-number collision across loaders for this
+    // one (0.19.3 is neoforge-only on Modrinth), so the plain version string is unambiguous.
+    // Needs neoforge>=21.0.167, satisfied by our neo_version (21.1.176).
+    localRuntime "maven.modrinth:treechop:0.19.3"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
