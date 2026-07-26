@@ -25,7 +25,8 @@ border. Sell items at your shop block to earn money, then spend it to expand the
     lava bucket, water bucket) at a flat price.
   - **Explore** — free random teleport up to 10,000 blocks out, for easier resource gathering.
     You're auto-returned to where you left after 10 minutes, with chat/GUI warnings at 5, 3, 2,
-    and 1 minute(s) left; can't teleport again until you're back.
+    and 1 minute(s) left; can't teleport again until you're back. An "Expedition" status effect
+    for the trip's duration blocks placing a new shop block while you're away.
 - Hopper items into the shop block to auto-sell them. Every 5 minutes you get a chat report of
   what your hopper automation sold (or "No hopper automation" if none sold anything).
 - Starter items (pickaxe, shop block, guide book) carry an `Unsellable` curse so they can't be

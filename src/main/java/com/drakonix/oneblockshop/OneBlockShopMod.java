@@ -60,6 +60,7 @@ public class OneBlockShopMod
         StarterKit.ATTACHMENTS.register(modEventBus);
         Border.ATTACHMENTS.register(modEventBus);
         Expedition.ATTACHMENTS.register(modEventBus);
+        Expedition.EFFECTS.register(modEventBus);
 
         modEventBus.addListener(this::addCreative);
     }

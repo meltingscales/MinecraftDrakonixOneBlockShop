@@ -4,15 +4,21 @@ import com.mojang.serialization.Codec;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -49,6 +55,15 @@ public final class Expedition
             "expedition_return_z", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).build());
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Integer>> NEXT_WARNING = ATTACHMENTS.register(
             "expedition_next_warning", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
+
+    // Marks a player as away so other systems (currently: blocking placing a new shop block -
+    // easy to lose track of which one is "home" if you drop a second one mid-expedition) can
+    // check for it without needing their own attachment. Anonymous subclass because MobEffect's
+    // constructor is protected - fine, plenty of vanilla effects (e.g. Confusion) are plain
+    // no-behavior instances like this too.
+    public static final DeferredRegister<MobEffect> EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, OneBlockShopMod.MODID);
+    public static final DeferredHolder<MobEffect, MobEffect> EFFECT = EFFECTS.register(
+            "expedition", () -> new MobEffect(MobEffectCategory.NEUTRAL, 0x55FFFF) {});
 
     private Expedition() {}
 
@@ -95,13 +110,16 @@ public final class Expedition
         player.teleportTo(surface.getX() + 0.5, surface.getY(), surface.getZ() + 0.5);
         player.setData(END_TICK, overworld.getGameTime() + DURATION_TICKS);
         player.setData(NEXT_WARNING, 0);
+        // Duration matches DURATION_TICKS so the vanilla potion-icon countdown and this class's
+        // own GUI/chat countdown always agree.
+        player.addEffect(new MobEffectInstance(EFFECT, (int) DURATION_TICKS, 0, false, true));
 
         player.sendSystemMessage(Component.literal(
                 "Teleported to a random spot! You'll be returned to base in 10 minutes.").withStyle(ChatFormatting.AQUA));
         return true;
     }
 
-    private static void returnHome(ServerPlayer player)
+    private static void returnHome(ServerPlayer player, boolean announce)
     {
         ServerLevel overworld = player.serverLevel().getServer().overworld();
         double x = player.getData(RETURN_X);
@@ -110,9 +128,11 @@ public final class Expedition
 
         player.teleportTo(x, y, z);
         player.setData(END_TICK, NOT_ON_EXPEDITION);
+        player.removeEffect(EFFECT);
         Border.endExpeditionHold(overworld);
 
-        player.sendSystemMessage(Component.literal("Returned to base.").withStyle(ChatFormatting.AQUA));
+        if (announce)
+            player.sendSystemMessage(Component.literal("Returned to base.").withStyle(ChatFormatting.AQUA));
     }
 
     @SubscribeEvent
@@ -126,7 +146,7 @@ public final class Expedition
         long remainingTicks = player.getData(END_TICK) - player.level().getGameTime();
         if (remainingTicks <= 0)
         {
-            returnHome(player);
+            returnHome(player, true);
             return;
         }
 
@@ -142,5 +162,33 @@ public final class Expedition
         }
         if (warned != player.getData(NEXT_WARNING))
             player.setData(NEXT_WARNING, warned);
+    }
+
+    // Watchdog for the abandoned-expedition case: onPlayerTick above only ever runs for a player
+    // who's actually online, so a player who logs out mid-expedition and never comes back would
+    // otherwise leave Border's EXPEDITIONS_ACTIVE counter permanently non-zero - the shared
+    // border stuck enlarged, and Border.tryExpand permanently refused, for everyone else forever.
+    // Returning them home right at logout (silently - they're disconnecting, no one to read a
+    // chat message) means the only way to get stuck is a true crash/power-loss, not just quitting.
+    @SubscribeEvent
+    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event)
+    {
+        if (event.getEntity() instanceof ServerPlayer player && isAway(player))
+            returnHome(player, false);
+    }
+
+    // Blocks placing a *new* shop block while away, so it's obvious which one is "home" - has no
+    // effect on shop blocks already placed before the expedition started.
+    @SubscribeEvent
+    public static void onBlockPlace(BlockEvent.EntityPlaceEvent event)
+    {
+        if (event.getPlacedBlock().getBlock() != OneBlockShopMod.SHOP_BLOCK.get())
+            return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || !player.hasEffect(EFFECT))
+            return;
+
+        event.setCanceled(true);
+        player.sendSystemMessage(Component.literal(
+                "Can't place a shop block while on an expedition.").withStyle(ChatFormatting.RED));
     }
 }

@@ -6,6 +6,16 @@ Tracked against README.md's feature list.
 
 - Modpack- how should we go about adding a modpack featuring the OneBlockShop mod? lives in `./modpack/`? light questing? `justfile` for common build commands? what modpack CLI tools exist out there?
 
+- add a minimap mod with waypoints to gradle config and recommended-mods
+
+- add WAILA as a mod to gradle  config and recommended-mods
+
+- add a /drakonixoneblockshop subcommand to end an expedition early
+
+- add a /drakonixoneblockshop help command with a list of available subcommands and some brief descriptions
+
+- instead of ephemeral "money", add items called "Drakonix OneBlockShop Token" (sprite from .ppm file to a .png file, hue-shifted for different amounts) that start at 1, 2, 4, 8, etc - up to 8196. - these should be used when buying/selling items. if you over-spend, it should automatically give you back the excess tokens in a way that satisfies the "Change-making Problem" in mathematics.
+
 - **Per-player world borders** — so multiple people can play together, each starting ~10 blocks
   apart and merging once their individually-grown borders touch. Attempted once this session and
   reverted - broke the client (hung at the title screen instead of joining a world) for a reason
@@ -110,6 +120,21 @@ Tracked against README.md's feature list.
     before the heightmap query, so it reflects real generated terrain. Still only boot-tested
     (client joins, no FATAL/Exception) beyond that one manual playtest - the countdown/warning
     timings and auto-return haven't been exercised, so treat those as unverified until played.
+  - Added a watchdog for the abandoned-expedition case: `Border.EXPEDITIONS_ACTIVE` only ever
+    decrements from `returnHome`, which only ever runs from that specific player's own
+    `PlayerTickEvent` - a player who logs out mid-expedition and never comes back (crash, quits
+    the world for good) would otherwise leave the shared border stuck enlarged and
+    `Border.tryExpand` permanently refused, forever, for everyone else. Fixed by force-returning
+    the player home (silently, no chat message) on `PlayerEvent.PlayerLoggedOutEvent` if they
+    were away - covers every graceful disconnect; only a true crash/power-loss can still leave it
+    stuck (no event fires for that case at all).
+  - Added an "Expedition" `MobEffect` (`Expedition.EFFECT`, no inherent behavior - just a
+    presence marker, same idiom as vanilla's plain effects like Confusion), applied for
+    `DURATION_TICKS` when a player teleports out and removed on return, so the vanilla
+    potion-icon countdown always agrees with the GUI/chat one. Blocks placing a *new* shop block
+    while it's active (`BlockEvent.EntityPlaceEvent`, cancelled + chat explanation) - existing
+    shop blocks are unaffected, this only stops confusion about which one is "home" if you drop
+    a second one mid-trip.
 - ~~Player could spawn outside the 1x1 border~~ — border now centers on the player's actual
   spawn position instead of the world's nominal spawn point.
 - ~~No safety net for leaving the border~~ — straying more than 5 blocks past the edge now
