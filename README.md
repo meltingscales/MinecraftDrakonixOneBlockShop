@@ -7,6 +7,7 @@ expand the border.
 ## Links
 
 - [CurseForge](https://www.curseforge.com/minecraft/mc-mods/drakonix-one-block-shop)
+- [Modrinth](https://modrinth.com/project/drakonix-one-block-shop)
 - [Download the mod from GitHub releases](https://github.com/meltingscales/MinecraftDrakonixOneBlockShop/releases)
 
 ## How it works
