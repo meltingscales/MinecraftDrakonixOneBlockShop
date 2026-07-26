@@ -17,6 +17,8 @@ version-pinning rationale next to each line; this file is just the quick-referen
 | [TreeChop](https://modrinth.com/mod/treechop) | 0.19.3 | Fells whole trees in one hit - handy for the log volume Sell/Explore playtesting wants. |
 | [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap) | neoforge-1.21.1-26.4.2 | Minimap + waypoints, handy for finding your way back to base after an Explore-tab teleport. |
 | [Jade](https://modrinth.com/mod/jade) | 15.10.5+neoforge | WAILA-equivalent tooltip HUD - see note below, not literally WAILA. |
+| [KotlinLangForge](https://modrinth.com/mod/kotlin-lang-forge) | 2.12.2-k2.4.10-3.0+neoforge | Kotlin mod-loader-language provider - hard-required by VeinMiner. |
+| [VeinMiner](https://modrinth.com/mod/veinminer) | `syKekkIm` (2.11.2) | Mines a whole ore vein in one break - fast resources for Sell/Explore playtesting, same reasoning as TreeChop. |
 
 Not added: IC2 (no NeoForge/1.21.1 release exists for any IC2-lineage mod as of writing) and
 Thermal Expansion (last release is 1.20.1 Forge-only). Re-check Modrinth if either ships one.

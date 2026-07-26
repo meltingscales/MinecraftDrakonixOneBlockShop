@@ -189,6 +189,17 @@ dependencies {
     // by our neo_version (21.1.176).
     localRuntime "maven.modrinth:jade:15.10.5+neoforge"
 
+    // Dev-only, mines a whole ore vein in one break - handy for the same reason as TreeChop
+    // (Sell/Explore playtesting wants a lot of resources fast). Hard-requires KotlinLangForge
+    // as a mod-loader-type language provider (its own neoforge.mods.toml declares
+    // modLoader="klf", not "javafml"), not obvious from VeinMiner's own Modrinth listing.
+    // Version string is already loader-prefixed ("veinminer-neoforge-2.11.2+1.21.1.jar" has a
+    // matching "2.11.2" collision across fabric/quilt/folia/paper though, so pinned to the
+    // NeoForge release's Modrinth version id). Needs neoforge>=21, minecraft>=1.21, both
+    // satisfied.
+    localRuntime "maven.modrinth:kotlin-lang-forge:2.12.2-k2.4.10-3.0+neoforge"
+    localRuntime "maven.modrinth:veinminer:syKekkIm"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
