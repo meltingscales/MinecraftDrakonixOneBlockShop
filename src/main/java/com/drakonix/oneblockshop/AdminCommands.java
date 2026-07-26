@@ -165,7 +165,10 @@ public final class AdminCommands
                 "/drakonixoneblockshop expedition end - end your current Explore-tab trip early",
                 "/drakonixoneblockshop help - show this list",
                 "/drakonixoneblockshop balance <get|set|add> <player> [amount] - op: read/adjust a wallet",
-                "/drakonixoneblockshop border <get|set|expand|simulatejoin> [size] - op: read/adjust the shared world border, or simulate a second player joining",
+                "/drakonixoneblockshop border get - op: read the shared world border's size",
+                "/drakonixoneblockshop border set <size> - op: set the shared world border's size",
+                "/drakonixoneblockshop border expand - op: expand the shared world border for free",
+                "/drakonixoneblockshop border simulatejoin - op: simulate a second player joining, for testing the multiplayer border clamp",
                 "/drakonixoneblockshop starterkit give <player> - op: re-issue the starter kit");
         for (String line : lines)
             ctx.getSource().sendSuccess(() -> Component.literal(line), false);

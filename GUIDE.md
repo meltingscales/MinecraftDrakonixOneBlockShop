@@ -2,7 +2,7 @@ Welcome to Drakonix One Block Shop!
 
 You start on a single block with an iron pickaxe and a Drakonix Block Shop. Place the shop, then start breaking and growing.
 
-If you just spawned, I highly recommend going on an expedition. Place the Drakonix Block Shop and select "Expedition".
+If you just spawned, I highly recommend going on an expedition. Place the Drakonix Block Shop, select "Explore", and click "Open Portal" - a portal appears above the shop for 30 seconds, and walking into it is what actually sends you off. If a friend walks in with you, you go together to the same spot.
 
 Keep Inventory is on by default in this world. A 1-block start means you can land somewhere rough - lava, void, whatever's below spawn - and that's not a risk you signed up for. Dying still costs you the run, just not your items.
 

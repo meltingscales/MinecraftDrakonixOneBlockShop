@@ -69,7 +69,7 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
 
         this.expandButton = addRenderableWidget(Button.builder(Component.literal("Buy expansion"), b -> pressButton(ShopMenu.EXPAND_BORDER_BUTTON))
                 .bounds(this.leftPos + 8, this.topPos + BORDER_ACTION_Y, 160, 20).build());
-        this.teleportButton = addRenderableWidget(Button.builder(Component.literal("Teleport"), b -> pressButton(ShopMenu.TELEPORT_BUTTON))
+        this.teleportButton = addRenderableWidget(Button.builder(Component.literal("Open Portal"), b -> pressButton(ShopMenu.TELEPORT_BUTTON))
                 .bounds(this.leftPos + 8, this.topPos + ACTION_Y, 160, 20).build());
 
         this.buyButtons.clear();
@@ -161,15 +161,15 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
 
         if (tab == ShopMenu.Tab.EXPEDITION)
         {
-            int remaining = this.menu.getExpeditionRemainingSeconds();
+            int remaining = this.menu.getPortalRemainingSeconds();
             if (remaining > 0)
             {
-                this.teleportButton.setMessage(Component.literal("Away - back in " + formatDuration(remaining)));
+                this.teleportButton.setMessage(Component.literal("Portal open (" + formatDuration(remaining) + ") - walk in!"));
                 this.teleportButton.active = false;
             }
             else
             {
-                this.teleportButton.setMessage(Component.literal("Teleport"));
+                this.teleportButton.setMessage(Component.literal("Open Portal"));
                 this.teleportButton.active = true;
             }
         }
@@ -225,6 +225,6 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
         else if (this.menu.getActiveTab() == ShopMenu.Tab.BUY)
             graphics.drawString(this.font, "Buy what you can't produce yet", 8, INFO_Y, 0xA0A0A0, false);
         else if (this.menu.getActiveTab() == ShopMenu.Tab.EXPEDITION)
-            graphics.drawString(this.font, "Random teleport, 10 min round trip", 8, INFO_Y, 0xA0A0A0, false);
+            graphics.drawString(this.font, "Opens a portal above the shop - walk in to go", 8, INFO_Y, 0xA0A0A0, false);
     }
 }

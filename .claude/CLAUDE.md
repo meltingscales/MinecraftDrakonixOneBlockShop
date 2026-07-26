@@ -1,7 +1,10 @@
 # Directions for AI agents working on this repo
 
 NeoForge 1.21.1 mod (Java 21, NeoGradle). Read TODO.md and README.md first - they're kept
-up to date and describe what's actually implemented vs. known shortcuts.
+up to date and describe what's actually implemented vs. known shortcuts. See also
+TODO-DONE.md (finished items, split out of TODO.md to keep it short), RECOMMENDED-MODS.md
+(current dev-only `localRuntime` mods) and FUTURE-MOD-COMPAT.md (mods verified compatible
+before but currently removed).
 
 ## Verify against decompiled sources, don't guess signatures
 
@@ -68,9 +71,15 @@ recipe; let crafted items fall out of recipe pricing automatically.
 ## Docs hygiene
 
 TODO.md is the running status doc - after any feature/fix, move it from "Not built yet" into
-"Fixed" (or add a new "Known shortcuts" entry if it's a deliberate simplification, tagged with
-why it's fine for now). Keep README.md's feature description matching what's actually
-implemented, not aspirational.
+TODO-DONE.md (or add a new "Known shortcuts" entry in TODO.md if it's a deliberate
+simplification, tagged with why it's fine for now). TODO-DONE.md is append-only history -
+newest entries go at the top, don't reorganize or delete old ones. Keep README.md's feature
+description matching what's actually implemented, not aspirational.
+
+Removing a dev-only `localRuntime` mod (not because it stopped working, just trimming the dev
+environment) - move its row from RECOMMENDED-MODS.md into FUTURE-MOD-COMPAT.md rather than
+deleting the compatibility notes outright, so re-adding it later doesn't mean redoing the
+Modrinth-query-and-toml-inspection legwork from scratch.
 
 ## Git / commits
 

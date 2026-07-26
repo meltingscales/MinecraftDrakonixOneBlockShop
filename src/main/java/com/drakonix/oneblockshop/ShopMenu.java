@@ -101,9 +101,9 @@ public class ShopMenu extends AbstractContainerMenu
     // Border.tryExpand) - not necessarily this block's owner, so this tracks the viewing
     // player specifically rather than reusing the owner-scoped balance display.
     private final DataSlot expandCooldownSeconds = DataSlot.standalone();
-    // Same idea as expandCooldownSeconds - whoever's viewing is whoever can click Teleport,
-    // regardless of whose shop block this is.
-    private final DataSlot expeditionRemainingSeconds = DataSlot.standalone();
+    // Portal state is global (one at a time, see Expedition.java), not tied to the viewing
+    // player - anyone can walk into whichever shop's portal is currently open.
+    private final DataSlot portalRemainingSeconds = DataSlot.standalone();
 
     // Client-side reconstruction from the network packet; slot 0's real contents get synced
     // over automatically regardless of which Container backs this local placeholder.
@@ -116,7 +116,7 @@ public class ShopMenu extends AbstractContainerMenu
         this.addDataSlot(this.balance);
         this.addDataSlot(this.activeTab);
         this.addDataSlot(this.expandCooldownSeconds);
-        this.addDataSlot(this.expeditionRemainingSeconds);
+        this.addDataSlot(this.portalRemainingSeconds);
         addSlots(this.container, playerInventory);
     }
 
@@ -129,7 +129,7 @@ public class ShopMenu extends AbstractContainerMenu
         this.addDataSlot(this.balance);
         this.addDataSlot(this.activeTab);
         this.addDataSlot(this.expandCooldownSeconds);
-        this.addDataSlot(this.expeditionRemainingSeconds);
+        this.addDataSlot(this.portalRemainingSeconds);
         refreshBalance();
         refreshCooldown();
         refreshExpedition();
@@ -161,8 +161,8 @@ public class ShopMenu extends AbstractContainerMenu
 
     private void refreshExpedition()
     {
-        if (this.viewingPlayer instanceof ServerPlayer)
-            this.expeditionRemainingSeconds.set((int) Math.min(Integer.MAX_VALUE, Expedition.remainingSeconds(this.viewingPlayer)));
+        if (this.blockEntity != null && this.blockEntity.getLevel() instanceof ServerLevel serverLevel)
+            this.portalRemainingSeconds.set((int) Math.min(Integer.MAX_VALUE, Expedition.portalRemainingSeconds(serverLevel)));
     }
 
     private void addSlots(Container sellContainer, Inventory playerInventory)
@@ -197,9 +197,9 @@ public class ShopMenu extends AbstractContainerMenu
         return this.expandCooldownSeconds.get();
     }
 
-    public int getExpeditionRemainingSeconds()
+    public int getPortalRemainingSeconds()
     {
-        return this.expeditionRemainingSeconds.get();
+        return this.portalRemainingSeconds.get();
     }
 
     public Tab getActiveTab()
@@ -258,8 +258,9 @@ public class ShopMenu extends AbstractContainerMenu
         if (id == TAB_EXPEDITION_BUTTON) { setActiveTab(Tab.EXPEDITION); return true; }
         if (id == EXPAND_BORDER_BUTTON && player instanceof ServerPlayer serverPlayer)
             return Border.tryExpand(serverPlayer);
-        if (id == TELEPORT_BUTTON && player instanceof ServerPlayer serverPlayer)
-            return Expedition.tryTeleport(serverPlayer);
+        if (id == TELEPORT_BUTTON && player instanceof ServerPlayer
+                && this.blockEntity != null && this.blockEntity.getLevel() instanceof ServerLevel serverLevel)
+            return Expedition.openPortal(serverLevel, this.blockEntity.getBlockPos());
         if (id >= BUY_ITEM_BUTTON_BASE && player instanceof ServerPlayer serverPlayer)
             return tryBuy(serverPlayer, id - BUY_ITEM_BUTTON_BASE);
         return super.clickMenuButton(player, id);

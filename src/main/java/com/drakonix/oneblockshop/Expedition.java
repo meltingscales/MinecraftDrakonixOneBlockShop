@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -14,27 +15,34 @@ import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 // Free (no Wallet cost) random long-range teleport from the shop GUI's Expedition tab, meant to
-// make resource gathering easier without having to walk out from the tiny starting border. Lands
-// somewhere in a +/-RANGE square, stays there for DURATION_TICKS, then auto-returns to wherever
-// the player was standing when they left. See Border.beginExpeditionHold for how the shared
-// WorldBorder is temporarily grown so vanilla doesn't push/damage the player for being "outside"
+// make resource gathering easier without having to walk out from the tiny starting border.
+// Clicking the button doesn't teleport instantly - it opens a portal (particles-only, no real
+// block) above that shop block for PORTAL_DURATION_TICKS, with one destination rolled up front.
+// Anyone who walks into it before it closes goes there together - this is what makes it a "team"
+// trip when more than one player happens to be nearby, with no separate team concept needed.
+// Each traveler still gets their own DURATION_TICKS stay and personal auto-return to wherever
+// they individually were, same as before. See Border.beginExpeditionHold for how the shared
+// WorldBorder is temporarily grown so vanilla doesn't push/damage a traveler for being "outside"
 // the real border while away.
 @EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class Expedition
 {
     static final int RANGE = 10_000;
     private static final long DURATION_TICKS = 10L * 60L * 20L;
+    private static final long PORTAL_DURATION_TICKS = 30L * 20L;
     // Countdown warnings before auto-return, seconds remaining, descending - each fires once as
     // the remaining time crosses it.
     private static final int[] WARNING_SECONDS = {300, 180, 120, 60};
@@ -42,6 +50,7 @@ public final class Expedition
     // stray-safety-net in Border.onPlayerTick.
     private static final double SAFE_BORDER_SIZE = 2.0 * (RANGE + 64) + 1.0;
     private static final long NOT_ON_EXPEDITION = Long.MIN_VALUE;
+    private static final long PORTAL_INACTIVE = Long.MIN_VALUE;
 
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, OneBlockShopMod.MODID);
@@ -55,6 +64,21 @@ public final class Expedition
             "expedition_return_z", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).build());
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Integer>> NEXT_WARNING = ATTACHMENTS.register(
             "expedition_next_warning", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
+
+    // Portal state is ServerLevel-scoped (the overworld), not per-player - only one portal open
+    // at a time across the whole server. Ponytail: simplest thing that works for this mod's
+    // scale; a second Teleport click while one's already open just no-ops rather than queuing or
+    // replacing it.
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Long>> PORTAL_END_TICK = ATTACHMENTS.register(
+            "portal_end_tick", () -> AttachmentType.builder(() -> PORTAL_INACTIVE).serialize(Codec.LONG).build());
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Long>> PORTAL_POS = ATTACHMENTS.register(
+            "portal_pos", () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG).build());
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> PORTAL_DEST_X = ATTACHMENTS.register(
+            "portal_dest_x", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).build());
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> PORTAL_DEST_Y = ATTACHMENTS.register(
+            "portal_dest_y", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).build());
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> PORTAL_DEST_Z = ATTACHMENTS.register(
+            "portal_dest_z", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).build());
 
     // Marks a player as away so other systems (currently: blocking placing a new shop block -
     // easy to lose track of which one is "home" if you drop a second one mid-expedition) can
@@ -84,17 +108,28 @@ public final class Expedition
         return (remainingTicks + 19L) / 20L;
     }
 
-    public static boolean tryTeleport(ServerPlayer player)
+    public static boolean isPortalOpen(ServerLevel overworld)
     {
-        if (isAway(player))
+        return overworld.getData(PORTAL_END_TICK) != PORTAL_INACTIVE;
+    }
+
+    // Whole seconds until the current portal closes, 0 if none is open - for the GUI/button state.
+    public static long portalRemainingSeconds(ServerLevel overworld)
+    {
+        long end = overworld.getData(PORTAL_END_TICK);
+        if (end == PORTAL_INACTIVE)
+            return 0L;
+        long remainingTicks = Math.max(0L, end - overworld.getGameTime());
+        return (remainingTicks + 19L) / 20L;
+    }
+
+    // From the shop GUI's Teleport button. Rolls one shared destination and opens a portal above
+    // the shop block instead of teleporting the clicker immediately - onLevelTick below is what
+    // actually moves whoever walks into it. False if a portal's already open somewhere.
+    public static boolean openPortal(ServerLevel overworld, BlockPos shopPos)
+    {
+        if (isPortalOpen(overworld))
             return false;
-
-        ServerLevel overworld = player.serverLevel().getServer().overworld();
-        Border.beginExpeditionHold(overworld, SAFE_BORDER_SIZE);
-
-        player.setData(RETURN_X, player.getX());
-        player.setData(RETURN_Y, player.getY());
-        player.setData(RETURN_Z, player.getZ());
 
         RandomSource random = overworld.getRandom();
         int x = random.nextInt(RANGE * 2 + 1) - RANGE;
@@ -107,7 +142,73 @@ public final class Expedition
         overworld.getChunk(x >> 4, z >> 4);
         BlockPos surface = overworld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z));
 
-        player.teleportTo(surface.getX() + 0.5, surface.getY(), surface.getZ() + 0.5);
+        overworld.setData(PORTAL_DEST_X, surface.getX() + 0.5);
+        overworld.setData(PORTAL_DEST_Y, (double) surface.getY());
+        overworld.setData(PORTAL_DEST_Z, surface.getZ() + 0.5);
+        overworld.setData(PORTAL_POS, shopPos.asLong());
+        overworld.setData(PORTAL_END_TICK, overworld.getGameTime() + PORTAL_DURATION_TICKS);
+        return true;
+    }
+
+    private static void closePortal(ServerLevel overworld)
+    {
+        overworld.setData(PORTAL_END_TICK, PORTAL_INACTIVE);
+    }
+
+    // Ambient swirl above the shop block for as long as the portal's open - purely cosmetic, no
+    // real block is placed, so there's nothing to clean up beyond clearing the attachment state.
+    private static void spawnPortalParticles(ServerLevel overworld, BlockPos portalPos)
+    {
+        overworld.sendParticles(ParticleTypes.PORTAL,
+                portalPos.getX() + 0.5, portalPos.getY() + 1.5, portalPos.getZ() + 0.5,
+                8, 0.3, 0.7, 0.3, 0.0);
+    }
+
+    private static boolean isStandingInPortal(ServerPlayer player, BlockPos portalPos)
+    {
+        AABB portalBox = new AABB(portalPos.getX(), portalPos.getY() + 1, portalPos.getZ(),
+                portalPos.getX() + 1, portalPos.getY() + 3, portalPos.getZ() + 1);
+        return player.getBoundingBox().intersects(portalBox);
+    }
+
+    // Drives the one active portal: particles, timeout, and walk-in detection. LevelTickEvent
+    // (not PlayerTickEvent) because this has to run even with nobody currently near the portal.
+    @SubscribeEvent
+    public static void onLevelTick(LevelTickEvent.Post event)
+    {
+        if (!(event.getLevel() instanceof ServerLevel overworld) || overworld != overworld.getServer().overworld())
+            return;
+        if (!isPortalOpen(overworld))
+            return;
+
+        if (portalRemainingSeconds(overworld) <= 0)
+        {
+            closePortal(overworld);
+            return;
+        }
+
+        BlockPos portalPos = BlockPos.of(overworld.getData(PORTAL_POS));
+        spawnPortalParticles(overworld, portalPos);
+
+        double destX = overworld.getData(PORTAL_DEST_X);
+        double destY = overworld.getData(PORTAL_DEST_Y);
+        double destZ = overworld.getData(PORTAL_DEST_Z);
+        for (ServerPlayer player : overworld.players())
+        {
+            if (!isAway(player) && isStandingInPortal(player, portalPos))
+                enterPortal(player, overworld, destX, destY, destZ);
+        }
+    }
+
+    private static void enterPortal(ServerPlayer player, ServerLevel overworld, double destX, double destY, double destZ)
+    {
+        Border.beginExpeditionHold(overworld, SAFE_BORDER_SIZE);
+
+        player.setData(RETURN_X, player.getX());
+        player.setData(RETURN_Y, player.getY());
+        player.setData(RETURN_Z, player.getZ());
+
+        player.teleportTo(destX, destY, destZ);
         player.setData(END_TICK, overworld.getGameTime() + DURATION_TICKS);
         player.setData(NEXT_WARNING, 0);
         // Duration matches DURATION_TICKS so the vanilla potion-icon countdown and this class's
@@ -115,8 +216,7 @@ public final class Expedition
         player.addEffect(new MobEffectInstance(EFFECT, (int) DURATION_TICKS, 0, false, true));
 
         player.sendSystemMessage(Component.literal(
-                "Teleported to a random spot! You'll be returned to base in 10 minutes.").withStyle(ChatFormatting.AQUA));
-        return true;
+                "Through the portal! You'll be returned to base in 10 minutes.").withStyle(ChatFormatting.AQUA));
     }
 
     // For /drakonixoneblockshop expedition end - lets a player cut their own trip short instead
