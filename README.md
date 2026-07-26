@@ -47,7 +47,10 @@ expand the border.
   fishing, sugarcane/cactus redstone.
 - `/drakonixoneblockshop help` lists every subcommand; `/drakonixoneblockshop expedition end`
   lets any player cut their own Explore-tab trip short instead of waiting out the countdown.
-  `balance`/`border`/`starterkit` subcommands are op-only, for testing/admin use.
+  `balance`/`border`/`starterkit`/`devcheat` subcommands are op-only, for testing/admin use.
+  `devcheat` skips straight to things that otherwise take real time to test: an expedition
+  teleport without the portal, fast-forwarding an active expedition's countdown, forcing the
+  hopper-sales report or a border mob wave right now, or force-closing a stuck portal.
 - Multiplayer-friendly by not trying to be per-player: once a second player's ever been online,
   the one shared world border can never be smaller than 17x17 again (never shrinks it if
   already bigger) - fair starting room without the mixin work real per-player borders would

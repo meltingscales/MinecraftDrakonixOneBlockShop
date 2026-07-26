@@ -42,17 +42,28 @@ public final class HopperSalesTracker
             return;
 
         for (ServerPlayer player : server.getPlayerList().getPlayers())
-        {
-            Map<Item, Integer> sales = pending.remove(player.getUUID());
-            if (sales == null || sales.isEmpty())
-            {
-                player.sendSystemMessage(Component.literal(PREFIX + "No hopper automation").withStyle(ChatFormatting.GRAY));
-                continue;
-            }
+            report(player);
+    }
 
-            player.sendSystemMessage(Component.literal(PREFIX + "Hopper sales (last 5 min):").withStyle(ChatFormatting.GOLD));
-            for (Map.Entry<Item, Integer> entry : sales.entrySet())
-                player.sendSystemMessage(Component.literal("  " + entry.getKey().getDescription().getString() + " x" + entry.getValue()));
+    // For /drakonixoneblockshop devcheat hopperreport - testing the message/prefix without
+    // waiting out the full 5 minutes. Shares the exact same reporting logic as the real
+    // interval tick above.
+    public static void devForceReport(ServerPlayer player)
+    {
+        report(player);
+    }
+
+    private static void report(ServerPlayer player)
+    {
+        Map<Item, Integer> sales = pending.remove(player.getUUID());
+        if (sales == null || sales.isEmpty())
+        {
+            player.sendSystemMessage(Component.literal(PREFIX + "No hopper automation").withStyle(ChatFormatting.GRAY));
+            return;
         }
+
+        player.sendSystemMessage(Component.literal(PREFIX + "Hopper sales (last 5 min):").withStyle(ChatFormatting.GOLD));
+        for (Map.Entry<Item, Integer> entry : sales.entrySet())
+            player.sendSystemMessage(Component.literal("  " + entry.getKey().getDescription().getString() + " x" + entry.getValue()));
     }
 }

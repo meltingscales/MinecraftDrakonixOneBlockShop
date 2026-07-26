@@ -19,9 +19,11 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
-// /drakonixoneblockshop <balance|border|starterkit> - op-only (level 2, same gate as /gamemode)
-// cheat commands for testing/admin use: adjust a player's wallet, adjust the shared border
-// directly (bypassing the shop's purchase cost), or re-issue the starter kit.
+// /drakonixoneblockshop <balance|border|starterkit|devcheat> - op-only (level 2, same gate as
+// /gamemode) cheat commands for testing/admin use: adjust a player's wallet, adjust the shared
+// border directly (bypassing the shop's purchase cost), re-issue the starter kit, or trigger
+// various things (expedition teleport/countdown, hopper report, border wave, portal) instantly
+// instead of waiting out their real timers.
 // /drakonixoneblockshop <expedition|help> - open to any player: end your own Explore-tab trip
 // early, or list what's available.
 // The requires(level 2) check is on each admin subcommand's own literal, not the root - a
@@ -69,6 +71,20 @@ public final class AdminCommands
                 .then(Commands.literal("expedition")
                         .then(Commands.literal("end")
                                 .executes(AdminCommands::expeditionEnd)))
+                .then(Commands.literal("devcheat")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("expedition")
+                                .then(Commands.literal("teleport")
+                                        .executes(AdminCommands::devExpeditionTeleport))
+                                .then(Commands.literal("fastforward")
+                                        .then(Commands.argument("seconds", LongArgumentType.longArg(0))
+                                                .executes(AdminCommands::devExpeditionFastForward))))
+                        .then(Commands.literal("hopperreport")
+                                .executes(AdminCommands::devHopperReport))
+                        .then(Commands.literal("borderwave")
+                                .executes(AdminCommands::devBorderWave))
+                        .then(Commands.literal("closeportal")
+                                .executes(AdminCommands::devClosePortal)))
                 .then(Commands.literal("help")
                         .executes(AdminCommands::help)));
     }
@@ -156,6 +172,56 @@ public final class AdminCommands
         return 1;
     }
 
+    private static int devExpeditionTeleport(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException
+    {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        // Expedition.devTeleport already sends its own "Through the portal!" chat line.
+        if (!Expedition.devTeleport(player))
+        {
+            ctx.getSource().sendFailure(Component.literal("Already on an expedition."));
+            return 0;
+        }
+        return 1;
+    }
+
+    private static int devExpeditionFastForward(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException
+    {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        long seconds = LongArgumentType.getLong(ctx, "seconds");
+        if (!Expedition.devFastForward(player, seconds))
+        {
+            ctx.getSource().sendFailure(Component.literal("Not currently on an expedition."));
+            return 0;
+        }
+        ctx.getSource().sendSuccess(() -> Component.literal("Expedition time remaining set to " + seconds + "s"), true);
+        return 1;
+    }
+
+    private static int devHopperReport(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException
+    {
+        // HopperSalesTracker.devForceReport already sends its own message(s).
+        HopperSalesTracker.devForceReport(ctx.getSource().getPlayerOrException());
+        return 1;
+    }
+
+    private static int devBorderWave(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException
+    {
+        // Border.devSpawnMobWave already sends its own "monsters closes in" chat line.
+        Border.devSpawnMobWave(ctx.getSource().getPlayerOrException());
+        return 1;
+    }
+
+    private static int devClosePortal(CommandContext<CommandSourceStack> ctx)
+    {
+        if (!Expedition.devClosePortal(overworld(ctx)))
+        {
+            ctx.getSource().sendFailure(Component.literal("No portal is currently open."));
+            return 0;
+        }
+        ctx.getSource().sendSuccess(() -> Component.literal("Portal closed."), true);
+        return 1;
+    }
+
     // Deliberately unfiltered - lists every subcommand regardless of whether the caller can
     // actually use the op-only ones, same as vanilla /help listing commands you may not have
     // permission for.
@@ -169,7 +235,12 @@ public final class AdminCommands
                 "/drakonixoneblockshop border set <size> - op: set the shared world border's size",
                 "/drakonixoneblockshop border expand - op: expand the shared world border for free",
                 "/drakonixoneblockshop border simulatejoin - op: simulate a second player joining, for testing the multiplayer border clamp",
-                "/drakonixoneblockshop starterkit give <player> - op: re-issue the starter kit");
+                "/drakonixoneblockshop starterkit give <player> - op: re-issue the starter kit",
+                "/drakonixoneblockshop devcheat expedition teleport - op: skip the portal, go on an expedition right now",
+                "/drakonixoneblockshop devcheat expedition fastforward <seconds> - op: jump your expedition countdown to N seconds left",
+                "/drakonixoneblockshop devcheat hopperreport - op: force your hopper-sales report to fire now",
+                "/drakonixoneblockshop devcheat borderwave - op: spawn a border-expansion mob wave without buying one",
+                "/drakonixoneblockshop devcheat closeportal - op: force-close a stuck/open Explore-tab portal");
         for (String line : lines)
             ctx.getSource().sendSuccess(() -> Component.literal(line), false);
         return lines.size();

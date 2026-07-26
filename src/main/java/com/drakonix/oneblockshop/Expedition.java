@@ -258,6 +258,46 @@ public final class Expedition
                 "Through the portal! You'll be returned to base in 10 minutes.").withStyle(ChatFormatting.AQUA));
     }
 
+    // For /drakonixoneblockshop devcheat expedition teleport - skips the portal (roll + walk-in)
+    // entirely, straight to the same "you're now away" state a real portal entry produces.
+    public static boolean devTeleport(ServerPlayer player)
+    {
+        if (isAway(player))
+            return false;
+
+        ServerLevel overworld = player.serverLevel().getServer().overworld();
+        RandomSource random = overworld.getRandom();
+        int x = random.nextInt(RANGE * 2 + 1) - RANGE;
+        int z = random.nextInt(RANGE * 2 + 1) - RANGE;
+        overworld.getChunk(x >> 4, z >> 4);
+        BlockPos destination = rollDestination(overworld, x, z, random);
+        enterPortal(player, overworld, destination.getX() + 0.5, destination.getY(), destination.getZ() + 0.5);
+        return true;
+    }
+
+    // For /drakonixoneblockshop devcheat expedition fastforward - jumps straight to any point in
+    // the countdown (warnings, auto-return) without actually waiting. Doesn't touch NEXT_WARNING:
+    // onPlayerTick's own catch-up loop already fires every threshold still ahead of the new
+    // value on its very next tick, which is useful for testing (jump from full to "5 seconds
+    // left" and every warning still prints in a burst, in order).
+    public static boolean devFastForward(ServerPlayer player, long remainingSeconds)
+    {
+        if (!isAway(player))
+            return false;
+        player.setData(END_TICK, player.level().getGameTime() + remainingSeconds * 20L);
+        return true;
+    }
+
+    // For /drakonixoneblockshop devcheat closeportal - recovers from the "one portal at a time"
+    // limitation during testing without waiting out the full 30 seconds.
+    public static boolean devClosePortal(ServerLevel overworld)
+    {
+        if (!isPortalOpen(overworld))
+            return false;
+        closePortal(overworld);
+        return true;
+    }
+
     // For /drakonixoneblockshop expedition end - lets a player cut their own trip short instead
     // of waiting out the full countdown.
     public static boolean tryEndEarly(ServerPlayer player)

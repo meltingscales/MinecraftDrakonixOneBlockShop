@@ -3,6 +3,16 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~No way to test Expedition/hopper-report/border-wave/portal timing without waiting out their
+  real timers~~ — added `/drakonixoneblockshop devcheat` (op-only, alongside
+  `balance`/`border`/`starterkit`): `expedition teleport` (skips the portal, straight to
+  `Expedition.enterPortal`'s "away" state), `expedition fastforward <seconds>` (jumps
+  `END_TICK` directly - doesn't touch `NEXT_WARNING`, so `onPlayerTick`'s own catch-up loop
+  fires every warning still ahead of the new value in one burst, useful for watching them all at
+  once), `hopperreport` and `borderwave` (both just call the same private logic the real
+  5-minute tick / real purchase already use, factored out as `HopperSalesTracker.devForceReport`
+  / `Border.devSpawnMobWave` so there's exactly one implementation), and `closeportal` (recovers
+  from the "one portal at a time" limitation during testing without waiting the full 30s).
 - ~~"Expedition" status effect had no description, and Explore-tab destinations only ever
   landed on the overworld surface~~ — two independent fixes:
   - Added a hover-tooltip description via NeoForge's `GatherEffectScreenTooltipsEvent`

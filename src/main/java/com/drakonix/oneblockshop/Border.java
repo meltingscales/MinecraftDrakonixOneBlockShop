@@ -175,6 +175,14 @@ public final class Border
         return true;
     }
 
+    // For /drakonixoneblockshop devcheat border wave - testing the wave without an actual
+    // purchase. Sized the same as a real expansion's wave would be right now.
+    public static void devSpawnMobWave(ServerPlayer player)
+    {
+        WorldBorder border = player.serverLevel().getServer().overworld().getWorldBorder();
+        spawnMobWave(player, border, purchaseCount(border));
+    }
+
     private static void spawnMobWave(ServerPlayer player, WorldBorder border, int purchaseCountBefore)
     {
         if (!(player.level() instanceof ServerLevel level))
