@@ -42,9 +42,16 @@ public class OneBlockShopMod
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
 
-    // Breakable like a normal block (iron-block-ish toughness) - mine it, move it, automate around it.
+    // Breakable like a normal block (iron-block-ish toughness) - mine it, move it, automate
+    // around it. No requiresCorrectToolForDrops(): any tool (or bare hands) breaks it and always
+    // drops it - a brand-new player who hasn't smelted an iron pickaxe yet still needs to be able
+    // to move their own shop block. Player.hasCorrectToolForDrops short-circuits true once a
+    // block's own requiresCorrectToolForDrops is false, regardless of tool tags, so
+    // needs_iron_tool (removed) would've been dead config anyway; mineable/pickaxe stays, since
+    // it still gives pickaxes their normal speed bonus via Tool.getMiningSpeed independently of
+    // drop eligibility.
     public static final DeferredBlock<Block> SHOP_BLOCK = BLOCKS.register("drakonix_block_shop",
-            () -> new ShopBlock(BlockBehaviour.Properties.of().mapColor(MapColor.GOLD).requiresCorrectToolForDrops().strength(5.0F, 6.0F)));
+            () -> new ShopBlock(BlockBehaviour.Properties.of().mapColor(MapColor.GOLD).strength(5.0F, 6.0F)));
     public static final DeferredItem<BlockItem> SHOP_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("drakonix_block_shop", SHOP_BLOCK);
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShopBlockEntity>> SHOP_BLOCK_ENTITY = BLOCK_ENTITIES.register(

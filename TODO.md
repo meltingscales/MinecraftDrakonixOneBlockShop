@@ -2,6 +2,16 @@
 
 Tracked against README.md's feature list.
 
+## Modpack
+- Modpack- how should we go about adding a modpack featuring the OneBlockShop mod? lives in `./modpack/`? light questing? use existing `justfile` for common build commands? what modpack CLI tools exist out there?
+
+- When this mod actually gets bundled into a modpack (not just a dev-only `localRuntime` dep),
+  set VeinMiner's `mustSneak` setting to `true` by default (`/veinminer settings mustSneak
+  true`, or whatever config-pre-seeding the modpack tooling supports) - without it, a normal
+  punch on any connected ore vein (e.g. a GregTech ore patch) silently vein-mines the whole
+  thing and burns tool durability across every block, not just the one you meant to break.
+
+
 ## Not built yet
 
 - Team expeditions - mentioned alongside the multiplayer border clamp (see "Fixed" below) but
@@ -10,8 +20,7 @@ Tracked against README.md's feature list.
   trip-starter's cooldown gates the group?) Needs a real spec before it's buildable - currently
   each player's expedition is fully independent of everyone else's, which already satisfies the
   "separate expeditions" half of the original ask.
-
-- Modpack- how should we go about adding a modpack featuring the OneBlockShop mod? lives in `./modpack/`? light questing? `justfile` for common build commands? what modpack CLI tools exist out there?
+  - In the GUI, you can add people to a "Team Expedition" and they need to confirm with a `/drakonixblockshop expedition team confirm` command, then the expedition will be shared with everyone in the team and players will be teleported to the expedition's destination.
 
 - **Per-player world borders** — so multiple people can play together, each starting ~10 blocks
   apart and merging once their individually-grown borders touch. Attempted once this session and
@@ -96,6 +105,16 @@ Tracked against README.md's feature list.
   (triggered on `minecraft:has_item` for each token) if that's ever noticed as friction.
 
 ## Fixed
+
+- ~~Shop block required an iron (or better) pickaxe to drop - a brand-new player who hasn't
+  smelted iron yet couldn't move their own shop block if they ever needed to~~ — removed
+  `requiresCorrectToolForDrops()` from the block's properties, so any tool (including bare
+  hands) now breaks and drops it. `Player.hasCorrectToolForDrops` short-circuits true once a
+  block's own `requiresCorrectToolForDrops` is false, regardless of tool tags (confirmed against
+  decompiled `Player.java`), so the `needs_iron_tool` tag was dead config once this changed -
+  removed that file entirely. Left `mineable/pickaxe` in place: it still gives pickaxes their
+  normal mining-speed bonus (`Tool.getMiningSpeed`, evaluated independently of drop eligibility)
+  without restricting which tools work.
 
 - ~~"Expedition" status effect had no icon, just vanilla's generic "?" texture, and no
   translated name~~ — added `assets/drakonixoneblockshop/textures/mob_effect/expedition.png`
