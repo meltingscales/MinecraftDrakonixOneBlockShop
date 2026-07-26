@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "drakonixoneblockshop:token_128"
+    },
+    {
+      "item": "drakonixoneblockshop:token_128"
+    }
+  ],
+  "result": {
+    "id": "drakonixoneblockshop:token_256",
+    "count": 1
+  }
+}

@@ -1,5 +1,19 @@
 {
   "block.drakonixoneblockshop.drakonix_block_shop": "Drakonix Block Shop",
   "container.drakonixoneblockshop.shop": "Drakonix Block Shop",
-  "enchantment.drakonixoneblockshop.unsellable": "Unsellable"
+  "enchantment.drakonixoneblockshop.unsellable": "Unsellable",
+  "item.drakonixoneblockshop.token_1": "Drakonix OneBlockShop Token (1)",
+  "item.drakonixoneblockshop.token_1024": "Drakonix OneBlockShop Token (1024)",
+  "item.drakonixoneblockshop.token_128": "Drakonix OneBlockShop Token (128)",
+  "item.drakonixoneblockshop.token_16": "Drakonix OneBlockShop Token (16)",
+  "item.drakonixoneblockshop.token_2": "Drakonix OneBlockShop Token (2)",
+  "item.drakonixoneblockshop.token_2048": "Drakonix OneBlockShop Token (2048)",
+  "item.drakonixoneblockshop.token_256": "Drakonix OneBlockShop Token (256)",
+  "item.drakonixoneblockshop.token_32": "Drakonix OneBlockShop Token (32)",
+  "item.drakonixoneblockshop.token_4": "Drakonix OneBlockShop Token (4)",
+  "item.drakonixoneblockshop.token_4096": "Drakonix OneBlockShop Token (4096)",
+  "item.drakonixoneblockshop.token_512": "Drakonix OneBlockShop Token (512)",
+  "item.drakonixoneblockshop.token_64": "Drakonix OneBlockShop Token (64)",
+  "item.drakonixoneblockshop.token_8": "Drakonix OneBlockShop Token (8)",
+  "item.drakonixoneblockshop.token_8192": "Drakonix OneBlockShop Token (8192)"
 }
