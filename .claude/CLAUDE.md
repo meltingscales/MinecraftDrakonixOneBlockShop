@@ -41,6 +41,13 @@ compile.
 - Always kill the client process after boot-testing (`pkill -f "BootstrapLauncher.*forgeclientdev"`
   and the `GradleWrapperMain runClient` wrapper) - it doesn't exit on its own when backgrounded.
 
+## Adding dev-only playtesting mods
+
+See `RECOMMENDED-MODS.md` for the full checklist (Modrinth API query -> inspect
+`neoforge.mods.toml` -> pin the newest compatible version -> check for version-number collisions
+across loaders -> boot-test). Add new `localRuntime` mods there, not just in `build.gradle`, so
+the table stays the source of truth for what's already been added and why.
+
 ## Economy / pricing
 
 Every item is sellable - never add a hardcoded per-item price map. `Pricing.priceOf` prices raw

@@ -223,8 +223,21 @@ Tracked against README.md's feature list.
   - IC2 skipped, same as Thermal Expansion: no NeoForge/1.21.1 release exists on Modrinth for
     any of the IC2-lineage mods checked (`ic2classic`, `industrial-craft`) - both Forge-only,
     older MC versions.
-- Added `maven.modrinth:twerk-crop-growth:3.0.0` as a fun dev-only `localRuntime` dep - sneak-spam
-  speeds up crop/sapling growth, handy while playtesting farmable-goods pricing. No gameplay
-  dependency, needs `neoforge>=21.1.145`, satisfied as-is. Added `RECOMMENDED-MODS.md` (linked
-  from README) as a quick-reference table of all `localRuntime` playtesting mods, generated from
-  the actual `build.gradle` lines rather than duplicating the pin rationale by hand.
+- Added `maven.modrinth:twerk-crop-growth:txp9wDw2` as a fun dev-only `localRuntime` dep -
+  sneak-spam speeds up crop/sapling growth, handy while playtesting farmable-goods pricing. No
+  gameplay dependency, needs `neoforge>=21.1.145`, satisfied as-is. Pinned to the Modrinth
+  version *id*, not the `3.0.0` semver string - that number is reused across separate
+  fabric/forge/neoforge releases, so the plain string resolved ambiguously (picked the Fabric
+  jar once, which NeoForge then refused to load with a "Skipping jar... is a Fabric mod"
+  warning at boot). Added `RECOMMENDED-MODS.md` (linked from README, referenced from
+  `.claude/CLAUDE.md`) as a quick-reference table of all `localRuntime` playtesting mods and the
+  add-a-new-one checklist, including this version-collision gotcha.
+- Added `maven.modrinth:jei:zHNxmOqp` (JEI 19.39.0.372) as a dev-only `localRuntime` dep for
+  playtesting the shop's Buy/Sell tabs against real recipes. Same version-id pin as
+  twerk-crop-growth above (JEI's forge/fabric/neoforge builds all share the same version
+  number). Its own `neoforge.mods.toml` `minecraft` dependency range reads `[1.21, 1.21.1)` -
+  looks like it excludes our exact `minecraft_version` (1.21.1) - but boot-tested clean anyway
+  (JEI loaded, registered plugins for Mekanism/GTCEu, no FATAL/Exception); NeoForge's actual
+  runtime version-range check evidently isn't as strict as the raw range text suggests, or
+  treats it as inclusive-enough in practice. Noting this so a future range read isn't trusted
+  as gospel without a boot-test to back it up.

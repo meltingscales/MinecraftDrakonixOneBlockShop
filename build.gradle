@@ -162,6 +162,13 @@ dependencies {
     // (txp9wDw2) instead. Needs neoforge>=21.1.145, satisfied by our neo_version (21.1.176).
     localRuntime "maven.modrinth:twerk-crop-growth:txp9wDw2"
 
+    // Dev-only recipe/item viewer, useful while playtesting the shop's Buy/Sell tabs against
+    // whatever's currently priced. Same version-number collision as twerk-crop-growth above
+    // (JEI's forge/fabric/neoforge builds all share version number 19.39.0.372) - pinned to the
+    // NeoForge release's Modrinth version id (zHNxmOqp). Its own neoforge.mods.toml needs
+    // neoforge>=21.0.118-beta, satisfied by our neo_version (21.1.176).
+    localRuntime "maven.modrinth:jei:zHNxmOqp"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
