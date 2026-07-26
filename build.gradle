@@ -148,11 +148,8 @@ dependencies {
     // 7.1.8-alpha, the newest version whose neoforge.mods.toml only needs neoforge>=21.1.58.
     localRuntime "maven.modrinth:enderio:7.1.8-alpha"
 
-    // Dev-only, same reasoning - GregTech CEu Modern is the actively-maintained GregTech line
-    // for 1.21.1/neoforge (the classic IC2/GT5u/GT6 lines have no neoforge or 1.21.1 release).
-    // mc1.21.1-7.0.2 (latest) needs neoforge>=21.1, satisfied by our neo_version; its other
-    // required deps (ldlib, configuration) are embedded in the jar, nothing else to add.
-    localRuntime "maven.modrinth:gregtechceu-modern:mc1.21.1-7.0.2"
+    // GregTech CEu Modern removed for now - see FUTURE-MOD-COMPAT.md for the compatibility
+    // details (version pin, dependency notes) to pick back up when it's re-added.
 
     // Fun/dev-only, no gameplay dependency on it - just makes sneak-spam speed up crop/sapling
     // growth so playtesting the shop's farmable-goods pricing doesn't require standing around.

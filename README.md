@@ -75,7 +75,9 @@ Requires JDK 21.
     ./gradlew build       # build the mod jar (build/libs/)
 
 `runClient` also pulls in a handful of dev-only playtesting mods (tech mods for pricing
-compatibility testing, etc.) - see `RECOMMENDED-MODS.md` for the list and why each is there.
+compatibility testing, etc.) - see `RECOMMENDED-MODS.md` for the current list and why each is
+there, and `FUTURE-MOD-COMPAT.md` for ones verified compatible before but deliberately not
+currently included (e.g. GregTech CEu Modern).
 
 ## Releasing
 

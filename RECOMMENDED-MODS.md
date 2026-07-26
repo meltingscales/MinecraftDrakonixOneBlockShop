@@ -11,7 +11,6 @@ version-pinning rationale next to each line; this file is just the quick-referen
 | [Applied Energistics 2](https://modrinth.com/mod/ae2) | 19.2.17 | Import bus is a named case for the tech-mod item-pipe TODO. |
 | [GuideMe](https://modrinth.com/mod/guideme) | 21.1.17 | Hard-required by AE2 (its in-game guide book library). |
 | [EnderIO](https://modrinth.com/mod/enderio) | 7.1.8-alpha | Conduits are the other named pipe-equivalent case. |
-| [GregTech CEu Modern](https://modrinth.com/mod/gregtechceu-modern) | mc1.21.1-7.0.2 | Actively-maintained GregTech line for NeoForge/1.21.1. |
 | [Twerk Crop Growth](https://modrinth.com/mod/twerk-crop-growth) | `txp9wDw2` (3.0.0) | Sneak-spam speeds up crop/sapling growth - handy while playtesting farmable-goods pricing. |
 | [JEI](https://modrinth.com/mod/jei) | `zHNxmOqp` (19.39.0.372) | Recipe/item viewer, useful while playtesting the shop's Buy/Sell tabs. |
 | [TreeChop](https://modrinth.com/mod/treechop) | 0.19.3 | Fells whole trees in one hit - handy for the log volume Sell/Explore playtesting wants. |
@@ -25,6 +24,9 @@ Thermal Expansion (last release is 1.20.1 Forge-only). Re-check Modrinth if eith
 Also not literally WAILA: that mod's last real client-side release is 1.16.5-era Forge/Fabric
 (`hwyla`/`waila-stages` on Modrinth) - Jade is its actively-maintained modern successor and
 what current packs use in its place.
+
+Removed for now: GregTech CEu Modern - see [FUTURE-MOD-COMPAT.md](FUTURE-MOD-COMPAT.md) for the
+version/compatibility notes to pick back up when it's re-added.
 
 ## Adding another
 
