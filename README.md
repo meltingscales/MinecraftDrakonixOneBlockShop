@@ -33,6 +33,9 @@ border. Sell items at your shop block to earn money, then spend it to expand the
   accidentally sold or hoppered away.
 - The guide book (a written book, populated from `GUIDE.md`) suggests automation: mob farms,
   fishing, sugarcane/cactus redstone.
+- `/drakonixoneblockshop help` lists every subcommand; `/drakonixoneblockshop expedition end`
+  lets any player cut their own Explore-tab trip short instead of waiting out the countdown.
+  `balance`/`border`/`starterkit` subcommands are op-only, for testing/admin use.
 
 ## Building & running
 

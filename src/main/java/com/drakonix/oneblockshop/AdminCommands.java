@@ -1,5 +1,7 @@
 package com.drakonix.oneblockshop;
 
+import java.util.List;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.LongArgumentType;
@@ -20,6 +22,11 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 // /drakonixoneblockshop <balance|border|starterkit> - op-only (level 2, same gate as /gamemode)
 // cheat commands for testing/admin use: adjust a player's wallet, adjust the shared border
 // directly (bypassing the shop's purchase cost), or re-issue the starter kit.
+// /drakonixoneblockshop <expedition|help> - open to any player: end your own Explore-tab trip
+// early, or list what's available.
+// The requires(level 2) check is on each admin subcommand's own literal, not the root - a
+// Brigadier parent's requires() would gate every child under it, including the player-facing
+// ones, which is why it can't just sit on "drakonixoneblockshop" itself.
 @EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class AdminCommands
 {
@@ -30,8 +37,8 @@ public final class AdminCommands
     {
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
         dispatcher.register(Commands.literal("drakonixoneblockshop")
-                .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("balance")
+                        .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("get")
                                 .then(Commands.argument("target", EntityArgument.player())
                                         .executes(AdminCommands::balanceGet)))
@@ -44,6 +51,7 @@ public final class AdminCommands
                                         .then(Commands.argument("amount", LongArgumentType.longArg())
                                                 .executes(AdminCommands::balanceAdd)))))
                 .then(Commands.literal("border")
+                        .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("get")
                                 .executes(AdminCommands::borderGet))
                         .then(Commands.literal("set")
@@ -52,9 +60,15 @@ public final class AdminCommands
                         .then(Commands.literal("expand")
                                 .executes(AdminCommands::borderExpand)))
                 .then(Commands.literal("starterkit")
+                        .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("give")
                                 .then(Commands.argument("target", EntityArgument.player())
-                                        .executes(AdminCommands::starterKitGive)))));
+                                        .executes(AdminCommands::starterKitGive))))
+                .then(Commands.literal("expedition")
+                        .then(Commands.literal("end")
+                                .executes(AdminCommands::expeditionEnd)))
+                .then(Commands.literal("help")
+                        .executes(AdminCommands::help)));
     }
 
     private static int balanceGet(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException
@@ -114,6 +128,35 @@ public final class AdminCommands
         StarterKit.giveItems(target);
         ctx.getSource().sendSuccess(() -> Component.literal("Gave the starter kit to " + target.getName().getString()), true);
         return 1;
+    }
+
+    private static int expeditionEnd(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException
+    {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        // Expedition.tryEndEarly already sends its own "Returned to base." chat line - no
+        // separate sendSuccess needed on top of that.
+        if (!Expedition.tryEndEarly(player))
+        {
+            ctx.getSource().sendFailure(Component.literal("You're not currently on an expedition."));
+            return 0;
+        }
+        return 1;
+    }
+
+    // Deliberately unfiltered - lists every subcommand regardless of whether the caller can
+    // actually use the op-only ones, same as vanilla /help listing commands you may not have
+    // permission for.
+    private static int help(CommandContext<CommandSourceStack> ctx)
+    {
+        List<String> lines = List.of(
+                "/drakonixoneblockshop expedition end - end your current Explore-tab trip early",
+                "/drakonixoneblockshop help - show this list",
+                "/drakonixoneblockshop balance <get|set|add> <player> [amount] - op: read/adjust a wallet",
+                "/drakonixoneblockshop border <get|set|expand> [size] - op: read/adjust the shared world border",
+                "/drakonixoneblockshop starterkit give <player> - op: re-issue the starter kit");
+        for (String line : lines)
+            ctx.getSource().sendSuccess(() -> Component.literal(line), false);
+        return lines.size();
     }
 
     private static ServerLevel overworld(CommandContext<CommandSourceStack> ctx)

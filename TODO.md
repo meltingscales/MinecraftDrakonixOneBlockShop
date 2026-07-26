@@ -6,17 +6,8 @@ Tracked against README.md's feature list.
 
 - Modpack- how should we go about adding a modpack featuring the OneBlockShop mod? lives in `./modpack/`? light questing? `justfile` for common build commands? what modpack CLI tools exist out there?
 
-- add a minimap mod with waypoints to gradle config and recommended-mods
-
-- add WAILA as a mod to gradle  config and recommended-mods
-
-- add a /drakonixoneblockshop subcommand to end an expedition early
-
-- add a /drakonixoneblockshop help command with a list of available subcommands and some brief descriptions
-
-- instead of ephemeral "money", add items called "Drakonix OneBlockShop Token" (sprite from .ppm file to a .png file, hue-shifted for different amounts) that start at 1, 2, 4, 8, etc - up to 8196. - these should be used when buying/selling items. if you over-spend, it should automatically give you back the excess tokens in a way that satisfies the "Change-making Problem" in mathematics.
-  - if you craft tokens together, they combine (only 2+2=4, 4+4=8, etc)
-  - if you craft a single token, it splits in half to two cheaper tokens
+- Physical token currency instead of the `Wallet` balance counter - see "Fixed" below for why
+  this is paused pending a couple of decisions rather than built yet.
 
 - **Per-player world borders** — so multiple people can play together, each starting ~10 blocks
   apart and merging once their individually-grown borders touch. Attempted once this session and
@@ -97,6 +88,22 @@ Tracked against README.md's feature list.
 
 ## Fixed
 
+- ~~Ending an Explore-tab trip meant waiting out the full 10-minute countdown, no way to cut it
+  short~~ — `/drakonixoneblockshop expedition end` (open to any player, not op-gated) calls the
+  same `Expedition.tryEndEarly`/`returnHome` path the countdown itself uses.
+- ~~No `/drakonixoneblockshop help`~~ — added, lists every subcommand with a one-line
+  description, deliberately unfiltered by permission (same as vanilla `/help` listing commands
+  you might not be able to run). Restructured `AdminCommands.java`'s command tree while at it:
+  the op-only `requires(level 2)` check used to sit on the root `drakonixoneblockshop` literal,
+  which would have gated the new player-facing `expedition`/`help` subcommands too - moved it
+  down onto each of `balance`/`border`/`starterkit`'s own literals instead, since a Brigadier
+  parent's `requires()` gates every child under it regardless of what the child itself declares.
+- ~~No minimap/waypoints or block-tooltip HUD for dev playtesting~~ — added
+  [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap) and
+  [Jade](https://modrinth.com/mod/jade) as `localRuntime` deps (see `RECOMMENDED-MODS.md`).
+  Jade, not literally WAILA as asked - WAILA's own last release is 1.16.5-era Forge/Fabric, no
+  NeoForge build exists; Jade is its actively-maintained modern successor and what current packs
+  use in its place.
 - ~~No way to reach distant biomes/resources from inside the tiny starting border~~ — new
   **Explore** tab (`Expedition.java`) does a free random teleport anywhere in a
   20,000x20,000-block square, auto-returns the player to wherever they left after 10 minutes

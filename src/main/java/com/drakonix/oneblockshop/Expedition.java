@@ -119,6 +119,16 @@ public final class Expedition
         return true;
     }
 
+    // For /drakonixoneblockshop expedition end - lets a player cut their own trip short instead
+    // of waiting out the full countdown.
+    public static boolean tryEndEarly(ServerPlayer player)
+    {
+        if (!isAway(player))
+            return false;
+        returnHome(player, true);
+        return true;
+    }
+
     private static void returnHome(ServerPlayer player, boolean announce)
     {
         ServerLevel overworld = player.serverLevel().getServer().overworld();
