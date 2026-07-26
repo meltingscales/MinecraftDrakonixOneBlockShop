@@ -30,13 +30,23 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 // spawn point, which vanilla can nudge a few blocks away when picking safe ground). Expanding
 // it is a deliberate purchase from the shop GUI's Border tab - see ShopMenu.clickMenuButton -
 // each expansion costing more than the last.
-// ponytail: one shared world border for the whole overworld, not per-player. Fine for
-// singleplayer; real multiplayer would need virtual per-player borders (a packet-level trick,
-// attempted once and reverted - see TODO.md).
+// ponytail: one shared world border for the whole overworld, not per-player - real per-player
+// borders need mixins this mod doesn't have (attempted once and reverted, see TODO.md). Instead,
+// once a second player's ever been online (see clampForMultiplayer), the shared border is just
+// guaranteed to never be smaller than a fair starting size - simpler than managing several.
 @EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class Border
 {
     private static final double MAX_STRAY_BLOCKS = 5.0;
+
+    // Once two or more players have ever been online together, the shared border can never be
+    // smaller than this again (never shrinks it if already bigger) - the simple alternative to
+    // real per-player borders (attempted once, reverted - see TODO.md): one shared border, just
+    // guaranteed not to still be the punishing 1x1 a solo player would've started with. 17, not
+    // 16 - every real expansion adds 2 to an odd starting size (1, 3, 5, ...), so 17 is the
+    // nearest size on that same lattice that's still >= the requested 16, keeping
+    // purchaseCount()'s (size-1)/2 math exact instead of introducing a fractional purchase count.
+    private static final double MULTIPLAYER_MIN_SIZE = 17.0;
 
     // Cost of the Nth expansion (0-indexed) is BASE * GROWTH_FACTOR^N, each purchase widens
     // the border by 2 (1 block each side). Tuned against SELL_PRICES: early purchases are a
@@ -86,6 +96,29 @@ public final class Border
         // Fairness: a 1-block border means spawning over lava/void is a real risk the player
         // never chose. keepInventory softens that without touching difficulty/mob damage.
         overworld.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, overworld.getServer());
+    }
+
+    // Called on every login - see MULTIPLAYER_MIN_SIZE. Safe to call unconditionally: a no-op
+    // once already clamped (setSize only ever moves up here), and skipped entirely while an
+    // Expedition hold has the border at its temporary safe-travel size (see
+    // beginExpeditionHold/endExpeditionHold) so this can't stomp that placeholder.
+    public static void clampForMultiplayer(ServerLevel overworld)
+    {
+        if (overworld.getServer().getPlayerList().getPlayerCount() < 2)
+            return;
+        forceMultiplayerClamp(overworld);
+    }
+
+    // For /drakonixoneblockshop border simulatejoin - a solo tester has no second real account
+    // to actually trigger clampForMultiplayer's player-count check, so this applies the same
+    // clamp unconditionally.
+    public static void forceMultiplayerClamp(ServerLevel overworld)
+    {
+        if (overworld.getData(EXPEDITIONS_ACTIVE) > 0)
+            return;
+        WorldBorder border = overworld.getWorldBorder();
+        if (border.getSize() < MULTIPLAYER_MIN_SIZE)
+            border.setSize(MULTIPLAYER_MIN_SIZE);
     }
 
     // How many expansions have already been bought, derived from the border's current size
@@ -188,7 +221,12 @@ public final class Border
         int active = Math.max(0, overworld.getData(EXPEDITIONS_ACTIVE) - 1);
         overworld.setData(EXPEDITIONS_ACTIVE, active);
         if (active == 0)
+        {
             overworld.getWorldBorder().setSize(overworld.getData(HOME_SIZE_SNAPSHOT));
+            // A second player could've logged in while the hold was active - clampForMultiplayer
+            // skips itself entirely during a hold (see above), so re-check now that it's over.
+            clampForMultiplayer(overworld);
+        }
     }
 
     // Safety net against straying past the border (bugs, other mods, admin teleports) - vanilla

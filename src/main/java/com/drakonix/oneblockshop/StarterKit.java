@@ -52,6 +52,7 @@ public final class StarterKit
         if (player instanceof ServerPlayer serverPlayer)
         {
             Border.initIfNeeded(serverPlayer);
+            Border.clampForMultiplayer(serverPlayer.serverLevel().getServer().overworld());
             Wallet.flushPendingCredits(serverPlayer);
         }
         if (player.getData(GIVEN))

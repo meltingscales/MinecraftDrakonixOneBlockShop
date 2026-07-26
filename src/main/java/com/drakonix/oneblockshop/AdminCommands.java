@@ -58,7 +58,9 @@ public final class AdminCommands
                                 .then(Commands.argument("size", DoubleArgumentType.doubleArg(1.0))
                                         .executes(AdminCommands::borderSet)))
                         .then(Commands.literal("expand")
-                                .executes(AdminCommands::borderExpand)))
+                                .executes(AdminCommands::borderExpand))
+                        .then(Commands.literal("simulatejoin")
+                                .executes(AdminCommands::borderSimulateJoin)))
                 .then(Commands.literal("starterkit")
                         .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("give")
@@ -122,6 +124,17 @@ public final class AdminCommands
         return (int) newSize;
     }
 
+    // For testing Border.clampForMultiplayer without a second real account - applies the same
+    // clamp (Border.forceMultiplayerClamp) the real player-count check would trigger.
+    private static int borderSimulateJoin(CommandContext<CommandSourceStack> ctx)
+    {
+        ServerLevel overworld = overworld(ctx);
+        Border.forceMultiplayerClamp(overworld);
+        double size = overworld.getWorldBorder().getSize();
+        ctx.getSource().sendSuccess(() -> Component.literal("Simulated a second player joining - border size is now " + size), true);
+        return (int) size;
+    }
+
     private static int starterKitGive(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException
     {
         ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
@@ -152,7 +165,7 @@ public final class AdminCommands
                 "/drakonixoneblockshop expedition end - end your current Explore-tab trip early",
                 "/drakonixoneblockshop help - show this list",
                 "/drakonixoneblockshop balance <get|set|add> <player> [amount] - op: read/adjust a wallet",
-                "/drakonixoneblockshop border <get|set|expand> [size] - op: read/adjust the shared world border",
+                "/drakonixoneblockshop border <get|set|expand|simulatejoin> [size] - op: read/adjust the shared world border, or simulate a second player joining",
                 "/drakonixoneblockshop starterkit give <player> - op: re-issue the starter kit");
         for (String line : lines)
             ctx.getSource().sendSuccess(() -> Component.literal(line), false);

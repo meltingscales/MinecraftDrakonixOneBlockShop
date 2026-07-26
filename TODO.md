@@ -4,6 +4,13 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
+- Team expeditions - mentioned alongside the multiplayer border clamp (see "Fixed" below) but
+  not built: what would make an Explore-tab trip a shared "team" one rather than each player's
+  own independent timer/destination? (Same destination? Synchronized countdown? Only the
+  trip-starter's cooldown gates the group?) Needs a real spec before it's buildable - currently
+  each player's expedition is fully independent of everyone else's, which already satisfies the
+  "separate expeditions" half of the original ask.
+
 - Modpack- how should we go about adding a modpack featuring the OneBlockShop mod? lives in `./modpack/`? light questing? `justfile` for common build commands? what modpack CLI tools exist out there?
 
 - **Per-player world borders** — so multiple people can play together, each starting ~10 blocks
@@ -90,6 +97,28 @@ Tracked against README.md's feature list.
 
 ## Fixed
 
+- ~~No multiplayer accommodation for the shared world border - a second player joining a
+  singleplayer-tuned 1x1 (or barely-expanded) border is an unfair start~~ —
+  `Border.clampForMultiplayer`, called on every login, guarantees the one shared border can
+  never be smaller than 17x17 once two or more players have ever been online together (never
+  shrinks it if already bigger - a one-way ratchet). 17, not the requested 16: every real
+  expansion adds 2 to an odd starting size (1, 3, 5, ...), so 17 is the nearest size on that
+  same lattice that's still >= 16, keeping `purchaseCount()`'s `(size-1)/2` math exact instead
+  of a fractional purchase count an even border size would produce. Deliberately still one
+  shared border, not per-player ones (that was attempted once and reverted - see the
+  per-player-borders TODO above) - "all players share the same upgrade status" was already true
+  before this change, since the border's always been level-scoped, not player-scoped. Each
+  player's Explore-tab trip already runs fully independently of everyone else's (see
+  `Expedition.java`) - "team expeditions" specifically is a separate, not-yet-specced idea, see
+  "Not built yet" above.
+  - Guarded against the one real edge case: `clampForMultiplayer` skips itself entirely while
+    any Expedition hold has the border at its temporary safe-travel size
+    (`Border.EXPEDITIONS_ACTIVE > 0`), so it can't clamp a placeholder value - and
+    `endExpeditionHold` re-checks the clamp right after restoring the real size, in case a
+    second player logged in mid-hold.
+  - Added `/drakonixoneblockshop border simulatejoin` (op-only) so a solo tester can exercise
+    this without a real second account - calls the same clamp (`Border.forceMultiplayerClamp`)
+    the real `PlayerLoggedInEvent` player-count check would trigger.
 - ~~"Money" was an invisible attachment counter, not the physical token items the TODO asked
   for~~ — `Wallet.get`/`add` now read/write the sum of Drakonix OneBlockShop Token items
   (`OneBlockShopMod.TOKEN_DENOMINATIONS`, powers of two 1..8192) in a player's inventory instead
@@ -136,6 +165,12 @@ Tracked against README.md's feature list.
   Jade, not literally WAILA as asked - WAILA's own last release is 1.16.5-era Forge/Fabric, no
   NeoForge build exists; Jade is its actively-maintained modern successor and what current packs
   use in its place.
+- ~~No VeinMiner dev dep~~ — added [VeinMiner](https://modrinth.com/mod/veinminer) (pinned to
+  its NeoForge release's Modrinth version id, `syKekkIm` - same version-number-collision issue
+  as JEI/twerk-crop-growth) plus its hard-required
+  [KotlinLangForge](https://modrinth.com/mod/kotlin-lang-forge) language provider (its
+  `neoforge.mods.toml` declares `modLoader="klf"`, not `javafml` - not obvious from VeinMiner's
+  own Modrinth listing, only surfaced by actually reading the toml).
 - ~~No way to reach distant biomes/resources from inside the tiny starting border~~ — new
   **Explore** tab (`Expedition.java`) does a free random teleport anywhere in a
   20,000x20,000-block square, auto-returns the player to wherever they left after 10 minutes
