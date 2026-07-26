@@ -99,6 +99,8 @@ public final class Border
     public static long cooldownRemainingSeconds(Player player)
     {
         long last = player.getData(LAST_EXPANSION_TICK);
+        if (last == Long.MIN_VALUE)
+            return 0L; // never expanded yet, not on cooldown
         long elapsed = player.level().getGameTime() - last;
         long remainingTicks = Math.max(0L, EXPANSION_COOLDOWN_TICKS - elapsed);
         return (remainingTicks + 19L) / 20L; // ceil to whole seconds
