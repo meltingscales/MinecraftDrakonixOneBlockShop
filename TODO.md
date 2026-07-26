@@ -15,6 +15,8 @@ Tracked against README.md's feature list.
 - add a /drakonixoneblockshop help command with a list of available subcommands and some brief descriptions
 
 - instead of ephemeral "money", add items called "Drakonix OneBlockShop Token" (sprite from .ppm file to a .png file, hue-shifted for different amounts) that start at 1, 2, 4, 8, etc - up to 8196. - these should be used when buying/selling items. if you over-spend, it should automatically give you back the excess tokens in a way that satisfies the "Change-making Problem" in mathematics.
+  - if you craft tokens together, they combine (only 2+2=4, 4+4=8, etc)
+  - if you craft a single token, it splits in half to two cheaper tokens
 
 - **Per-player world borders** — so multiple people can play together, each starting ~10 blocks
   apart and merging once their individually-grown borders touch. Attempted once this session and
