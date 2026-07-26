@@ -223,3 +223,8 @@ Tracked against README.md's feature list.
   - IC2 skipped, same as Thermal Expansion: no NeoForge/1.21.1 release exists on Modrinth for
     any of the IC2-lineage mods checked (`ic2classic`, `industrial-craft`) - both Forge-only,
     older MC versions.
+- Added `maven.modrinth:twerk-crop-growth:3.0.0` as a fun dev-only `localRuntime` dep - sneak-spam
+  speeds up crop/sapling growth, handy while playtesting farmable-goods pricing. No gameplay
+  dependency, needs `neoforge>=21.1.145`, satisfied as-is. Added `RECOMMENDED-MODS.md` (linked
+  from README) as a quick-reference table of all `localRuntime` playtesting mods, generated from
+  the actual `build.gradle` lines rather than duplicating the pin rationale by hand.

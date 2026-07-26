@@ -37,6 +37,9 @@ Requires JDK 21.
     ./gradlew runClient   # launch a dev client
     ./gradlew build       # build the mod jar (build/libs/)
 
+`runClient` also pulls in a handful of dev-only playtesting mods (tech mods for pricing
+compatibility testing, etc.) - see `RECOMMENDED-MODS.md` for the list and why each is there.
+
 ## Releasing
 
 `gradle.properties`' `mod_version` is the single source of truth for the mod's version. To cut

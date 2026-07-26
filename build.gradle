@@ -154,6 +154,14 @@ dependencies {
     // required deps (ldlib, configuration) are embedded in the jar, nothing else to add.
     localRuntime "maven.modrinth:gregtechceu-modern:mc1.21.1-7.0.2"
 
+    // Fun/dev-only, no gameplay dependency on it - just makes sneak-spam speed up crop/sapling
+    // growth so playtesting the shop's farmable-goods pricing doesn't require standing around.
+    // Modrinth publishes separate fabric/forge/neoforge jars all labelled version "3.0.0", so
+    // the plain semver string is ambiguous (resolved to the Fabric jar once, which NeoForge
+    // then refused to load) - must pin the NeoForge release's specific Modrinth version id
+    // (txp9wDw2) instead. Needs neoforge>=21.1.145, satisfied by our neo_version (21.1.176).
+    localRuntime "maven.modrinth:twerk-crop-growth:txp9wDw2"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
