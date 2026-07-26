@@ -49,7 +49,8 @@ compatibility testing, etc.) - see `RECOMMENDED-MODS.md` for the list and why ea
 a release:
 
 1. Bump `mod_version` in `gradle.properties`, commit.
-2. Tag the commit `vX.Y.Z` (matching `mod_version` exactly) and push the tag.
+2. Run `just release` (tags the commit `vX.Y.Z` from the current `mod_version` and pushes the
+   tag), or do it by hand: tag the commit `vX.Y.Z` and push the tag.
 3. CI builds the jar and publishes a GitHub Release with it attached — see
    `.github/workflows/release.yml`. The tag/version mismatch check fails the build if they
    don't match.

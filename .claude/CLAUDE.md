@@ -82,3 +82,8 @@ Bump `mod_version` in `gradle.properties` when committing real changes (features
 content) - it's the single source of truth `release.yml` checks a pushed tag against (see
 README.md's Releasing section). Skip the bump for changes that don't affect the mod itself
 (this file, CI config tweaks, typo fixes in comments).
+
+Committing and bumping `mod_version` does NOT cut a release by itself - GitHub Releases only
+come from a pushed `vX.Y.Z` tag (`release.yml` triggers on tag push, not on commits to `main`;
+plain pushes only run `build.yml`, compile + build, no release). Run `just release` to tag the
+current `mod_version` and push it - only do so when explicitly asked, same as any other push.
