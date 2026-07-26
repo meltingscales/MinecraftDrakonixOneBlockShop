@@ -17,6 +17,7 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
 {
     private static final int TAB_Y = 18;
     private static final int TAB_HEIGHT = 14;
+    private static final int TAB_WIDTH = 44;
     private static final int SELL_INFO_Y = 56;
     private static final int INFO_Y = 36;
     private static final int ACTION_Y = 50;
@@ -39,7 +40,9 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     private Button sellTabButton;
     private Button borderTabButton;
     private Button buyTabButton;
+    private Button expeditionTabButton;
     private Button expandButton;
+    private Button teleportButton;
     private final List<Button> buyButtons = new ArrayList<>();
 
     public ShopScreen(ShopMenu menu, Inventory playerInventory, Component title)
@@ -56,14 +59,18 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
         super.init();
 
         this.sellTabButton = addRenderableWidget(Button.builder(Component.literal("Sell"), b -> pressTab(ShopMenu.TAB_SELL_BUTTON))
-                .bounds(this.leftPos + 8, this.topPos + TAB_Y, 50, TAB_HEIGHT).build());
+                .bounds(this.leftPos + 8, this.topPos + TAB_Y, TAB_WIDTH, TAB_HEIGHT).build());
         this.borderTabButton = addRenderableWidget(Button.builder(Component.literal("Border"), b -> pressTab(ShopMenu.TAB_BORDER_BUTTON))
-                .bounds(this.leftPos + 60, this.topPos + TAB_Y, 50, TAB_HEIGHT).build());
+                .bounds(this.leftPos + 8 + TAB_WIDTH + 2, this.topPos + TAB_Y, TAB_WIDTH, TAB_HEIGHT).build());
         this.buyTabButton = addRenderableWidget(Button.builder(Component.literal("Buy"), b -> pressTab(ShopMenu.TAB_BUY_BUTTON))
-                .bounds(this.leftPos + 112, this.topPos + TAB_Y, 50, TAB_HEIGHT).build());
+                .bounds(this.leftPos + 8 + (TAB_WIDTH + 2) * 2, this.topPos + TAB_Y, TAB_WIDTH, TAB_HEIGHT).build());
+        this.expeditionTabButton = addRenderableWidget(Button.builder(Component.literal("Explore"), b -> pressTab(ShopMenu.TAB_EXPEDITION_BUTTON))
+                .bounds(this.leftPos + 8 + (TAB_WIDTH + 2) * 3, this.topPos + TAB_Y, TAB_WIDTH, TAB_HEIGHT).build());
 
         this.expandButton = addRenderableWidget(Button.builder(Component.literal("Buy expansion"), b -> pressButton(ShopMenu.EXPAND_BORDER_BUTTON))
                 .bounds(this.leftPos + 8, this.topPos + BORDER_ACTION_Y, 160, 20).build());
+        this.teleportButton = addRenderableWidget(Button.builder(Component.literal("Teleport"), b -> pressButton(ShopMenu.TELEPORT_BUTTON))
+                .bounds(this.leftPos + 8, this.topPos + ACTION_Y, 160, 20).build());
 
         this.buyButtons.clear();
         List<ShopMenu.BuyOffer> offers = ShopMenu.BUY_OFFERS;
@@ -124,6 +131,7 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     {
         ShopMenu.Tab tab = this.menu.getActiveTab();
         this.expandButton.visible = tab == ShopMenu.Tab.BORDER;
+        this.teleportButton.visible = tab == ShopMenu.Tab.EXPEDITION;
         for (Button button : this.buyButtons)
             button.visible = tab == ShopMenu.Tab.BUY;
 
@@ -150,6 +158,26 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
             for (int i = 0; i < this.buyButtons.size() && i < offers.size(); i++)
                 this.buyButtons.get(i).active = this.menu.getBalance() >= offers.get(i).price();
         }
+
+        if (tab == ShopMenu.Tab.EXPEDITION)
+        {
+            int remaining = this.menu.getExpeditionRemainingSeconds();
+            if (remaining > 0)
+            {
+                this.teleportButton.setMessage(Component.literal("Away - back in " + formatDuration(remaining)));
+                this.teleportButton.active = false;
+            }
+            else
+            {
+                this.teleportButton.setMessage(Component.literal("Teleport"));
+                this.teleportButton.active = true;
+            }
+        }
+    }
+
+    private static String formatDuration(int seconds)
+    {
+        return (seconds / 60) + ":" + String.format("%02d", seconds % 60);
     }
 
     // Sell tab: show what an item would fetch when hovered, same tooltip mechanism vanilla
@@ -196,5 +224,7 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
         }
         else if (this.menu.getActiveTab() == ShopMenu.Tab.BUY)
             graphics.drawString(this.font, "Buy what you can't produce yet", 8, INFO_Y, 0xA0A0A0, false);
+        else if (this.menu.getActiveTab() == ShopMenu.Tab.EXPEDITION)
+            graphics.drawString(this.font, "Random teleport, 10 min round trip", 8, INFO_Y, 0xA0A0A0, false);
     }
 }

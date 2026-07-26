@@ -59,6 +59,7 @@ public class OneBlockShopMod
         Wallet.ATTACHMENTS.register(modEventBus);
         StarterKit.ATTACHMENTS.register(modEventBus);
         Border.ATTACHMENTS.register(modEventBus);
+        Expedition.ATTACHMENTS.register(modEventBus);
 
         modEventBus.addListener(this::addCreative);
     }

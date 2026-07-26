@@ -42,12 +42,14 @@ public class ShopMenu extends AbstractContainerMenu
 {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public enum Tab { SELL, BORDER, BUY }
+    public enum Tab { SELL, BORDER, BUY, EXPEDITION }
 
     public static final int TAB_SELL_BUTTON = 0;
     public static final int TAB_BORDER_BUTTON = 1;
     public static final int TAB_BUY_BUTTON = 2;
     public static final int EXPAND_BORDER_BUTTON = 3;
+    public static final int TAB_EXPEDITION_BUTTON = 4;
+    public static final int TELEPORT_BUTTON = 5;
     public static final int BUY_ITEM_BUTTON_BASE = 10;
 
     public record BuyOffer(Item item, int count, long price) {}
@@ -99,6 +101,9 @@ public class ShopMenu extends AbstractContainerMenu
     // Border.tryExpand) - not necessarily this block's owner, so this tracks the viewing
     // player specifically rather than reusing the owner-scoped balance display.
     private final DataSlot expandCooldownSeconds = DataSlot.standalone();
+    // Same idea as expandCooldownSeconds - whoever's viewing is whoever can click Teleport,
+    // regardless of whose shop block this is.
+    private final DataSlot expeditionRemainingSeconds = DataSlot.standalone();
 
     // Client-side reconstruction from the network packet; slot 0's real contents get synced
     // over automatically regardless of which Container backs this local placeholder.
@@ -111,6 +116,7 @@ public class ShopMenu extends AbstractContainerMenu
         this.addDataSlot(this.balance);
         this.addDataSlot(this.activeTab);
         this.addDataSlot(this.expandCooldownSeconds);
+        this.addDataSlot(this.expeditionRemainingSeconds);
         addSlots(this.container, playerInventory);
     }
 
@@ -123,8 +129,10 @@ public class ShopMenu extends AbstractContainerMenu
         this.addDataSlot(this.balance);
         this.addDataSlot(this.activeTab);
         this.addDataSlot(this.expandCooldownSeconds);
+        this.addDataSlot(this.expeditionRemainingSeconds);
         refreshBalance();
         refreshCooldown();
+        refreshExpedition();
         addSlots(blockEntity, playerInventory);
     }
 
@@ -135,6 +143,7 @@ public class ShopMenu extends AbstractContainerMenu
     {
         refreshBalance();
         refreshCooldown();
+        refreshExpedition();
         super.broadcastChanges();
     }
 
@@ -148,6 +157,12 @@ public class ShopMenu extends AbstractContainerMenu
     {
         if (this.viewingPlayer instanceof ServerPlayer)
             this.expandCooldownSeconds.set((int) Math.min(Integer.MAX_VALUE, Border.cooldownRemainingSeconds(this.viewingPlayer)));
+    }
+
+    private void refreshExpedition()
+    {
+        if (this.viewingPlayer instanceof ServerPlayer)
+            this.expeditionRemainingSeconds.set((int) Math.min(Integer.MAX_VALUE, Expedition.remainingSeconds(this.viewingPlayer)));
     }
 
     private void addSlots(Container sellContainer, Inventory playerInventory)
@@ -180,6 +195,11 @@ public class ShopMenu extends AbstractContainerMenu
     public int getExpandCooldownSeconds()
     {
         return this.expandCooldownSeconds.get();
+    }
+
+    public int getExpeditionRemainingSeconds()
+    {
+        return this.expeditionRemainingSeconds.get();
     }
 
     public Tab getActiveTab()
@@ -235,8 +255,11 @@ public class ShopMenu extends AbstractContainerMenu
         if (id == TAB_SELL_BUTTON) { setActiveTab(Tab.SELL); return true; }
         if (id == TAB_BORDER_BUTTON) { setActiveTab(Tab.BORDER); return true; }
         if (id == TAB_BUY_BUTTON) { setActiveTab(Tab.BUY); return true; }
+        if (id == TAB_EXPEDITION_BUTTON) { setActiveTab(Tab.EXPEDITION); return true; }
         if (id == EXPAND_BORDER_BUTTON && player instanceof ServerPlayer serverPlayer)
             return Border.tryExpand(serverPlayer);
+        if (id == TELEPORT_BUTTON && player instanceof ServerPlayer serverPlayer)
+            return Expedition.tryTeleport(serverPlayer);
         if (id >= BUY_ITEM_BUTTON_BASE && player instanceof ServerPlayer serverPlayer)
             return tryBuy(serverPlayer, id - BUY_ITEM_BUTTON_BASE);
         return super.clickMenuButton(player, id);

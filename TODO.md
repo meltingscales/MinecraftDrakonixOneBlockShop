@@ -4,6 +4,8 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
+- Modpack- how should we go about adding a modpack featuring the OneBlockShop mod? lives in `./modpack/`? light questing? `justfile` for common build commands? what modpack CLI tools exist out there?
+
 - **Per-player world borders** — so multiple people can play together, each starting ~10 blocks
   apart and merging once their individually-grown borders touch. Attempted once this session and
   reverted - broke the client (hung at the title screen instead of joining a world) for a reason
@@ -83,6 +85,25 @@ Tracked against README.md's feature list.
 
 ## Fixed
 
+- ~~No way to reach distant biomes/resources from inside the tiny starting border~~ — new
+  **Explore** tab (`Expedition.java`) does a free random teleport anywhere in a
+  20,000x20,000-block square, auto-returns the player to wherever they left after 10 minutes
+  (chat + GUI countdown warnings at 5/3/2/1 minute(s) left), and blocks re-use until they're
+  back. The tricky part: this mod's world border is one real `WorldBorder` shared by the whole
+  overworld (see the per-player-borders TODO below) - teleporting 10,000 blocks out would
+  otherwise immediately trigger vanilla's own border push/damage plus this mod's 5-block
+  stray-safety-net (`Border.onPlayerTick`). Fixed by temporarily growing that shared border for
+  the expedition's duration (`Border.beginExpeditionHold`/`endExpeditionHold`, reference-counted
+  so overlapping expeditions from multiple players don't stomp each other, snapshotting the real
+  size once and restoring it when the last player gets back) rather than any mixin-based
+  per-player exemption. `Border.tryExpand` now also refuses to run while any expedition is
+  active, since the border's current size is a temporary placeholder, not real progress, during
+  that window. Known shortcut: on a real multiplayer server, a player still at home sees their
+  own tiny border balloon out for the duration of someone else's expedition - not worth mixins
+  to fix given this mod's singleplayer-first design (same tradeoff already accepted for the one
+  shared border in general). Boot-tested clean only (client joins, no FATAL/Exception with the
+  new attachments registered) - the actual teleport-out/countdown/auto-return click path hasn't
+  been exercised in a running client, so treat the gameplay behavior as unverified until played.
 - ~~Player could spawn outside the 1x1 border~~ — border now centers on the player's actual
   spawn position instead of the world's nominal spawn point.
 - ~~No safety net for leaving the border~~ — straying more than 5 blocks past the edge now

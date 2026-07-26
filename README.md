@@ -14,7 +14,7 @@ border. Sell items at your shop block to earn money, then spend it to expand the
   inside a 1x1 world border centered on your spawn point. Straying more than 5 blocks past the
   border teleports you back to its center.
 - The Drakonix Block Shop block (craftable from 8 gold ingots around a hopper) has a GUI with
-  three tabs:
+  four tabs:
   - **Sell** — drop an item in to sell it instantly. Every item is sellable: raw resources use
     a hand-set price, crafted items derive their price recursively from their cheapest recipe.
     Hover an item for its sell price.
@@ -23,6 +23,9 @@ border. Sell items at your shop block to earn money, then spend it to expand the
     in a monster wave sized to how many you've already bought.
   - **Buy** — buy a short list of items you can't easily produce early on (sugarcane, cactus,
     lava bucket, water bucket) at a flat price.
+  - **Explore** — free random teleport up to 10,000 blocks out, for easier resource gathering.
+    You're auto-returned to where you left after 10 minutes, with chat/GUI warnings at 5, 3, 2,
+    and 1 minute(s) left; can't teleport again until you're back.
 - Hopper items into the shop block to auto-sell them. Every 5 minutes you get a chat report of
   what your hopper automation sold (or "No hopper automation" if none sold anything).
 - Starter items (pickaxe, shop block, guide book) carry an `Unsellable` curse so they can't be

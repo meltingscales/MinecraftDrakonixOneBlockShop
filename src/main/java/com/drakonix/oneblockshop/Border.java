@@ -63,6 +63,12 @@ public final class Border
             "border_initialized", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Long>> LAST_EXPANSION_TICK = ATTACHMENTS.register(
             "last_expansion_tick", () -> AttachmentType.builder(() -> Long.MIN_VALUE).serialize(Codec.LONG).build());
+    // How many players currently have an Expedition teleport in flight - see
+    // beginExpeditionHold/endExpeditionHold below.
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Integer>> EXPEDITIONS_ACTIVE = ATTACHMENTS.register(
+            "expeditions_active", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> HOME_SIZE_SNAPSHOT = ATTACHMENTS.register(
+            "home_size_snapshot", () -> AttachmentType.builder(() -> 1.0).serialize(Codec.DOUBLE).build());
 
     private Border() {}
 
@@ -110,10 +116,15 @@ public final class Border
     // still on cooldown from their last purchase).
     public static boolean tryExpand(ServerPlayer player)
     {
+        ServerLevel overworld = player.serverLevel().getServer().overworld();
+        // The shared border's current size is a temporary Expedition placeholder right now, not
+        // real progress - expanding it would corrupt that placeholder instead of buying anything.
+        if (overworld.getData(EXPEDITIONS_ACTIVE) > 0)
+            return false;
         if (cooldownRemainingSeconds(player) > 0)
             return false;
 
-        WorldBorder border = player.serverLevel().getServer().overworld().getWorldBorder();
+        WorldBorder border = overworld.getWorldBorder();
         long cost = costForNextExpansion(border);
         if (Wallet.get(player) < cost)
             return false;
@@ -153,6 +164,31 @@ public final class Border
 
         player.sendSystemMessage(Component.literal(
                 "A wave of " + waveSize + " monsters closes in on your new border!").withStyle(ChatFormatting.RED));
+    }
+
+    // Growing the one shared WorldBorder is the only mixin-free way to let a player on an
+    // Expedition roam far without vanilla's own border push/damage (and onPlayerTick's stray
+    // safety-net below) kicking in - there's no per-player WorldBorder without mixins, same
+    // limitation noted for the reverted per-player-borders attempt in TODO.md. Fine for
+    // singleplayer; a second player still at home sees their border balloon out for the
+    // expedition's duration too - known shortcut, not worth mixins to fix.
+    public static void beginExpeditionHold(ServerLevel overworld, double minimumSize)
+    {
+        int active = overworld.getData(EXPEDITIONS_ACTIVE);
+        if (active == 0)
+            overworld.setData(HOME_SIZE_SNAPSHOT, overworld.getWorldBorder().getSize());
+        overworld.setData(EXPEDITIONS_ACTIVE, active + 1);
+        if (overworld.getWorldBorder().getSize() < minimumSize)
+            overworld.getWorldBorder().setSize(minimumSize);
+    }
+
+    // Restores the real border once the last player currently away returns.
+    public static void endExpeditionHold(ServerLevel overworld)
+    {
+        int active = Math.max(0, overworld.getData(EXPEDITIONS_ACTIVE) - 1);
+        overworld.setData(EXPEDITIONS_ACTIVE, active);
+        if (active == 0)
+            overworld.getWorldBorder().setSize(overworld.getData(HOME_SIZE_SNAPSHOT));
     }
 
     // Safety net against straying past the border (bugs, other mods, admin teleports) - vanilla
