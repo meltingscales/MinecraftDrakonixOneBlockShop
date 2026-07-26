@@ -175,6 +175,20 @@ dependencies {
     // Needs neoforge>=21.0.167, satisfied by our neo_version (21.1.176).
     localRuntime "maven.modrinth:treechop:0.19.3"
 
+    // Dev-only, minimap + waypoints - handy for finding your way back to base after an
+    // Explore-tab teleport. Version string is already loader-prefixed by Xaero
+    // ("neoforge-1.21.1-26.4.2"), no collision with the forge/fabric builds. Needs
+    // neoforge in [21.0.110-beta,21.2.0), satisfied by our neo_version (21.1.176).
+    localRuntime "maven.modrinth:xaeros-minimap:neoforge-1.21.1-26.4.2"
+
+    // Dev-only tooltip-HUD (shows what block/entity you're looking at). NOT literally WAILA -
+    // WAILA itself has no NeoForge release at all (its last builds are 1.16.5-era Forge/Fabric,
+    // see hwyla/waila-stages on Modrinth) - Jade is WAILA's actively-maintained modern
+    // successor and what every current pack uses in its place. Version string is already
+    // loader-suffixed ("15.10.5+neoforge"), no collision. Needs neoforge>=21.0.143, satisfied
+    // by our neo_version (21.1.176).
+    localRuntime "maven.modrinth:jade:15.10.5+neoforge"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"

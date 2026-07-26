@@ -15,9 +15,14 @@ version-pinning rationale next to each line; this file is just the quick-referen
 | [Twerk Crop Growth](https://modrinth.com/mod/twerk-crop-growth) | `txp9wDw2` (3.0.0) | Sneak-spam speeds up crop/sapling growth - handy while playtesting farmable-goods pricing. |
 | [JEI](https://modrinth.com/mod/jei) | `zHNxmOqp` (19.39.0.372) | Recipe/item viewer, useful while playtesting the shop's Buy/Sell tabs. |
 | [TreeChop](https://modrinth.com/mod/treechop) | 0.19.3 | Fells whole trees in one hit - handy for the log volume Sell/Explore playtesting wants. |
+| [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap) | neoforge-1.21.1-26.4.2 | Minimap + waypoints, handy for finding your way back to base after an Explore-tab teleport. |
+| [Jade](https://modrinth.com/mod/jade) | 15.10.5+neoforge | WAILA-equivalent tooltip HUD - see note below, not literally WAILA. |
 
 Not added: IC2 (no NeoForge/1.21.1 release exists for any IC2-lineage mod as of writing) and
 Thermal Expansion (last release is 1.20.1 Forge-only). Re-check Modrinth if either ships one.
+Also not literally WAILA: that mod's last real client-side release is 1.16.5-era Forge/Fabric
+(`hwyla`/`waila-stages` on Modrinth) - Jade is its actively-maintained modern successor and
+what current packs use in its place.
 
 ## Adding another
 
