@@ -2,6 +2,7 @@
   "block.drakonixoneblockshop.drakonix_block_shop": "Drakonix Block Shop",
   "container.drakonixoneblockshop.shop": "Drakonix Block Shop",
   "effect.drakonixoneblockshop.expedition": "Expedition",
+  "effect.drakonixoneblockshop.expedition.description": "You're away on an expedition - can't place a new shop block until you return.",
   "enchantment.drakonixoneblockshop.unsellable": "Unsellable",
   "item.drakonixoneblockshop.token_1": "Drakonix OneBlockShop Token (1)",
   "item.drakonixoneblockshop.token_1024": "Drakonix OneBlockShop Token (1024)",

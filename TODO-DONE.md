@@ -3,6 +3,26 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~"Expedition" status effect had no description, and Explore-tab destinations only ever
+  landed on the overworld surface~~ — two independent fixes:
+  - Added a hover-tooltip description via NeoForge's `GatherEffectScreenTooltipsEvent`
+    (confirmed in decompiled `EffectRenderingInventoryScreen` - this is the actual, only hook
+    for appending lines to a potion effect's tooltip; vanilla itself has no built-in
+    "description" concept for effects, the inventory panel only ever shows name + duration).
+    New `ExpeditionClientEvents` class, deliberately kept separate from `Expedition.java` so
+    that class never has to import a client-only event type (referencing one from a class that
+    also loads on a dedicated server risks `NoClassDefFoundError`). Lang key
+    (`effect.drakonixoneblockshop.expedition.description`) added by
+    `tools/generate_expedition_icon.py` alongside the icon/name, same as before.
+  - `Expedition.rollDestination` now has a 35% chance (`CAVE_CHANCE`) of landing underground
+    instead of on the surface - `findCaveLanding` scans a random Y in the column for an air
+    pocket with solid footing below (`BlockState.blocksMotion()`, deprecated but confirmed
+    still the exact predicate vanilla's own `Heightmap.MOTION_BLOCKING` uses internally, so no
+    real replacement to migrate to), falling back to the surface roll if the sampled range
+    turns out solid all the way through (e.g. no cave under that exact column).
+- ~~"No hopper automation" and the periodic hopper-sales report weren't obviously from this
+  mod~~ — both now prefixed `[Drakonix Shop] ` (`HopperSalesTracker.PREFIX`) so the recurring
+  chat message isn't mistaken for a different mod or a server plugin.
 - ~~Team expeditions had no spec - what would make an Explore-tab trip a shared "team" one
   rather than each player's own independent timer/destination?~~ — resolved by changing what
   the Teleport button *does*, not by adding a separate team concept. Clicking it (renamed "Open

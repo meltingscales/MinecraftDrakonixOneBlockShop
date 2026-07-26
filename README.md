@@ -31,10 +31,13 @@ expand the border.
     same time, no separate team button or setup needed. Each traveler still gets their own
     10-minute stay and personal auto-return to wherever they individually left from, with
     chat/GUI warnings at 5, 3, 2, and 1 minute(s) left; can't walk into another portal while
-    you're still away. An "Expedition" status effect for the trip's duration blocks placing a
-    new shop block while you're away.
-- Hopper items into the shop block to auto-sell them. Every 5 minutes you get a chat report of
-  what your hopper automation sold (or "No hopper automation" if none sold anything).
+    you're still away. Lands on the surface most of the time, but has a chance of dropping you
+    into a cave instead - resource gathering shouldn't only mean overworld terrain. An
+    "Expedition" status effect for the trip's duration (hover it for a tooltip explaining why)
+    blocks placing a new shop block while you're away.
+- Hopper items into the shop block to auto-sell them. Every 5 minutes you get a chat report
+  prefixed `[Drakonix Shop]` of what your hopper automation sold (or "No hopper automation" if
+  none sold anything) - the prefix makes it obvious which mod that recurring message is from.
 - Starter items (pickaxe, shop block, guide book) carry an `Unsellable` curse so they can't be
   accidentally sold or hoppered away.
 - Money is physical: Drakonix OneBlockShop Token items, denominations 1 through 8192 (doubling

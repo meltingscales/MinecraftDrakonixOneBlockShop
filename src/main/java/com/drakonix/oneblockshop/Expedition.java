@@ -140,14 +140,53 @@ public final class Expedition
         // dropping players out of the world. Force it to ChunkStatus.FULL first so the heightmap
         // reflects real generated terrain.
         overworld.getChunk(x >> 4, z >> 4);
-        BlockPos surface = overworld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z));
+        BlockPos destination = rollDestination(overworld, x, z, random);
 
-        overworld.setData(PORTAL_DEST_X, surface.getX() + 0.5);
-        overworld.setData(PORTAL_DEST_Y, (double) surface.getY());
-        overworld.setData(PORTAL_DEST_Z, surface.getZ() + 0.5);
+        overworld.setData(PORTAL_DEST_X, destination.getX() + 0.5);
+        overworld.setData(PORTAL_DEST_Y, (double) destination.getY());
+        overworld.setData(PORTAL_DEST_Z, destination.getZ() + 0.5);
         overworld.setData(PORTAL_POS, shopPos.asLong());
         overworld.setData(PORTAL_END_TICK, overworld.getGameTime() + PORTAL_DURATION_TICKS);
         return true;
+    }
+
+    // Lands on the surface most of the time, but sometimes drops the traveler into a cave
+    // instead - "resource gathering" should be able to mean ore, not just overworld terrain.
+    private static final double CAVE_CHANCE = 0.35;
+
+    private static BlockPos rollDestination(ServerLevel overworld, int x, int z, RandomSource random)
+    {
+        BlockPos surface = overworld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z));
+        if (random.nextDouble() >= CAVE_CHANCE)
+            return surface;
+
+        BlockPos cave = findCaveLanding(overworld, x, z, surface.getY(), random);
+        return cave != null ? cave : surface;
+    }
+
+    // Scans a random column height for an air pocket (room to stand, solid footing below) -
+    // finds a cave floor without needing real pathing/cave-generation knowledge. Falls back to
+    // null (caller lands on the surface instead) if the sampled range turns out solid all the
+    // way through, e.g. no cave actually passes under this exact column.
+    private static BlockPos findCaveLanding(ServerLevel overworld, int x, int z, int surfaceY, RandomSource random)
+    {
+        int minY = overworld.getMinBuildHeight() + 4;
+        int maxY = surfaceY - 8;
+        if (maxY <= minY)
+            return null;
+
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, 0, z);
+        int startY = minY + random.nextInt(maxY - minY);
+        for (int y = startY; y > minY; y--)
+        {
+            pos.setY(y);
+            boolean hereOpen = !overworld.getBlockState(pos).blocksMotion();
+            boolean aboveOpen = !overworld.getBlockState(pos.above()).blocksMotion();
+            boolean belowSolid = overworld.getBlockState(pos.below()).blocksMotion();
+            if (hereOpen && aboveOpen && belowSolid)
+                return pos.immutable();
+        }
+        return null;
     }
 
     private static void closePortal(ServerLevel overworld)

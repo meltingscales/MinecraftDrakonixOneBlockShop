@@ -20,6 +20,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class HopperSalesTracker
 {
     private static final int REPORT_INTERVAL_TICKS = 20 * 60 * 5;
+    // Every-5-minutes chat messages are otherwise unlabeled and easy to mistake for a different
+    // mod (or a server plugin) - this makes it obvious where they're coming from.
+    private static final String PREFIX = "[Drakonix Shop] ";
 
     private static final Map<UUID, Map<Item, Integer>> pending = new HashMap<>();
 
@@ -43,11 +46,11 @@ public final class HopperSalesTracker
             Map<Item, Integer> sales = pending.remove(player.getUUID());
             if (sales == null || sales.isEmpty())
             {
-                player.sendSystemMessage(Component.literal("No hopper automation").withStyle(ChatFormatting.GRAY));
+                player.sendSystemMessage(Component.literal(PREFIX + "No hopper automation").withStyle(ChatFormatting.GRAY));
                 continue;
             }
 
-            player.sendSystemMessage(Component.literal("Hopper sales (last 5 min):").withStyle(ChatFormatting.GOLD));
+            player.sendSystemMessage(Component.literal(PREFIX + "Hopper sales (last 5 min):").withStyle(ChatFormatting.GOLD));
             for (Map.Entry<Item, Integer> entry : sales.entrySet())
                 player.sendSystemMessage(Component.literal("  " + entry.getKey().getDescription().getString() + " x" + entry.getValue()));
         }

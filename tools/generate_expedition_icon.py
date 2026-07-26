@@ -60,9 +60,14 @@ def main():
     lang_path = RESOURCES / f"assets/{MODID}/lang/en_us.json"
     lang = json.loads(lang_path.read_text(encoding="utf-8"))
     lang[f"effect.{MODID}.expedition"] = "Expedition"
+    # Vanilla has no built-in "description" concept for potion effects (the inventory effects
+    # panel only ever shows name + duration) - this key is read by ExpeditionClientEvents via
+    # NeoForge's GatherEffectScreenTooltipsEvent, which appends extra lines to the hover
+    # tooltip specifically.
+    lang[f"effect.{MODID}.expedition.description"] = "You're away on an expedition - can't place a new shop block until you return."
     write_json(lang_path, dict(sorted(lang.items())))
 
-    print("Generated expedition.png (18x18) and its lang entry")
+    print("Generated expedition.png (18x18) and its lang entries")
 
 
 if __name__ == "__main__":
