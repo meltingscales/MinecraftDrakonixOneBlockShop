@@ -25,3 +25,7 @@ run-data
 logs
 
 repo
+
+# python (tools/*.py asset generators)
+__pycache__
+*.pyc
