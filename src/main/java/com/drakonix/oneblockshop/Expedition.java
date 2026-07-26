@@ -84,6 +84,12 @@ public final class Expedition
         RandomSource random = overworld.getRandom();
         int x = random.nextInt(RANGE * 2 + 1) - RANGE;
         int z = random.nextInt(RANGE * 2 + 1) - RANGE;
+        // A random spot this far out is essentially guaranteed to be in an unloaded chunk -
+        // Level.getHeight/getHeightmapPos silently falls back to getMinBuildHeight() (the void
+        // floor) for a chunk that isn't loaded yet, rather than generating it, which is what was
+        // dropping players out of the world. Force it to ChunkStatus.FULL first so the heightmap
+        // reflects real generated terrain.
+        overworld.getChunk(x >> 4, z >> 4);
         BlockPos surface = overworld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z));
 
         player.teleportTo(surface.getX() + 0.5, surface.getY(), surface.getZ() + 0.5);

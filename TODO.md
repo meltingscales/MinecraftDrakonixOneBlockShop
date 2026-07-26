@@ -101,9 +101,15 @@ Tracked against README.md's feature list.
   that window. Known shortcut: on a real multiplayer server, a player still at home sees their
   own tiny border balloon out for the duration of someone else's expedition - not worth mixins
   to fix given this mod's singleplayer-first design (same tradeoff already accepted for the one
-  shared border in general). Boot-tested clean only (client joins, no FATAL/Exception with the
-  new attachments registered) - the actual teleport-out/countdown/auto-return click path hasn't
-  been exercised in a running client, so treat the gameplay behavior as unverified until played.
+  shared border in general).
+  - Playtested and fixed once already: the first version dropped the player out of the world on
+    landing. Root cause: `Level.getHeight`/`getHeightmapPos` silently falls back to
+    `getMinBuildHeight()` (the void floor) for a chunk that isn't loaded yet, rather than
+    generating it - and a random spot 10,000 blocks out is essentially guaranteed unloaded.
+    Fixed by forcing `overworld.getChunk(x >> 4, z >> 4)` (blocks until `ChunkStatus.FULL`) right
+    before the heightmap query, so it reflects real generated terrain. Still only boot-tested
+    (client joins, no FATAL/Exception) beyond that one manual playtest - the countdown/warning
+    timings and auto-return haven't been exercised, so treat those as unverified until played.
 - ~~Player could spawn outside the 1x1 border~~ — border now centers on the player's actual
   spawn position instead of the world's nominal spawn point.
 - ~~No safety net for leaving the border~~ — straying more than 5 blocks past the edge now
