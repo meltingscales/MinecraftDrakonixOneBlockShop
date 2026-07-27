@@ -3,6 +3,17 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Added Lithium (general game-logic performance optimization - not a rendering mod like Sodium,
+  which is Fabric-only; the NeoForge port keeps the same name). No collision, no Modrinth-
+  declared dependencies, and its own `neoforge.mods.toml` doesn't even constrain neoforge's
+  version (`loaderVersion="*"`) - only minecraft in `[1.21, 1.21.1]`, satisfied. Synced via
+  `just modpack-sync` (23 mods total now).
+- Added Building Wands (extends a placed block along a line/plane, consuming matching blocks
+  from inventory - less tedious building of long runs) plus its two hard-required Modrinth
+  dependencies, Architectury API and Cloth Config API, neither obvious from its own page - only
+  surfaced via its declared Modrinth dependency list. No version-number collisions across any of
+  the three; all satisfied by our neo_version (21.1.176). Synced via `just modpack-sync` (22
+  mods total now).
 - Added Sophisticated Backpacks (upgradeable backpacks with their own inventory tabs/filters/
   auto-sort - fits this mod's fetch-and-carry loop) plus its hard-required Sophisticated Core
   shared library, which isn't obvious from Sophisticated Backpacks' own Modrinth page - only

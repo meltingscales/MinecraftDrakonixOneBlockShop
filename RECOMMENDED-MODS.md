@@ -26,6 +26,10 @@ version-pinning rationale next to each line; this file is just the quick-referen
 | [Dissolver Enhanced](https://modrinth.com/mod/dissolver-enhanced-item-transmutation-(emc)) | `yEX3Y3na` (1.5.31-neoforge-1.21.x) | EMC-style item transmutation, standing in for ProjectE - see note below, ProjectE itself has no Modrinth listing at all. Pinned by project id since the slug has literal parentheses that risk misparsing as a Gradle coordinate. |
 | [Sophisticated Core](https://modrinth.com/mod/sophisticated-core) | 1.21.1-1.4.80.2194 | Shared library hard-required by Sophisticated Backpacks (not obvious from that mod's own page - only surfaced via its declared Modrinth dependency list). |
 | [Sophisticated Backpacks](https://modrinth.com/mod/sophisticated-backpacks) | 1.21.1-3.25.73.2020 | Upgradeable backpacks with their own inventory tabs/filters/auto-sort - useful given this mod's whole loop is fetch-and-carry (Sell trips, Explore-tab expeditions). |
+| [Architectury API](https://modrinth.com/mod/architectury-api) | 13.0.11+neoforge | Cross-loader API library hard-required by Building Wands. |
+| [Cloth Config API](https://modrinth.com/mod/cloth-config) | 15.0.140+neoforge | Config-screen library hard-required by Building Wands. |
+| [Building Wands](https://modrinth.com/mod/building-wands) | 3.0.5_beta_neoforge_1.21.1 | Extends a placed block along a line/plane, consuming matching blocks from inventory - less tedious building of long runs. |
+| [Lithium](https://modrinth.com/mod/lithium) | mc1.21.1-0.15.4-neoforge | General game-logic performance optimization (not a rendering mod like Sodium, which is Fabric-only) - the NeoForge port carries the same name, not a rebrand. |
 
 Not added: IC2 (no NeoForge/1.21.1 release exists for any IC2-lineage mod as of writing) and
 Thermal Expansion (last release is 1.20.1 Forge-only). Re-check Modrinth if either ships one.

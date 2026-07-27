@@ -248,6 +248,22 @@ dependencies {
     localRuntime "maven.modrinth:sophisticated-core:1.21.1-1.4.80.2194"
     localRuntime "maven.modrinth:sophisticated-backpacks:1.21.1-3.25.73.2020"
 
+    // Dev-only QoL, extends a placed block along a line/plane by consuming matching blocks from
+    // inventory - less tedious building of long runs (floors/walls/tunnels). Hard-requires
+    // Architectury API and Cloth Config API (its declared Modrinth dependencies, not obvious
+    // from its own page). No version-number collisions (all three unique to their neoforge
+    // builds). Needs neoforge>=21.1 (wands), >=21.0.110-beta (the other two), all satisfied by
+    // our neo_version (21.1.176).
+    localRuntime "maven.modrinth:architectury-api:13.0.11+neoforge"
+    localRuntime "maven.modrinth:cloth-config:15.0.140+neoforge"
+    localRuntime "maven.modrinth:building-wands:3.0.5_beta_neoforge_1.21.1"
+
+    // Dev-only, general game-logic performance optimization (not a rendering mod like Sodium -
+    // that's a separate, Fabric-only project). No collision (unique to this neoforge build), no
+    // Modrinth-declared dependencies. Its own neoforge.mods.toml doesn't even constrain
+    // neoforge's version (loaderVersion="*"), only minecraft in [1.21, 1.21.1], satisfied.
+    localRuntime "maven.modrinth:lithium:mc1.21.1-0.15.4-neoforge"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
