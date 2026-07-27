@@ -3,6 +3,22 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~No easier on-ramp for players who don't want to hand-build a tech mod's early automation
+  chain~~ — new `StarterPacks.java` + shop GUI "Packs" tab: a free, no-cost bundle of
+  useful blocks/machines/power/conduits for AE2, Mekanism, and EnderIO, gated by an
+  independent 1-hour-per-pack cooldown (`ShopMenu`/`ShopScreen` mirror `Border`'s existing
+  per-player cooldown attachment pattern, just keyed by pack id instead of a single value).
+  Thermal Expansion and IC2 were skipped - neither has a NeoForge 1.21.1 release to draw items
+  from (see RECOMMENDED-MODS.md), and GregTech was already removed. Every item id was checked
+  against that mod's real recipe/lang data (extracted straight from its jar) before being
+  hardcoded, not guessed - caught two real gaps in the process: modern Mekanism (10.x) has no
+  power-generator block anymore (Heat/Solar/Bio/Wind Generators were cut years ago, Basic
+  Energy Cube is the closest real substitute), and EnderIO's conduits are all one shared
+  `enderio:conduit` item typed via a mod-specific data component set at craft time - granting a
+  correctly-typed one needs that component, which isn't accessible without a compile-time
+  dependency on EnderIO (the same open problem already tracked for EnderIO's item pipes in
+  TODO.md), so both packs simply skip the slot they can't fill safely rather than hand out a
+  broken/blank item.
 - ~~Token coin sprite was a flat hue-shifted circle with a plain highlight blob, didn't read as
   a coin or tie into the mod's theme~~ — `tools/generate_tokens.py`'s `coin_sprite` now shades
   the fill/rim toward a desaturated metallic tone and stamps a dragon wing (parametric fan of

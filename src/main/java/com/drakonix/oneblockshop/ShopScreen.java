@@ -28,6 +28,10 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     // than ACTION_Y (which the buy grid still uses unchanged).
     private static final int BORDER_WARNING_Y = 46;
     private static final int BORDER_ACTION_Y = 58;
+    // Packs tab also has a second description line (see PACKS_SUBINFO_Y), same reason.
+    private static final int PACKS_SUBINFO_Y = 46;
+    private static final int PACKS_ACTION_Y = 58;
+    private static final int PACKS_ROW_HEIGHT = 22;
 
     // The buy grid's row count depends on however many offers are in pricing/buy_offers.json,
     // so the player inventory (and the whole GUI) is sized to fit it rather than a fixed guess -
@@ -37,18 +41,24 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     static final int PLAYER_INVENTORY_Y = ACTION_Y + BUY_GRID_ROWS * BUY_ROW_HEIGHT + 4;
     static final int HOTBAR_Y = PLAYER_INVENTORY_Y + 3 * 18 + 4;
 
+    // Tab row now has 5 tabs (Sell/Border/Buy/Explore/Packs) - the buy grid alone no longer
+    // guarantees a wide enough background, so the image width is whichever of the two is wider.
+    private static final int TAB_ROW_WIDTH = ShopMenu.Tab.values().length * TAB_WIDTH + (ShopMenu.Tab.values().length - 1) * 2;
+
     private Button sellTabButton;
     private Button borderTabButton;
     private Button buyTabButton;
     private Button expeditionTabButton;
+    private Button packsTabButton;
     private Button expandButton;
     private Button teleportButton;
     private final List<Button> buyButtons = new ArrayList<>();
+    private final List<Button> packButtons = new ArrayList<>();
 
     public ShopScreen(ShopMenu menu, Inventory playerInventory, Component title)
     {
         super(menu, playerInventory, title);
-        this.imageWidth = 8 + BUY_COLS * BUY_COL_WIDTH + 8;
+        this.imageWidth = 8 + Math.max(BUY_COLS * BUY_COL_WIDTH, TAB_ROW_WIDTH) + 8;
         this.imageHeight = HOTBAR_Y + 18 + 6;
         this.inventoryLabelY = PLAYER_INVENTORY_Y - 12;
     }
@@ -66,6 +76,8 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
                 .bounds(this.leftPos + 8 + (TAB_WIDTH + 2) * 2, this.topPos + TAB_Y, TAB_WIDTH, TAB_HEIGHT).build());
         this.expeditionTabButton = addRenderableWidget(Button.builder(Component.literal("Explore"), b -> pressTab(ShopMenu.TAB_EXPEDITION_BUTTON))
                 .bounds(this.leftPos + 8 + (TAB_WIDTH + 2) * 3, this.topPos + TAB_Y, TAB_WIDTH, TAB_HEIGHT).build());
+        this.packsTabButton = addRenderableWidget(Button.builder(Component.literal("Packs"), b -> pressTab(ShopMenu.TAB_PACKS_BUTTON))
+                .bounds(this.leftPos + 8 + (TAB_WIDTH + 2) * 4, this.topPos + TAB_Y, TAB_WIDTH, TAB_HEIGHT).build());
 
         this.expandButton = addRenderableWidget(Button.builder(Component.literal("Buy expansion"), b -> pressButton(ShopMenu.EXPAND_BORDER_BUTTON))
                 .bounds(this.leftPos + 8, this.topPos + BORDER_ACTION_Y, 160, 20).build());
@@ -83,6 +95,16 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
             Button button = addRenderableWidget(Button.builder(buyLabel(offer), b -> pressButton(buttonId))
                     .bounds(this.leftPos + 8 + col * BUY_COL_WIDTH, this.topPos + ACTION_Y + row * BUY_ROW_HEIGHT, BUY_COL_WIDTH - 4, BUY_ROW_HEIGHT - 2).build());
             this.buyButtons.add(button);
+        }
+
+        this.packButtons.clear();
+        List<StarterPacks.Pack> packs = StarterPacks.PACKS;
+        for (int i = 0; i < packs.size(); i++)
+        {
+            int buttonId = ShopMenu.PACK_CLAIM_BUTTON_BASE + i;
+            Button button = addRenderableWidget(Button.builder(Component.literal(packs.get(i).label()), b -> pressButton(buttonId))
+                    .bounds(this.leftPos + 8, this.topPos + PACKS_ACTION_Y + i * PACKS_ROW_HEIGHT, TAB_ROW_WIDTH, 20).build());
+            this.packButtons.add(button);
         }
 
         syncWidgets();
@@ -134,6 +156,8 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
         this.teleportButton.visible = tab == ShopMenu.Tab.EXPEDITION;
         for (Button button : this.buyButtons)
             button.visible = tab == ShopMenu.Tab.BUY;
+        for (Button button : this.packButtons)
+            button.visible = tab == ShopMenu.Tab.PACKS;
 
         if (tab == ShopMenu.Tab.BORDER && this.minecraft.level != null)
         {
@@ -171,6 +195,26 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
             {
                 this.teleportButton.setMessage(Component.literal("Open Portal"));
                 this.teleportButton.active = true;
+            }
+        }
+
+        if (tab == ShopMenu.Tab.PACKS)
+        {
+            List<StarterPacks.Pack> packs = StarterPacks.PACKS;
+            for (int i = 0; i < this.packButtons.size() && i < packs.size(); i++)
+            {
+                Button button = this.packButtons.get(i);
+                int cooldown = this.menu.getPackCooldownSeconds(i);
+                if (cooldown > 0)
+                {
+                    button.setMessage(Component.literal(packs.get(i).label() + " - wait " + formatDuration(cooldown)));
+                    button.active = false;
+                }
+                else
+                {
+                    button.setMessage(Component.literal("Claim: " + packs.get(i).label()));
+                    button.active = true;
+                }
             }
         }
     }
@@ -226,5 +270,10 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
             graphics.drawString(this.font, "Buy what you can't produce yet", 8, INFO_Y, 0xA0A0A0, false);
         else if (this.menu.getActiveTab() == ShopMenu.Tab.EXPEDITION)
             graphics.drawString(this.font, "Opens a portal above the shop - walk in to go", 8, INFO_Y, 0xA0A0A0, false);
+        else if (this.menu.getActiveTab() == ShopMenu.Tab.PACKS)
+        {
+            graphics.drawString(this.font, "Free tech mod starter kits - an easier way to get going", 8, INFO_Y, 0xA0A0A0, false);
+            graphics.drawString(this.font, "One claim per pack every hour, no cost", 8, PACKS_SUBINFO_Y, 0xA0A0A0, false);
+        }
     }
 }

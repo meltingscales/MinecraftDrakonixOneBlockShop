@@ -42,7 +42,7 @@ public class ShopMenu extends AbstractContainerMenu
 {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public enum Tab { SELL, BORDER, BUY, EXPEDITION }
+    public enum Tab { SELL, BORDER, BUY, EXPEDITION, PACKS }
 
     public static final int TAB_SELL_BUTTON = 0;
     public static final int TAB_BORDER_BUTTON = 1;
@@ -50,7 +50,11 @@ public class ShopMenu extends AbstractContainerMenu
     public static final int EXPAND_BORDER_BUTTON = 3;
     public static final int TAB_EXPEDITION_BUTTON = 4;
     public static final int TELEPORT_BUTTON = 5;
+    public static final int TAB_PACKS_BUTTON = 6;
     public static final int BUY_ITEM_BUTTON_BASE = 10;
+    // Well clear of BUY_ITEM_BUTTON_BASE's range (pricing/buy_offers.json has room to grow) -
+    // StarterPacks.PACKS is a short, fixed list so this only ever needs a handful of ids.
+    public static final int PACK_CLAIM_BUTTON_BASE = 100;
 
     public record BuyOffer(Item item, int count, long price) {}
 
@@ -104,6 +108,9 @@ public class ShopMenu extends AbstractContainerMenu
     // Portal state is global (one at a time, see Expedition.java), not tied to the viewing
     // player - anyone can walk into whichever shop's portal is currently open.
     private final DataSlot portalRemainingSeconds = DataSlot.standalone();
+    // One per StarterPacks.PACKS entry, same order - each pack has its own independent
+    // per-player cooldown (see StarterPacks.cooldownRemainingSeconds).
+    private final List<DataSlot> packCooldownSeconds = new ArrayList<>();
 
     // Client-side reconstruction from the network packet; slot 0's real contents get synced
     // over automatically regardless of which Container backs this local placeholder.
@@ -117,6 +124,7 @@ public class ShopMenu extends AbstractContainerMenu
         this.addDataSlot(this.activeTab);
         this.addDataSlot(this.expandCooldownSeconds);
         this.addDataSlot(this.portalRemainingSeconds);
+        addPackCooldownSlots();
         addSlots(this.container, playerInventory);
     }
 
@@ -130,10 +138,22 @@ public class ShopMenu extends AbstractContainerMenu
         this.addDataSlot(this.activeTab);
         this.addDataSlot(this.expandCooldownSeconds);
         this.addDataSlot(this.portalRemainingSeconds);
+        addPackCooldownSlots();
         refreshBalance();
         refreshCooldown();
         refreshExpedition();
+        refreshPackCooldowns();
         addSlots(blockEntity, playerInventory);
+    }
+
+    private void addPackCooldownSlots()
+    {
+        for (int i = 0; i < StarterPacks.PACKS.size(); i++)
+        {
+            DataSlot slot = DataSlot.standalone();
+            this.packCooldownSeconds.add(slot);
+            this.addDataSlot(slot);
+        }
     }
 
     // Neither is a slot, so nothing pushes them to the client on their own - refresh every
@@ -144,6 +164,7 @@ public class ShopMenu extends AbstractContainerMenu
         refreshBalance();
         refreshCooldown();
         refreshExpedition();
+        refreshPackCooldowns();
         super.broadcastChanges();
     }
 
@@ -163,6 +184,17 @@ public class ShopMenu extends AbstractContainerMenu
     {
         if (this.blockEntity != null && this.blockEntity.getLevel() instanceof ServerLevel serverLevel)
             this.portalRemainingSeconds.set((int) Math.min(Integer.MAX_VALUE, Expedition.portalRemainingSeconds(serverLevel)));
+    }
+
+    private void refreshPackCooldowns()
+    {
+        if (!(this.viewingPlayer instanceof ServerPlayer))
+            return;
+        for (int i = 0; i < StarterPacks.PACKS.size(); i++)
+        {
+            long remaining = StarterPacks.cooldownRemainingSeconds(this.viewingPlayer, StarterPacks.PACKS.get(i).id());
+            this.packCooldownSeconds.get(i).set((int) Math.min(Integer.MAX_VALUE, remaining));
+        }
     }
 
     private void addSlots(Container sellContainer, Inventory playerInventory)
@@ -200,6 +232,11 @@ public class ShopMenu extends AbstractContainerMenu
     public int getPortalRemainingSeconds()
     {
         return this.portalRemainingSeconds.get();
+    }
+
+    public int getPackCooldownSeconds(int packIndex)
+    {
+        return this.packCooldownSeconds.get(packIndex).get();
     }
 
     public Tab getActiveTab()
@@ -256,12 +293,15 @@ public class ShopMenu extends AbstractContainerMenu
         if (id == TAB_BORDER_BUTTON) { setActiveTab(Tab.BORDER); return true; }
         if (id == TAB_BUY_BUTTON) { setActiveTab(Tab.BUY); return true; }
         if (id == TAB_EXPEDITION_BUTTON) { setActiveTab(Tab.EXPEDITION); return true; }
+        if (id == TAB_PACKS_BUTTON) { setActiveTab(Tab.PACKS); return true; }
         if (id == EXPAND_BORDER_BUTTON && player instanceof ServerPlayer serverPlayer)
             return Border.tryExpand(serverPlayer);
         if (id == TELEPORT_BUTTON && player instanceof ServerPlayer
                 && this.blockEntity != null && this.blockEntity.getLevel() instanceof ServerLevel serverLevel)
             return Expedition.openPortal(serverLevel, this.blockEntity.getBlockPos());
-        if (id >= BUY_ITEM_BUTTON_BASE && player instanceof ServerPlayer serverPlayer)
+        if (id >= PACK_CLAIM_BUTTON_BASE && id < PACK_CLAIM_BUTTON_BASE + StarterPacks.PACKS.size() && player instanceof ServerPlayer serverPlayer)
+            return StarterPacks.tryClaim(serverPlayer, StarterPacks.PACKS.get(id - PACK_CLAIM_BUTTON_BASE).id());
+        if (id >= BUY_ITEM_BUTTON_BASE && id < BUY_ITEM_BUTTON_BASE + BUY_OFFERS.size() && player instanceof ServerPlayer serverPlayer)
             return tryBuy(serverPlayer, id - BUY_ITEM_BUTTON_BASE);
         return super.clickMenuButton(player, id);
     }

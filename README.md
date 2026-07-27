@@ -25,6 +25,10 @@ expand the border.
     in a monster wave sized to how many you've already bought.
   - **Buy** — buy a short list of items you can't easily produce early on (sugarcane, cactus,
     lava bucket, water bucket) at a flat price.
+  - **Packs** — free tech-mod starter kits (blocks/machines/power/conduits) for AE2, Mekanism,
+    and EnderIO, an easier on-ramp for players who'd rather skip building up that mod's
+    automation chain from scratch. No cost, but each pack has its own 1-hour cooldown per
+    player.
   - **Explore** — clicking "Open Portal" doesn't teleport you instantly: it opens a portal
     (particle effect, no real block) above that shop block for 30 seconds with one random
     destination up to 10,000 blocks out. Anyone who walks into it before it closes goes there
