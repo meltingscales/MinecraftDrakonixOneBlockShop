@@ -3,6 +3,16 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~Token coin sprite was a flat hue-shifted circle with a plain highlight blob, didn't read as
+  a coin or tie into the mod's theme~~ — `tools/generate_tokens.py`'s `coin_sprite` now shades
+  the fill/rim toward a desaturated metallic tone and stamps a dragon wing (parametric fan of
+  bones from a shoulder point, scalloped bat-wing membrane between them, computed with `math`/
+  trig rather than a hand-placed pixel table) across every denomination's hue. Iterated by
+  rendering upscaled previews and viewing them (no Pillow, still the stdlib `png_writer`) rather
+  than guessing pixel placement blind.
+- ~~`tools/generate_tokens.py` and `tools/generate_expedition_icon.py` had no `justfile` recipe,
+  unlike `generate_modpack.py`'s `modpack-sync`~~ — added `tokens-sync` and
+  `expedition-icon-sync`.
 - ~~Border mob waves spawned on a ring outside the border, where vanilla's `WorldBorder`
   collision (`Entity.collectColliders`, entity-agnostic - confirmed in decompiled source) blocks
   any entity from crossing in, so they could never reach the player~~ — `spawnMobWave` now picks

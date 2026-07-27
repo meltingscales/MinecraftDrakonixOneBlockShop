@@ -28,3 +28,13 @@ modpack-sync:
 # Serves the modpack locally for testing with a packwiz-compatible launcher (e.g. Prism).
 modpack-serve:
     cd modpack && packwiz serve
+
+# Regenerates the 14 token item textures/models/lang/recipes (see tools/generate_tokens.py).
+# Rerun after changing the denomination list or the coin sprite design.
+tokens-sync:
+    python3 tools/generate_tokens.py
+
+# Regenerates the "Expedition" status-effect icon and lang entry (see
+# tools/generate_expedition_icon.py). Rerun if the effect's color or icon design changes.
+expedition-icon-sync:
+    python3 tools/generate_expedition_icon.py
