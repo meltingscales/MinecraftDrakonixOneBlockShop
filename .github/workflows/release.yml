@@ -50,8 +50,36 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Setup Go (for packwiz)
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Install packwiz
+        run: go install github.com/packwiz/packwiz@latest
+
+      - name: Build Prism-compatible modpack (.mrpack)
+        run: |
+          export PATH="$(go env GOPATH)/bin:$PATH"
+          python3 tools/generate_modpack.py
+          # Bundle our own freshly-built jar directly (not a Modrinth listing) - any file under
+          # modpack/ that isn't packwiz's own .pw.toml metadata gets carried straight into the
+          # exported .mrpack's overrides/ folder (Prism unpacks overrides/ verbatim into the
+          # instance's .minecraft/, confirmed against a real export). Copied in after
+          # regenerating dependencies, since generate_modpack.py wipes modpack/mods/ first.
+          cp build/libs/*.jar modpack/mods/
+          MOD_VERSION="$(grep '^mod_version=' gradle.properties | cut -d= -f2)"
+          (cd modpack && packwiz modrinth export -o "../drakonix-one-block-shop-${MOD_VERSION}.mrpack" -y)
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/libs/*.jar
+          files: |
+            build/libs/*.jar
+            *.mrpack
           generate_release_notes: true

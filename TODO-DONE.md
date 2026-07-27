@@ -3,6 +3,16 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~Releases had the mod jar, but nothing a player could actually install in one step~~ —
+  `release.yml` now also builds a `drakonix-one-block-shop-<version>.mrpack` and attaches it to
+  every GitHub Release, importable directly into Prism Launcher (or any Modrinth-pack-compatible
+  launcher). Regenerates `modpack/` the same way CI's `build.yml` validates it, then copies the
+  just-built mod jar into `modpack/mods/` *after* that regeneration (`generate_modpack.py` wipes
+  that folder first) and runs `packwiz modrinth export` - confirmed via a real export that any
+  file under `modpack/` packwiz doesn't recognize as its own `.pw.toml` metadata gets carried
+  straight into the exported `.mrpack`'s `overrides/` folder, which Prism unpacks verbatim into
+  the instance's `.minecraft/` - so this needed no Modrinth listing or hosted download URL for
+  our own mod, just dropping the jar in place before exporting.
 - ~~No real modpack, just a TODO note asking how to approach one~~ — `./modpack/` is a real
   `packwiz` pack (`packwiz init`, NeoForge 1.21.1/21.1.176 to match `gradle.properties`). New
   `tools/generate_modpack.py` regenerates `modpack/mods/*.pw.toml` from `build.gradle`'s

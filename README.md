@@ -100,6 +100,10 @@ currently included (e.g. GregTech CEu Modern).
 committed `modpack/` ever drifts from `build.gradle`. See `TODO.md` for what's still undecided
 (which mods actually belong in a *shipped* pack vs. this dev-convenience list, light questing).
 
+Every [release](#releasing) attaches a ready-to-use `drakonix-one-block-shop-<version>.mrpack`
+alongside the mod jar - download it and use Prism Launcher's "Import from zip" (or drag-and-drop
+onto the instance list) to get the mod plus every dependency in one step, no manual mod-hunting.
+
 ## Releasing
 
 `gradle.properties`' `mod_version` is the single source of truth for the mod's version. To cut
