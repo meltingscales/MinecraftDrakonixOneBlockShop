@@ -239,6 +239,15 @@ dependencies {
     // minecraft in [1.21,1.22), both satisfied by our pins.
     localRuntime "maven.modrinth:yEX3Y3na:1.5.31-neoforge-1.21.x"
 
+    // Dev-only QoL, upgradeable backpacks with their own inventory tabs/filters/auto-sort -
+    // useful given this mod's whole loop is fetch-and-carry (Sell trips, Explore-tab
+    // expeditions). Hard-requires Sophisticated Core (its own shared library, not obvious from
+    // this mod's own Modrinth page - only surfaced via its declared Modrinth dependency list).
+    // No version-number collision for either (both unique to this neoforge build). Both need
+    // neoforge>=21.1.0, satisfied by our neo_version (21.1.176).
+    localRuntime "maven.modrinth:sophisticated-core:1.21.1-1.4.80.2194"
+    localRuntime "maven.modrinth:sophisticated-backpacks:1.21.1-3.25.73.2020"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"

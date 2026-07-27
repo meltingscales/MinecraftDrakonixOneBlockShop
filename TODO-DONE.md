@@ -3,6 +3,14 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Added Sophisticated Backpacks (upgradeable backpacks with their own inventory tabs/filters/
+  auto-sort - fits this mod's fetch-and-carry loop) plus its hard-required Sophisticated Core
+  shared library, which isn't obvious from Sophisticated Backpacks' own Modrinth page - only
+  surfaced via its declared Modrinth dependency list. Both need neoforge>=21.1.0, satisfied; no
+  version-number collisions. Synced via `just modpack-sync` (19 mods total now). The boot-test
+  for this one only got as far as confirming all 19 mods load/render cleanly (textures, shaders,
+  mixins, no errors) - it never confirmed reaching an actual world join within the wait window,
+  so unlike prior additions this wasn't verified end-to-end at the "joined the game" checkpoint.
 - ~~ProjectE was requested as a dev-runtime mod~~ — the real ProjectE (and every fork/
   continuation checked) has no Modrinth listing at all, not just missing this version - confirmed
   by slug lookup, search, and a search by its original author (sinkillerj); likely
