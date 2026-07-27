@@ -3,6 +3,19 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~Playtest report: shift-clicking a sellable item into the Sell slot could rarely delete tokens
+  from inventory or leave a smaller balance than expected~~ — root cause: `ShopMenu.
+  quickMoveStack`'s post-transfer cleanup (`slot.set(ItemStack.EMPTY)` on the shift-click's
+  source slot) ran *after* `moveItemStackTo` had already synchronously triggered the sale
+  (`ShopBlockEntity.setItem` -> `trySell` -> `Wallet.add`), and `Wallet.add` clears+remints every
+  token stack in the player's inventory by index (`removeAllTokens`/`mint`) as part of its
+  design (see "Token currency" in README.md). If `mint`'s `Inventory.add` happened to reuse the
+  exact slot the shift-click was clearing out from, the unconditional `slot.set(EMPTY)`
+  afterward destroyed the just-minted tokens the instant after they were paid out - only
+  reproducible when the timing/slot layout lined up, matching the "rarely" in the report. Fixed
+  by only clearing that slot if it still holds the same `ItemStack` instance the shift-click
+  started with (reference equality) - if `Wallet.add`'s remint already replaced it with a new
+  stack, leave it alone instead of clobbering.
 - ~~GeOre's ore geode clusters only dropped their real item with Silk Touch equipped, a lesser
   "shard" otherwise (same pattern as vanilla's Amethyst Cluster) - didn't fit this mod's own
   "sell raw resources" economy well~~ — `tools/generate_geore_overrides.py` (`just

@@ -272,7 +272,18 @@ public class ShopMenu extends AbstractContainerMenu
             }
 
             if (moved.isEmpty())
-                slot.set(ItemStack.EMPTY);
+            {
+                // Not just slot.set(ItemStack.EMPTY) unconditionally: selling a stack into slot 0
+                // above runs ShopBlockEntity.setItem -> trySell -> Wallet.add synchronously, and
+                // Wallet.add clears+remints every token stack in the player's own inventory by
+                // index (see Wallet.removeAllTokens/mint) as a side effect - while this shift-
+                // click is still mid-flight. If that remint happens to reuse this exact slot
+                // index for a freshly-minted token stack, blindly clearing it here would destroy
+                // those tokens the instant after they were paid out. Only clear if this slot
+                // still holds the same (now fully moved) stack we started with.
+                if (slot.getItem() == moved)
+                    slot.set(ItemStack.EMPTY);
+            }
             else
                 slot.setChanged();
         }
