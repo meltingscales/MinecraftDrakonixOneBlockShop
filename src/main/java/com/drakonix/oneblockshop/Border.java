@@ -63,7 +63,17 @@ public final class Border
     private static final int WAVE_BASE_SIZE = 2;
     private static final int WAVE_SIZE_PER_PURCHASE = 1;
     private static final int WAVE_MAX_SIZE = 12;
-    private static final double WAVE_RING_MARGIN = 3.0;
+    // Below this, there's nowhere to land a mob without it spawning right on top of the player -
+    // "6x6" per the request, but border sizes only ever land on odd numbers (1, 3, 5, 7, ...),
+    // so this effectively means the first eligible size is 7.
+    private static final double WAVE_MIN_BORDER_SIZE = 6.0;
+    // Vanilla's own WorldBorder collision (Entity.collectColliders, confirmed in decompiled
+    // source) blocks ANY entity from crossing it, not just players - a wave spawned just outside
+    // the border (the old approach here) could physically never reach the player, it would just
+    // stand there uselessly. Spawn inside instead, far enough from the player's current position
+    // that a wave "appearing" doesn't mean spawning adjacent to them.
+    private static final double WAVE_MIN_DISTANCE_FROM_PLAYER = 3.0;
+    private static final int WAVE_SPAWN_ATTEMPTS = 10;
     private static final List<EntityType<? extends Monster>> WAVE_MOBS =
             List.of(EntityType.ZOMBIE, EntityType.SKELETON, EntityType.SPIDER);
 
@@ -187,24 +197,42 @@ public final class Border
     {
         if (!(player.level() instanceof ServerLevel level))
             return;
+        if (border.getSize() <= WAVE_MIN_BORDER_SIZE)
+            return;
 
         int waveSize = Math.min(WAVE_MAX_SIZE, WAVE_BASE_SIZE + purchaseCountBefore * WAVE_SIZE_PER_PURCHASE);
-        double radius = border.getSize() / 2.0 + WAVE_RING_MARGIN;
+        double halfSize = border.getSize() / 2.0;
         RandomSource random = level.getRandom();
+        int spawned = 0;
 
         for (int i = 0; i < waveSize; i++)
         {
-            double angle = random.nextDouble() * Math.PI * 2.0;
-            int x = (int) Math.round(border.getCenterX() + Math.cos(angle) * radius);
-            int z = (int) Math.round(border.getCenterZ() + Math.sin(angle) * radius);
-            BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(x, 0, z));
+            BlockPos surface = null;
+            for (int attempt = 0; attempt < WAVE_SPAWN_ATTEMPTS; attempt++)
+            {
+                int x = (int) Math.round(border.getCenterX() + (random.nextDouble() * 2.0 - 1.0) * halfSize);
+                int z = (int) Math.round(border.getCenterZ() + (random.nextDouble() * 2.0 - 1.0) * halfSize);
+                BlockPos candidate = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(x, 0, z));
+                if (candidate.distSqr(player.blockPosition()) >= WAVE_MIN_DISTANCE_FROM_PLAYER * WAVE_MIN_DISTANCE_FROM_PLAYER)
+                {
+                    surface = candidate;
+                    break;
+                }
+            }
+            // A cramped border (just past WAVE_MIN_BORDER_SIZE) may not have room for every
+            // mob in the wave to land far enough away - skip that one rather than spawn it on
+            // top of the player.
+            if (surface == null)
+                continue;
 
             EntityType<? extends Monster> type = WAVE_MOBS.get(random.nextInt(WAVE_MOBS.size()));
             type.spawn(level, surface, MobSpawnType.EVENT);
+            spawned++;
         }
 
-        player.sendSystemMessage(Component.literal(
-                "A wave of " + waveSize + " monsters closes in on your new border!").withStyle(ChatFormatting.RED));
+        if (spawned > 0)
+            player.sendSystemMessage(Component.literal(
+                    "A wave of " + spawned + " monsters appears inside your border!").withStyle(ChatFormatting.RED));
     }
 
     // Growing the one shared WorldBorder is the only mixin-free way to let a player on an

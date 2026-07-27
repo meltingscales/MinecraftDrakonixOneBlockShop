@@ -3,6 +3,21 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~Border mob waves spawned on a ring outside the border, where vanilla's `WorldBorder`
+  collision (`Entity.collectColliders`, entity-agnostic - confirmed in decompiled source) blocks
+  any entity from crossing in, so they could never reach the player~~ — `spawnMobWave` now picks
+  random points *inside* the border instead, at least `WAVE_MIN_DISTANCE_FROM_PLAYER` (3 blocks)
+  from the player, retrying up to `WAVE_SPAWN_ATTEMPTS` (10) times per mob and skipping that mob
+  if no spot qualifies. Also skips the wave entirely below `WAVE_MIN_BORDER_SIZE` (6) - border
+  sizes only land on odd numbers, so 7x7 is the first size waves actually fire at, since a smaller
+  border doesn't leave room to land a mob away from the player.
+- ~~VeinMiner's `mustSneak` defaulted to `false`, so a normal punch on any connected ore vein
+  (e.g. a GregTech ore patch) silently vein-mined the whole thing~~ — `modpack/config/Veinminer/
+  settings.json` now ships as a modpack override with `mustSneak: true` pre-set (packwiz bundles
+  any non-`.pw.toml` file under the pack root into the exported `.mrpack`'s `overrides/`, which
+  Prism unpacks into the instance's `.minecraft/`) - schema copied from the mod's own generated
+  default (booted a dev client once to capture it) rather than guessed, only that one field
+  flipped.
 - ~~Releases had the mod jar, but nothing a player could actually install in one step~~ —
   `release.yml` now also builds a `drakonix-one-block-shop-<version>.mrpack` and attaches it to
   every GitHub Release, importable directly into Prism Launcher (or any Modrinth-pack-compatible

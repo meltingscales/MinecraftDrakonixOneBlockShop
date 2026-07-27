@@ -18,13 +18,6 @@ Tracked against README.md's feature list.
   already links a Modrinth project page), but that's a separate question from what this session
   built (syncing the *dependency* mods only).
 
-- When this mod actually gets bundled into a modpack (not just a dev-only `localRuntime` dep),
-  set VeinMiner's `mustSneak` setting to `true` by default (`/veinminer settings mustSneak
-  true`, or whatever config-pre-seeding the modpack tooling supports) - without it, a normal
-  punch on any connected ore vein (e.g. a GregTech ore patch) silently vein-mines the whole
-  thing and burns tool durability across every block, not just the one you meant to break.
-
-
 ## Not built yet
 
 - **Tech-mod item pipe/pipe-equivalent compatibility** (AE2, IC2, GregTech, Thermal Expansion,
@@ -54,7 +47,10 @@ Tracked against README.md's feature list.
 - Border-expansion mob wave is a fixed mob pool (zombie/skeleton/spider) and a flat linear size
   curve (`WAVE_BASE_SIZE + purchaseCount`, capped) - no scaling by world difficulty, day count,
   or distance from spawn, and no variety beyond those three types. Fine as a first pass; revisit
-  if waves feel same-y at higher expansion counts.
+  if waves feel same-y at higher expansion counts. Spawns land inside the border now (not on an
+  outside ring - vanilla's `WorldBorder` collision blocks any entity from crossing it, so an
+  outside spawn could never reach the player) and only fire once the border is bigger than 6x6,
+  see TODO-DONE.md.
 - `PricingSeedTest` only validates `seed_prices.json`'s structure (parses, item-ID-shaped keys,
   positive prices) - it can't confirm those IDs actually resolve to real items, and it doesn't
   touch the recursive recipe-derived pricing at all. Both need a live `RecipeManager` +
