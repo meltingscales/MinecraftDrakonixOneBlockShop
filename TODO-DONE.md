@@ -3,6 +3,20 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~The defensive double-teleport below (immediate + delayed recheck) didn't fix the reported
+  underground-landing bug - a second real playtest still hit it~~ — replaced the whole
+  forced-teleport-on-respawn approach: `onPlayerRespawn` no longer touches the player's position
+  at all, just lets vanilla's normal respawn stand. A new `onPlayerDeath` (`LivingDeathEvent`,
+  fires on the *old* entity while its position is still valid) records where they died into new
+  `DEATH_X/Y/Z` attachments (separate from `RETURN_X/Y/Z`, which stays the expedition's *origin*
+  at home), and respawning now hands the player an "Expedition Resume Potion" instead - drinking
+  it (`RESUME_EFFECT`, instantaneous) teleports back to that exact death spot. Global state is
+  untouched by death itself (`isAway()`/`END_TICK`/`Border.EXPEDITIONS_ACTIVE` all keep running
+  in the background exactly as if the player just weren't there, same as being logged out except
+  `onPlayerLogout` doesn't apply since they respawned instead of disconnecting) - `RESUME_EFFECT`
+  re-checks `isAway()` at drink time and just prints a chat message and does nothing if the
+  expedition already ended (timed out, `/expedition end`, or the return potion) by then, rather
+  than teleporting into a stale state.
 - ~~Playtest report: dying in a cave expedition landed the player underground below their base
   instead of exactly on `RETURN_X/Y/Z`~~ — never root-caused (leading suspect is some vanilla
   post-respawn positioning step still running after `PlayerRespawnEvent` returns, since the

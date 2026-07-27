@@ -30,6 +30,7 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
@@ -71,24 +72,15 @@ public final class Expedition
     // potion could immediately suck them right back through it. See RETURN_EFFECT/
     // PORTAL_IMMUNITY_EFFECT and the onLevelTick walk-in check below.
     private static final long PORTAL_IMMUNITY_TICKS = 30L * 20L;
-    // A death-respawn teleport landed a player underground below their base once in testing
-    // instead of exactly on RETURN_X/Y/Z - never root-caused (vanilla's own post-respawn
-    // positioning, e.g. an "unstuck from blocks" pass, is the leading suspect, since the return
-    // spot could differ from when the expedition started if the player's built over it since).
-    // Rather than trust a single teleport call made mid-respawn, onPlayerRespawn re-checks and
-    // re-applies RETURN_X/Y/Z a few seconds later too - cheap and idempotent if the first one
-    // actually did stick.
-    private static final long RESPAWN_RECHECK_DELAY_TICKS = 5L * 20L;
-    private static final long NO_RECHECK_PENDING = Long.MIN_VALUE;
 
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, OneBlockShopMod.MODID);
-    // .copyOnDeath() on all five of these: a serializable attachment is NOT copied onto the new
-    // player entity a death/respawn creates by default (only .serialize() alone, which is just
-    // for surviving a chunk unload/server restart on the *same* entity) - without it, dying
+    // .copyOnDeath() on all these: a serializable attachment is NOT copied onto the new player
+    // entity a death/respawn creates by default (only .serialize() alone, which is just for
+    // surviving a chunk unload/server restart on the *same* entity) - without it, dying
     // mid-expedition would silently reset isAway() to false on respawn (the attachment's default
     // value), leaving Border.EXPEDITIONS_ACTIVE permanently incremented (same bug class
-    // onPlayerLogout's watchdog exists for) and losing the "away" status. See onPlayerRespawn.
+    // onPlayerLogout's watchdog exists for) and losing the "away" status.
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Long>> END_TICK = ATTACHMENTS.register(
             "expedition_end_tick", () -> AttachmentType.builder(() -> NOT_ON_EXPEDITION).serialize(Codec.LONG).copyOnDeath().build());
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> RETURN_X = ATTACHMENTS.register(
@@ -99,11 +91,16 @@ public final class Expedition
             "expedition_return_z", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).copyOnDeath().build());
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Integer>> NEXT_WARNING = ATTACHMENTS.register(
             "expedition_next_warning", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).copyOnDeath().build());
-    // Set by onPlayerRespawn, consumed by onPlayerTick - see RESPAWN_RECHECK_DELAY_TICKS above.
-    // No .copyOnDeath(): only ever read/written on an already-respawned (live) player, never
-    // needs to survive a death itself.
-    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Long>> RESPAWN_RECHECK_TICK = ATTACHMENTS.register(
-            "expedition_respawn_recheck_tick", () -> AttachmentType.builder(() -> NO_RECHECK_PENDING).serialize(Codec.LONG).build());
+    // Where the player actually died - captured by onPlayerDeath (fires on the *old*, still-valid
+    // entity) so RESUME_EFFECT can send them back there later. Deliberately separate from
+    // RETURN_X/Y/Z (the expedition's *origin*, at home) - resuming should mean "back to where I
+    // died", not "back to base".
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> DEATH_X = ATTACHMENTS.register(
+            "expedition_death_x", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).copyOnDeath().build());
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> DEATH_Y = ATTACHMENTS.register(
+            "expedition_death_y", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).copyOnDeath().build());
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> DEATH_Z = ATTACHMENTS.register(
+            "expedition_death_z", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).copyOnDeath().build());
 
     // Portal state is ServerLevel-scoped (the overworld), not per-player - only one portal open
     // at a time across the whole server. Ponytail: simplest thing that works for this mod's
@@ -144,6 +141,29 @@ public final class Expedition
                 {
                     if (livingEntity instanceof ServerPlayer player && isAway(player))
                         returnHome(player, true);
+                    return true;
+                }
+            });
+    // Also instantaneous - drinking this sends the player back to exactly where they died, so
+    // they can carry on the same expedition instead of it silently ending. Checks isAway() at
+    // drink time (not just at death) since the expedition may have since expired on its own
+    // (onPlayerTick's normal timeout) or been ended manually (/expedition end, the return
+    // potion) - in either case there's nothing to resume, so this just says so and does nothing,
+    // rather than teleporting into a stale/out-of-sync state.
+    public static final DeferredHolder<MobEffect, MobEffect> RESUME_EFFECT = EFFECTS.register(
+            "expedition_resume", () -> new InstantenousMobEffect(MobEffectCategory.BENEFICIAL, 0x55FFAA)
+            {
+                @Override
+                public boolean applyEffectTick(LivingEntity livingEntity, int amplifier)
+                {
+                    if (livingEntity instanceof ServerPlayer player)
+                    {
+                        if (isAway(player))
+                            player.teleportTo(player.getData(DEATH_X), player.getData(DEATH_Y), player.getData(DEATH_Z));
+                        else
+                            player.sendSystemMessage(Component.literal(
+                                    "That expedition has already ended.").withStyle(ChatFormatting.RED));
+                    }
                     return true;
                 }
             });
@@ -371,6 +391,21 @@ public final class Expedition
         return potion;
     }
 
+    // Given on death instead of forcing a teleport (a forced respawn-time teleport turned out
+    // unreliable in practice - see TODO.md). The player just respawns normally; drinking this
+    // sends them back to their death spot (RESUME_EFFECT), checking the expedition's still valid
+    // at that moment rather than assuming it still is.
+    private static ItemStack resumePotion(ServerPlayer player)
+    {
+        ItemStack potion = new ItemStack(Items.POTION);
+        potion.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.empty(), List.of(
+                new MobEffectInstance(RESUME_EFFECT, 1, 0))));
+        potion.set(DataComponents.ITEM_NAME, Component.translatable("item.drakonixoneblockshop.expedition_resume_potion"));
+        EnchantmentHelper.updateEnchantments(potion, mutable ->
+                mutable.set(player.level().registryAccess().holderOrThrow(OneBlockShopMod.UNSELLABLE), 1));
+        return potion;
+    }
+
     // For /drakonixoneblockshop devcheat expedition teleport - skips the portal (roll + walk-in)
     // entirely, straight to the same "you're now away" state a real portal entry produces.
     public static boolean devTeleport(ServerPlayer player)
@@ -438,17 +473,6 @@ public final class Expedition
     {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.level().isClientSide)
             return;
-
-        // Runs even after isAway() has already gone false (returnHome clears that but never
-        // touches RETURN_X/Y/Z) - a pending recheck means onPlayerRespawn's own teleport might
-        // not have stuck, so re-apply the same destination once more here.
-        long recheckTick = player.getData(RESPAWN_RECHECK_TICK);
-        if (recheckTick != NO_RECHECK_PENDING && player.level().getGameTime() >= recheckTick)
-        {
-            player.setData(RESPAWN_RECHECK_TICK, NO_RECHECK_PENDING);
-            player.teleportTo(player.getData(RETURN_X), player.getData(RETURN_Y), player.getData(RETURN_Z));
-        }
-
         if (!isAway(player))
             return;
 
@@ -499,25 +523,37 @@ public final class Expedition
             returnHome(player, false);
     }
 
-    // Dying mid-expedition should send the player back to where they left from, not wherever
-    // vanilla's own bed/anchor/world-spawn logic would otherwise put them - fires after vanilla
-    // has already repositioned the (new, respawned) player entity, so this just overrides that
-    // with the real return point. Relies on END_TICK/RETURN_X/Y/Z surviving onto the new entity
-    // via .copyOnDeath() above; without that, isAway() here would already be back to its default
-    // (false) and this would never fire.
+    // Captures exactly where a player died (their own bounding position, still valid here - this
+    // fires on the *old* entity before it's replaced) so RESUME_EFFECT can send them back to it
+    // later. Deliberately doesn't touch isAway()/END_TICK/Border.EXPEDITIONS_ACTIVE at all - the
+    // expedition just keeps running in the background exactly as if the player were still there,
+    // same as if they'd logged out (except onPlayerLogout still applies if they then disconnect
+    // instead of respawning).
+    @SubscribeEvent
+    public static void onPlayerDeath(LivingDeathEvent event)
+    {
+        if (!(event.getEntity() instanceof ServerPlayer player) || !isAway(player))
+            return;
+        player.setData(DEATH_X, player.getX());
+        player.setData(DEATH_Y, player.getY());
+        player.setData(DEATH_Z, player.getZ());
+    }
+
+    // A forced teleport straight out of the respawn event turned out unreliable in practice (see
+    // TODO.md) - instead, just let vanilla's normal respawn stand, and hand the player a potion
+    // that sends them back to their death spot on demand. isAway() still reads correctly here
+    // thanks to END_TICK's .copyOnDeath() - the expedition itself was never touched by dying, so
+    // there's nothing to "resume" in the data model, only in where the player physically is.
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event)
     {
         if (event.getEntity() instanceof ServerPlayer player && isAway(player))
         {
-            returnHome(player, false);
-            // Belt-and-suspenders: re-apply the same teleport a few seconds from now too, in case
-            // something later in vanilla's own respawn handling (still in flight at this exact
-            // point) repositions the player again after this event returns - see
-            // RESPAWN_RECHECK_DELAY_TICKS.
-            player.setData(RESPAWN_RECHECK_TICK, player.level().getGameTime() + RESPAWN_RECHECK_DELAY_TICKS);
+            player.getInventory().add(resumePotion(player));
             player.sendSystemMessage(Component.literal(
-                    "You died on your expedition - returned to where you left from.").withStyle(ChatFormatting.AQUA));
+                    "You died on your expedition. Drink the potion in your inventory to go back to"
+                            + " where you died, or wait it out - you'll be auto-returned when your"
+                            + " time runs out either way.").withStyle(ChatFormatting.AQUA));
         }
     }
 
