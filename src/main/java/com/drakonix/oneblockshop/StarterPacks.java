@@ -3,14 +3,19 @@ package com.drakonix.oneblockshop;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.mojang.serialization.Codec;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -23,7 +28,20 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 // grind of building up that mod's automation chain from scratch by hand.
 public final class StarterPacks
 {
-    public record PackItem(String itemId, int count) {}
+    // conduitType is null for a plain item; set (to e.g. "enderio:energy") for an EnderIO
+    // conduit, which needs special handling - see enderioConduit().
+    public record PackItem(String itemId, int count, String conduitType)
+    {
+        public static PackItem item(String itemId, int count)
+        {
+            return new PackItem(itemId, count, null);
+        }
+
+        public static PackItem enderioConduit(String conduitType, int count)
+        {
+            return new PackItem("enderio:conduit", count, conduitType);
+        }
+    }
 
     public record Pack(String id, String label, List<PackItem> items) {}
 
@@ -36,14 +54,14 @@ public final class StarterPacks
     // being added here, not guessed.
     public static final List<Pack> PACKS = List.of(
             new Pack("ae2", "Applied Energistics 2", List.of(
-                    new PackItem("ae2:controller", 1),
-                    new PackItem("ae2:drive", 1),
-                    new PackItem("ae2:interface", 1),
-                    new PackItem("ae2:crafting_terminal", 1),
-                    new PackItem("ae2:cable_energy_acceptor", 1),
-                    new PackItem("ae2:energy_cell", 2),
-                    new PackItem("ae2:item_storage_cell_1k", 4),
-                    new PackItem("ae2:fluix_smart_cable", 8))),
+                    PackItem.item("ae2:controller", 1),
+                    PackItem.item("ae2:drive", 1),
+                    PackItem.item("ae2:interface", 1),
+                    PackItem.item("ae2:crafting_terminal", 1),
+                    PackItem.item("ae2:cable_energy_acceptor", 1),
+                    PackItem.item("ae2:energy_cell", 2),
+                    PackItem.item("ae2:item_storage_cell_1k", 4),
+                    PackItem.item("ae2:fluix_smart_cable", 8))),
             // Modern Mekanism (10.x) no longer ships a dedicated power-generator block - the old
             // Heat/Solar/Bio/Wind Generators were cut from the mod years ago (confirmed: no
             // "generator" or "solar panel" block anywhere in this version's lang data). Basic
@@ -51,27 +69,29 @@ public final class StarterPacks
             // system, real Mekanism blocks) are the closest substitutes - several different real
             // energy machines, just storage/buffering rather than generation.
             new Pack("mekanism", "Mekanism", List.of(
-                    new PackItem("mekanism:enrichment_chamber", 1),
-                    new PackItem("mekanism:crusher", 1),
-                    new PackItem("mekanism:basic_energy_cube", 1),
-                    new PackItem("mekanism:basic_induction_cell", 1),
-                    new PackItem("mekanism:basic_induction_provider", 1),
-                    new PackItem("mekanism:basic_universal_cable", 8))),
+                    PackItem.item("mekanism:enrichment_chamber", 1),
+                    PackItem.item("mekanism:crusher", 1),
+                    PackItem.item("mekanism:basic_energy_cube", 1),
+                    PackItem.item("mekanism:basic_induction_cell", 1),
+                    PackItem.item("mekanism:basic_induction_provider", 1),
+                    PackItem.item("mekanism:basic_universal_cable", 8))),
             // EnderIO's conduits are all one shared "enderio:conduit" item, typed via a
-            // mod-specific data component set at craft time (confirmed in its recipe JSON) -
-            // granting a correctly-typed one needs that component, which this mod has no
-            // compile-time handle on since EnderIO isn't a real dependency (the same open
-            // problem TODO.md already tracks for EnderIO's item pipes). Skips a conduit entry
-            // rather than hand out a blank/untyped one.
+            // mod-specific data component (confirmed in its recipe JSON: result "id" is always
+            // "enderio:conduit", with a "components": {"enderio:conduit": "enderio:<type>"}
+            // entry picking the type) rather than being separate items - see enderioConduit().
             new Pack("enderio", "EnderIO", List.of(
-                    new PackItem("enderio:alloy_smelter", 1),
-                    new PackItem("enderio:sag_mill", 1),
-                    new PackItem("enderio:stirling_generator", 1),
+                    PackItem.item("enderio:alloy_smelter", 1),
+                    PackItem.item("enderio:sag_mill", 1),
+                    PackItem.item("enderio:stirling_generator", 1),
                     // Base tier of EnderIO's real solar generator block (its tooltip literally
                     // reads "Solar Power!") - "pulsating"/"vibrant" are higher alloy tiers above
                     // this "energetic" one, same naming convention as its other machine tiers.
-                    new PackItem("enderio:energetic_photovoltaic_module", 4),
-                    new PackItem("enderio:basic_capacitor_bank", 1))));
+                    PackItem.item("enderio:energetic_photovoltaic_module", 4),
+                    PackItem.item("enderio:basic_capacitor_bank", 1),
+                    PackItem.enderioConduit("enderio:energy", 8),
+                    PackItem.enderioConduit("enderio:item", 8),
+                    PackItem.enderioConduit("enderio:fluid", 8),
+                    PackItem.enderioConduit("enderio:redstone", 8))));
 
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, OneBlockShopMod.MODID);
@@ -118,14 +138,66 @@ public final class StarterPacks
 
         for (PackItem entry : pack.items())
         {
-            ResourceLocation id = ResourceLocation.parse(entry.itemId());
-            if (!BuiltInRegistries.ITEM.containsKey(id))
-                continue; // that tech mod isn't installed on this server - skip rather than crash
-            Item item = BuiltInRegistries.ITEM.get(id);
-            ItemStack stack = new ItemStack(item, entry.count());
+            ItemStack stack = entry.conduitType() != null
+                    ? enderioConduit(player.level().registryAccess(), entry.conduitType(), entry.count())
+                    : plainItem(entry.itemId(), entry.count());
+            if (stack.isEmpty())
+                continue; // that tech mod (or conduit type) isn't installed/available - skip rather than crash
             if (!player.getInventory().add(stack))
                 player.drop(stack, false);
         }
         return true;
+    }
+
+    private static ItemStack plainItem(String itemId, int count)
+    {
+        ResourceLocation id = ResourceLocation.parse(itemId);
+        if (!BuiltInRegistries.ITEM.containsKey(id))
+            return ItemStack.EMPTY; // that tech mod isn't installed on this server
+        return new ItemStack(BuiltInRegistries.ITEM.get(id), count);
+    }
+
+    // EnderIO's own registry for conduit types, confirmed by decompiling the class that
+    // registers it (com.enderio.conduits.api.EnderIOConduitsRegistries$Keys.CONDUIT ->
+    // ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath("enderio",
+    // "conduit"))) - same id as the data component below, different concept (one's the
+    // registry of conduit *types*, the other's the per-stack component that names one).
+    private static final ResourceLocation ENDERIO_CONDUIT_ID = ResourceLocation.fromNamespaceAndPath("enderio", "conduit");
+    private static final ResourceKey<Registry<Object>> ENDERIO_CONDUIT_REGISTRY = ResourceKey.createRegistryKey(ENDERIO_CONDUIT_ID);
+
+    // EnderIO's conduit item ("enderio:conduit") only becomes a specific conduit type (energy,
+    // item, fluid, redstone, ...) via a data component whose value is a Holder into the registry
+    // above (confirmed the same way - the component's declared generic signature is
+    // DataComponentType<Holder<Conduit<?>>>). Neither type is on this mod's compile classpath
+    // (EnderIO isn't a real dependency), so this works entirely through the runtime registries -
+    // BuiltInRegistries.DATA_COMPONENT_TYPE for the component itself, then an unchecked generic
+    // set() since we only ever have a raw DataComponentType<?> to work with. Returns
+    // ItemStack.EMPTY (skip, not a broken/blank conduit) if EnderIO isn't installed, its
+    // component/registry ever gets renamed, or conduitTypeId isn't a real entry.
+    @SuppressWarnings("unchecked")
+    private static ItemStack enderioConduit(RegistryAccess registryAccess, String conduitTypeId, int count)
+    {
+        if (!BuiltInRegistries.ITEM.containsKey(ENDERIO_CONDUIT_ID))
+            return ItemStack.EMPTY;
+        DataComponentType<?> componentType = BuiltInRegistries.DATA_COMPONENT_TYPE.get(ENDERIO_CONDUIT_ID);
+        if (componentType == null)
+            return ItemStack.EMPTY;
+
+        Registry<Object> conduitRegistry;
+        try
+        {
+            conduitRegistry = registryAccess.registryOrThrow(ENDERIO_CONDUIT_REGISTRY);
+        }
+        catch (IllegalStateException e)
+        {
+            return ItemStack.EMPTY;
+        }
+        Optional<Holder.Reference<Object>> conduitType = conduitRegistry.getHolder(ResourceLocation.parse(conduitTypeId));
+        if (conduitType.isEmpty())
+            return ItemStack.EMPTY;
+
+        ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(ENDERIO_CONDUIT_ID), count);
+        stack.set((DataComponentType<Object>) componentType, conduitType.get());
+        return stack;
     }
 }

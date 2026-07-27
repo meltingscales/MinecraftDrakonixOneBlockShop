@@ -3,6 +3,23 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~The EnderIO starter pack skipped conduits entirely - granting a plain `enderio:conduit` item
+  would've been a blank/untyped "<MISSING> Conduit" since EnderIO's conduits are all one shared
+  item typed via a mod-specific data component set at craft time, and this mod has no
+  compile-time handle on EnderIO's classes to construct that component~~ — decompiled EnderIO's
+  actual registration classes to solve it for real instead of working around it: the component
+  (`enderio:conduit`) holds a `Holder` into EnderIO's own `Registry<Conduit<?>>` (registry key,
+  same id, confirmed via `EnderIOConduitsRegistries$Keys.CONDUIT`), so `StarterPacks.
+  enderioConduit` looks up the `DataComponentType` via `BuiltInRegistries.DATA_COMPONENT_TYPE`
+  and the registry via `RegistryAccess.registryOrThrow` at runtime, then sets the component with
+  an unchecked generic cast (`ItemStack.set` needs a real type parameter this mod doesn't have
+  compile-time access to) - a legitimate, if unusual, interop pattern since Java generics are
+  fully erased at runtime. All four conduit-type entry ids (`enderio:energy`/`item`/`fluid`/
+  `redstone`) were confirmed the same way every other pack item was - extracted from the real
+  pinned jar's recipe JSON, not guessed. Boot-tested clean with the real EnderIO version loaded,
+  but the actual claim-and-render path (clicking "Claim: EnderIO" and inspecting the resulting
+  conduit item) couldn't be interactively verified - no computer-use tool for the game window -
+  worth a real playtest to confirm it displays/behaves as a proper typed conduit.
 - Border.initIfNeeded now also sets `mobGriefing` to `false` on first join, alongside the
   existing `keepInventory` - same fairness reasoning: a creeper/enderman griefing the 1-block
   starting border (or whatever's been built up since) is a much bigger deal than on a normal

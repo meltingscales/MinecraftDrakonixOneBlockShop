@@ -36,6 +36,11 @@ Tracked against README.md's feature list.
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
+- `StarterPacks.enderioConduit`'s generic runtime interop with EnderIO's `Conduit` registry
+  (see TODO-DONE.md) boot-tests clean but hasn't been interactively verified - no computer-use
+  tool for the game window to actually click "Claim: EnderIO" and inspect the resulting item.
+  Should read as a properly-typed conduit (Energy/Item/Fluid/Redstone Conduit) rather than a
+  blank "<MISSING> Conduit" - worth a real playtest to confirm before trusting it fully.
 - Dying more than once on the same expedition before drinking any Expedition Resume Potion
   leaves the older potions in inventory pointing at the *newest* death spot, not the one they
   were handed at (`DEATH_X/Y/Z` is a single per-player attachment overwritten by each death, not
