@@ -43,6 +43,9 @@ public final class Expedition
     static final int RANGE = 10_000;
     private static final long DURATION_TICKS = 10L * 60L * 20L;
     private static final long PORTAL_DURATION_TICKS = 30L * 20L;
+    // How often the vanilla potion-icon countdown gets forced back in sync with END_TICK - see
+    // onPlayerTick.
+    private static final long RESYNC_INTERVAL_TICKS = 5L * 20L;
     // Countdown warnings before auto-return, seconds remaining, descending - each fires once as
     // the remaining time crosses it.
     private static final int[] WARNING_SECONDS = {300, 180, 120, 60};
@@ -337,6 +340,19 @@ public final class Expedition
         {
             returnHome(player, true);
             return;
+        }
+
+        // Forces the vanilla potion-icon countdown back in sync with END_TICK. Needed because
+        // MobEffectInstance.update() (what addEffect uses to merge with an existing instance of
+        // the same effect) only ever extends a duration, never shrinks it - so anything that
+        // moves END_TICK earlier without touching the applied effect directly (devcheat's
+        // fastforward, an admin /effect command, milk bucket or death wiping the effect
+        // entirely) would otherwise leave the visible icon wrong indefinitely. Remove-then-
+        // reapply forces an exact match regardless of which direction it drifted.
+        if (player.level().getGameTime() % RESYNC_INTERVAL_TICKS == 0L)
+        {
+            player.removeEffect(EFFECT);
+            player.addEffect(new MobEffectInstance(EFFECT, (int) remainingTicks, 0, false, true));
         }
 
         long remainingSeconds = (remainingTicks + 19L) / 20L;

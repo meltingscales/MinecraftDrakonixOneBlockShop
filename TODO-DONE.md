@@ -3,6 +3,15 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~The "Expedition" potion-icon countdown could drift out of sync with the real `END_TICK` -
+  e.g. `devcheat expedition fastforward` moving the return time earlier, an admin `/effect`
+  command, or milk bucket/death wiping the applied effect entirely while `isAway()` still says
+  yes~~ — `onPlayerTick` now force-resyncs every 5 seconds (`RESYNC_INTERVAL_TICKS`):
+  `removeEffect` then `addEffect` with the exact remaining duration recomputed from `END_TICK`.
+  Plain `addEffect` alone wouldn't have fixed the "moved earlier" cases -
+  `MobEffectInstance.update()` (confirmed in decompiled source) only ever extends a duration
+  when merging with an existing instance of the same effect, never shrinks it - so
+  remove-then-reapply is what actually guarantees an exact match in both directions.
 - ~~No way to test Expedition/hopper-report/border-wave/portal timing without waiting out their
   real timers~~ — added `/drakonixoneblockshop devcheat` (op-only, alongside
   `balance`/`border`/`starterkit`): `expedition teleport` (skips the portal, straight to
