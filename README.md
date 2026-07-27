@@ -29,17 +29,20 @@ expand the border.
     and EnderIO, an easier on-ramp for players who'd rather skip building up that mod's
     automation chain from scratch. No cost, but each pack has its own 1-hour cooldown per
     player.
-  - **Explore** — clicking "Open Portal" doesn't teleport you instantly: it opens a portal
-    (particle effect, no real block) above that shop block for 30 seconds with one random
-    destination up to 10,000 blocks out. Anyone who walks into it before it closes goes there
-    together - a free team trip if more than one of you is nearby, purely by walking in at the
-    same time, no separate team button or setup needed. Each traveler still gets their own
-    10-minute stay and personal auto-return to wherever they individually left from, with
-    chat/GUI warnings at 5, 3, 2, and 1 minute(s) left; can't walk into another portal while
-    you're still away. Lands on the surface most of the time, but has a chance of dropping you
-    into a cave instead - resource gathering shouldn't only mean overworld terrain. An
-    "Expedition" status effect for the trip's duration (hover it for a tooltip explaining why)
-    blocks placing a new shop block while you're away.
+  - **Explore** — "Open Portal" and "Open Portal (Cave Only)" don't teleport you instantly:
+    each opens a portal (particle effect, no real block) above that shop block for 30 seconds
+    with one random destination up to 10,000 blocks out, rerolled if it would land in an ocean.
+    Anyone who walks into it before it closes goes there together - a free team trip if more
+    than one of you is nearby, purely by walking in at the same time, no separate team button or
+    setup needed. Each traveler still gets their own 10-minute stay and personal auto-return to
+    wherever they individually left from, with chat/GUI warnings at 5, 3, 2, and 1 minute(s)
+    left; can't walk into another portal while you're still away. The normal button lands on the
+    surface most of the time with a chance of dropping you into a (dry - never underwater) cave
+    instead; the Cave Only button always finds one. An "Expedition" status effect for the trip's
+    duration (hover it for a tooltip explaining why) blocks placing a new shop block while you're
+    away. You also get an unsellable potion on arrival - drink it any time to come back early
+    instead of typing a command; it also grants 30 seconds of immunity to being pulled back
+    through a still-open portal, since it returns you to right where you left from.
 - Hopper items into the shop block to auto-sell them. Every 5 minutes you get a chat report
   prefixed `[Drakonix Shop]` of what your hopper automation sold (or "No hopper automation" if
   none sold anything) - the prefix makes it obvious which mod that recurring message is from.

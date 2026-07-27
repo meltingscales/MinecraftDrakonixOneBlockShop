@@ -32,6 +32,8 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     private static final int PACKS_SUBINFO_Y = 46;
     private static final int PACKS_ACTION_Y = 58;
     private static final int PACKS_ROW_HEIGHT = 22;
+    // Explore tab's second (cave-only) button sits right below the normal one.
+    private static final int EXPEDITION_CAVE_ACTION_Y = ACTION_Y + 22;
 
     // The buy grid's row count depends on however many offers are in pricing/buy_offers.json,
     // so the player inventory (and the whole GUI) is sized to fit it rather than a fixed guess -
@@ -52,6 +54,7 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     private Button packsTabButton;
     private Button expandButton;
     private Button teleportButton;
+    private Button teleportCaveButton;
     private final List<Button> buyButtons = new ArrayList<>();
     private final List<Button> packButtons = new ArrayList<>();
 
@@ -83,6 +86,8 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
                 .bounds(this.leftPos + 8, this.topPos + BORDER_ACTION_Y, 160, 20).build());
         this.teleportButton = addRenderableWidget(Button.builder(Component.literal("Open Portal"), b -> pressButton(ShopMenu.TELEPORT_BUTTON))
                 .bounds(this.leftPos + 8, this.topPos + ACTION_Y, 160, 20).build());
+        this.teleportCaveButton = addRenderableWidget(Button.builder(Component.literal("Open Portal (Cave Only)"), b -> pressButton(ShopMenu.TELEPORT_CAVE_BUTTON))
+                .bounds(this.leftPos + 8, this.topPos + EXPEDITION_CAVE_ACTION_Y, 160, 20).build());
 
         this.buyButtons.clear();
         List<ShopMenu.BuyOffer> offers = ShopMenu.BUY_OFFERS;
@@ -154,6 +159,7 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
         ShopMenu.Tab tab = this.menu.getActiveTab();
         this.expandButton.visible = tab == ShopMenu.Tab.BORDER;
         this.teleportButton.visible = tab == ShopMenu.Tab.EXPEDITION;
+        this.teleportCaveButton.visible = tab == ShopMenu.Tab.EXPEDITION;
         for (Button button : this.buyButtons)
             button.visible = tab == ShopMenu.Tab.BUY;
         for (Button button : this.packButtons)
@@ -188,13 +194,18 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
             int remaining = this.menu.getPortalRemainingSeconds();
             if (remaining > 0)
             {
-                this.teleportButton.setMessage(Component.literal("Portal open (" + formatDuration(remaining) + ") - walk in!"));
+                Component status = Component.literal("Portal open (" + formatDuration(remaining) + ") - walk in!");
+                this.teleportButton.setMessage(status);
                 this.teleportButton.active = false;
+                this.teleportCaveButton.setMessage(status);
+                this.teleportCaveButton.active = false;
             }
             else
             {
                 this.teleportButton.setMessage(Component.literal("Open Portal"));
                 this.teleportButton.active = true;
+                this.teleportCaveButton.setMessage(Component.literal("Open Portal (Cave Only)"));
+                this.teleportCaveButton.active = true;
             }
         }
 

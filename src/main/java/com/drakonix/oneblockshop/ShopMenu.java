@@ -51,6 +51,7 @@ public class ShopMenu extends AbstractContainerMenu
     public static final int TAB_EXPEDITION_BUTTON = 4;
     public static final int TELEPORT_BUTTON = 5;
     public static final int TAB_PACKS_BUTTON = 6;
+    public static final int TELEPORT_CAVE_BUTTON = 7;
     public static final int BUY_ITEM_BUTTON_BASE = 10;
     // Well clear of BUY_ITEM_BUTTON_BASE's range (pricing/buy_offers.json has room to grow) -
     // StarterPacks.PACKS is a short, fixed list so this only ever needs a handful of ids.
@@ -298,7 +299,10 @@ public class ShopMenu extends AbstractContainerMenu
             return Border.tryExpand(serverPlayer);
         if (id == TELEPORT_BUTTON && player instanceof ServerPlayer
                 && this.blockEntity != null && this.blockEntity.getLevel() instanceof ServerLevel serverLevel)
-            return Expedition.openPortal(serverLevel, this.blockEntity.getBlockPos());
+            return Expedition.openPortal(serverLevel, this.blockEntity.getBlockPos(), false);
+        if (id == TELEPORT_CAVE_BUTTON && player instanceof ServerPlayer
+                && this.blockEntity != null && this.blockEntity.getLevel() instanceof ServerLevel serverLevel)
+            return Expedition.openPortal(serverLevel, this.blockEntity.getBlockPos(), true);
         if (id >= PACK_CLAIM_BUTTON_BASE && id < PACK_CLAIM_BUTTON_BASE + StarterPacks.PACKS.size() && player instanceof ServerPlayer serverPlayer)
             return StarterPacks.tryClaim(serverPlayer, StarterPacks.PACKS.get(id - PACK_CLAIM_BUTTON_BASE).id());
         if (id >= BUY_ITEM_BUTTON_BASE && id < BUY_ITEM_BUTTON_BASE + BUY_OFFERS.size() && player instanceof ServerPlayer serverPlayer)

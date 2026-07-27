@@ -1,19 +1,30 @@
 package com.drakonix.oneblockshop;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.mojang.serialization.Codec;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.InstantenousMobEffect;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -54,6 +65,12 @@ public final class Expedition
     private static final double SAFE_BORDER_SIZE = 2.0 * (RANGE + 64) + 1.0;
     private static final long NOT_ON_EXPEDITION = Long.MIN_VALUE;
     private static final long PORTAL_INACTIVE = Long.MIN_VALUE;
+    // Deliberately equal to PORTAL_DURATION_TICKS: returnHome puts the player right back where
+    // they teleported from, which is often still inside (or right next to) the very portal that's
+    // still open - without immunity lasting at least that long, walking away from a drunk return
+    // potion could immediately suck them right back through it. See RETURN_EFFECT/
+    // PORTAL_IMMUNITY_EFFECT and the onLevelTick walk-in check below.
+    private static final long PORTAL_IMMUNITY_TICKS = 30L * 20L;
 
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, OneBlockShopMod.MODID);
@@ -91,6 +108,25 @@ public final class Expedition
     public static final DeferredRegister<MobEffect> EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, OneBlockShopMod.MODID);
     public static final DeferredHolder<MobEffect, MobEffect> EFFECT = EFFECTS.register(
             "expedition", () -> new MobEffect(MobEffectCategory.NEUTRAL, 0x55FFFF) {});
+    // Just a marker, same idiom as EFFECT above - checked in onLevelTick's portal walk-in test so
+    // a player who just drank a return potion can't be immediately sucked back through the still-
+    // open portal they may still be standing in/next to.
+    public static final DeferredHolder<MobEffect, MobEffect> PORTAL_IMMUNITY_EFFECT = EFFECTS.register(
+            "portal_immunity", () -> new MobEffect(MobEffectCategory.BENEFICIAL, 0xAAAAFF) {});
+    // Instantaneous (applies once, immediately, like vanilla's Instant Health) rather than a
+    // regular timed effect - drinking the return potion should end the expedition right away, not
+    // over time. Real vanilla base class (Instant Health/Harm use the same one), not guessed.
+    public static final DeferredHolder<MobEffect, MobEffect> RETURN_EFFECT = EFFECTS.register(
+            "expedition_return", () -> new InstantenousMobEffect(MobEffectCategory.BENEFICIAL, 0x55AAFF)
+            {
+                @Override
+                public boolean applyEffectTick(LivingEntity livingEntity, int amplifier)
+                {
+                    if (livingEntity instanceof ServerPlayer player && isAway(player))
+                        returnHome(player, true);
+                    return true;
+                }
+            });
 
     private Expedition() {}
 
@@ -129,21 +165,12 @@ public final class Expedition
     // From the shop GUI's Teleport button. Rolls one shared destination and opens a portal above
     // the shop block instead of teleporting the clicker immediately - onLevelTick below is what
     // actually moves whoever walks into it. False if a portal's already open somewhere.
-    public static boolean openPortal(ServerLevel overworld, BlockPos shopPos)
+    public static boolean openPortal(ServerLevel overworld, BlockPos shopPos, boolean caveOnly)
     {
         if (isPortalOpen(overworld))
             return false;
 
-        RandomSource random = overworld.getRandom();
-        int x = random.nextInt(RANGE * 2 + 1) - RANGE;
-        int z = random.nextInt(RANGE * 2 + 1) - RANGE;
-        // A random spot this far out is essentially guaranteed to be in an unloaded chunk -
-        // Level.getHeight/getHeightmapPos silently falls back to getMinBuildHeight() (the void
-        // floor) for a chunk that isn't loaded yet, rather than generating it, which is what was
-        // dropping players out of the world. Force it to ChunkStatus.FULL first so the heightmap
-        // reflects real generated terrain.
-        overworld.getChunk(x >> 4, z >> 4);
-        BlockPos destination = rollDestination(overworld, x, z, random);
+        BlockPos destination = rollDestination(overworld, overworld.getRandom(), caveOnly);
 
         overworld.setData(PORTAL_DEST_X, destination.getX() + 0.5);
         overworld.setData(PORTAL_DEST_Y, (double) destination.getY());
@@ -154,17 +181,48 @@ public final class Expedition
     }
 
     // Lands on the surface most of the time, but sometimes drops the traveler into a cave
-    // instead - "resource gathering" should be able to mean ore, not just overworld terrain.
+    // instead (or always, in caveOnly mode) - "resource gathering" should be able to mean ore,
+    // not just overworld terrain.
     private static final double CAVE_CHANCE = 0.35;
+    // Rerolls the whole column if it's ocean ("resource gathering" shouldn't dump you in open
+    // water with nothing to stand on) or, in caveOnly mode, if this particular column just
+    // doesn't have a cave under it. Bounded so a bad RNG streak - or a genuinely all-ocean seed,
+    // or a caveOnly roll over a stretch of world with nothing underground nearby - still
+    // terminates instead of hanging; the last column rolled is used as a fallback rather than
+    // failing outright.
+    private static final int MAX_LOCATION_ATTEMPTS = 20;
 
-    private static BlockPos rollDestination(ServerLevel overworld, int x, int z, RandomSource random)
+    private static BlockPos rollDestination(ServerLevel overworld, RandomSource random, boolean caveOnly)
     {
-        BlockPos surface = overworld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z));
-        if (random.nextDouble() >= CAVE_CHANCE)
-            return surface;
+        BlockPos lastSurface = BlockPos.ZERO;
+        for (int attempt = 0; attempt < MAX_LOCATION_ATTEMPTS; attempt++)
+        {
+            int x = random.nextInt(RANGE * 2 + 1) - RANGE;
+            int z = random.nextInt(RANGE * 2 + 1) - RANGE;
+            // A random spot this far out is essentially guaranteed to be in an unloaded chunk -
+            // Level.getHeight/getHeightmapPos silently falls back to getMinBuildHeight() (the
+            // void floor) for a chunk that isn't loaded yet, rather than generating it, which is
+            // what was dropping players out of the world. Force it to ChunkStatus.FULL first so
+            // the heightmap reflects real generated terrain.
+            overworld.getChunk(x >> 4, z >> 4);
+            BlockPos surface = overworld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z));
+            lastSurface = surface;
+            if (overworld.getBiome(surface).is(BiomeTags.IS_OCEAN))
+                continue;
 
-        BlockPos cave = findCaveLanding(overworld, x, z, surface.getY(), random);
-        return cave != null ? cave : surface;
+            if (!caveOnly)
+            {
+                if (random.nextDouble() >= CAVE_CHANCE)
+                    return surface;
+                BlockPos cave = findCaveLanding(overworld, x, z, surface.getY(), random);
+                return cave != null ? cave : surface;
+            }
+
+            BlockPos cave = findCaveLanding(overworld, x, z, surface.getY(), random);
+            if (cave != null)
+                return cave;
+        }
+        return lastSurface;
     }
 
     // Scans a random column height for an air pocket (room to stand, solid footing below) -
@@ -183,8 +241,12 @@ public final class Expedition
         for (int y = startY; y > minY; y--)
         {
             pos.setY(y);
-            boolean hereOpen = !overworld.getBlockState(pos).blocksMotion();
-            boolean aboveOpen = !overworld.getBlockState(pos.above()).blocksMotion();
+            // blocksMotion() alone isn't enough - water doesn't block motion (vanilla's own
+            // MOTION_BLOCKING heightmap predicate ORs in a fluid check for exactly this reason),
+            // so without also requiring empty fluid state here a flooded underwater cave passage
+            // would look "open" and drop the player straight into open water.
+            boolean hereOpen = !overworld.getBlockState(pos).blocksMotion() && overworld.getFluidState(pos).isEmpty();
+            boolean aboveOpen = !overworld.getBlockState(pos.above()).blocksMotion() && overworld.getFluidState(pos.above()).isEmpty();
             boolean belowSolid = overworld.getBlockState(pos.below()).blocksMotion();
             if (hereOpen && aboveOpen && belowSolid)
                 return pos.immutable();
@@ -237,7 +299,11 @@ public final class Expedition
         double destZ = overworld.getData(PORTAL_DEST_Z);
         for (ServerPlayer player : overworld.players())
         {
-            if (!isAway(player) && isStandingInPortal(player, portalPos))
+            // A player who just drank their return potion carries PORTAL_IMMUNITY_EFFECT for a
+            // while specifically so this check can't immediately grab them again - returnHome
+            // puts them right back where they teleported from, often still inside this very
+            // portal's hitbox.
+            if (!isAway(player) && !player.hasEffect(PORTAL_IMMUNITY_EFFECT) && isStandingInPortal(player, portalPos))
                 enterPortal(player, overworld, destX, destY, destZ);
         }
     }
@@ -256,9 +322,28 @@ public final class Expedition
         // Duration matches DURATION_TICKS so the vanilla potion-icon countdown and this class's
         // own GUI/chat countdown always agree.
         player.addEffect(new MobEffectInstance(EFFECT, (int) DURATION_TICKS, 0, false, true));
+        player.getInventory().add(returnPotion(player));
 
         player.sendSystemMessage(Component.literal(
-                "Through the portal! You'll be returned to base in 10 minutes.").withStyle(ChatFormatting.AQUA));
+                "Through the portal! You'll be returned to base in 10 minutes. Drink the potion in"
+                        + " your inventory to come back early.").withStyle(ChatFormatting.AQUA));
+    }
+
+    // A game-friendly alternative to typing "/drakonixoneblockshop expedition end": drinking this
+    // ends the expedition immediately (RETURN_EFFECT, instantaneous) and grants
+    // PORTAL_IMMUNITY_TICKS of immunity from re-entering a portal (PORTAL_IMMUNITY_EFFECT) so
+    // landing back next to a still-open one can't suck the player straight back through it.
+    // Unsellable, same curse as the starter kit's items, so it can't be sold/hoppered away by
+    // accident while it's still needed.
+    private static ItemStack returnPotion(ServerPlayer player)
+    {
+        ItemStack potion = new ItemStack(Items.POTION);
+        potion.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.empty(), List.of(
+                new MobEffectInstance(RETURN_EFFECT, 1, 0),
+                new MobEffectInstance(PORTAL_IMMUNITY_EFFECT, (int) PORTAL_IMMUNITY_TICKS, 0))));
+        EnchantmentHelper.updateEnchantments(potion, mutable ->
+                mutable.set(player.level().registryAccess().holderOrThrow(OneBlockShopMod.UNSELLABLE), 1));
+        return potion;
     }
 
     // For /drakonixoneblockshop devcheat expedition teleport - skips the portal (roll + walk-in)
@@ -269,11 +354,7 @@ public final class Expedition
             return false;
 
         ServerLevel overworld = player.serverLevel().getServer().overworld();
-        RandomSource random = overworld.getRandom();
-        int x = random.nextInt(RANGE * 2 + 1) - RANGE;
-        int z = random.nextInt(RANGE * 2 + 1) - RANGE;
-        overworld.getChunk(x >> 4, z >> 4);
-        BlockPos destination = rollDestination(overworld, x, z, random);
+        BlockPos destination = rollDestination(overworld, overworld.getRandom(), false);
         enterPortal(player, overworld, destination.getX() + 0.5, destination.getY(), destination.getZ() + 0.5);
         return true;
     }

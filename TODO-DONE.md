@@ -3,6 +3,26 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~Expedition teleports could drop a player in open ocean, or (rarer) in a flooded underwater
+  cave passage, with nothing to stand on~~ — `Expedition.rollDestination` rerolls the whole
+  column (fresh x/z, up to `MAX_LOCATION_ATTEMPTS`) whenever the sampled surface's biome is
+  tagged `BiomeTags.IS_OCEAN`, falling back to the last-rolled column rather than hanging if
+  every attempt somehow lands in ocean. Separately, `findCaveLanding`'s open-space check was
+  `!blocksMotion()` alone, which is true for water (confirmed against vanilla's own
+  `MOTION_BLOCKING` heightmap predicate, which explicitly ORs in a fluid check for exactly this
+  reason) - added an explicit `getFluidState(...).isEmpty()` check so a flooded cave passage no
+  longer counts as valid footing.
+  - Added a second Explore-tab button while touching this code: "Open Portal (Cave Only)"
+    (`ShopMenu.TELEPORT_CAVE_BUTTON`) rerolls columns until one actually has a cave under it,
+    instead of just biasing the normal button's coin-flip toward one.
+  - Also added a game-friendlier way to end an expedition early than the `/drakonixoneblockshop
+    expedition end` command: arriving now also grants an unsellable Potion (real vanilla
+    `PotionContents` with two custom effects, not a hand-rolled item) that instantly ends the
+    trip when drunk (`RETURN_EFFECT`, extends vanilla's own `InstantenousMobEffect` base class -
+    the same one Instant Health/Harm use) and grants `PORTAL_IMMUNITY_EFFECT` for 30 seconds
+    (deliberately equal to `PORTAL_DURATION_TICKS`) so returning right next to a still-open
+    portal can't immediately suck the player back through it - `onLevelTick`'s walk-in check now
+    also requires the absence of that effect.
 - ~~No easier on-ramp for players who don't want to hand-build a tech mod's early automation
   chain~~ — new `StarterPacks.java` + shop GUI "Packs" tab: a free, no-cost bundle of
   useful blocks/machines/power/conduits for AE2, Mekanism, and EnderIO, gated by an
@@ -19,6 +39,14 @@ entries at the top; oldest (original MVP build-out) at the bottom.
   dependency on EnderIO (the same open problem already tracked for EnderIO's item pipes in
   TODO.md), so both packs simply skip the slot they can't fill safely rather than hand out a
   broken/blank item.
+- ~~Expedition teleports could drop a player in open ocean with nothing to stand on~~ —
+  `Expedition.rollDestination` now rerolls the whole column (fresh x/z, up to
+  `MAX_LOCATION_ATTEMPTS`) whenever the sampled surface's biome is tagged `BiomeTags.IS_OCEAN`,
+  falling back to the last-rolled column if every attempt somehow lands in ocean rather than
+  hanging. Also added a "cave only" Explore-tab option while touching this code: a second
+  button (`ShopMenu.TELEPORT_CAVE_BUTTON`) that forces `rollDestination` to keep rerolling
+  columns until one actually has a cave under it, instead of just biasing the coin-flip toward
+  one like the normal button does.
 - Follow-up to the above: AE2's pack gained a Crafting Terminal and four 1k storage cells;
   Mekanism's gained a Basic Induction Cell/Provider pair (its actual modular big-battery
   system - still no true generator block, see above); EnderIO's gained four Energetic

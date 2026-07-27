@@ -20,9 +20,6 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
-- Make sure players don't get teleported to oceans when they go on an Expedition
-  - if they would, just pick a new random point.
-
 - **Tech-mod item pipe/pipe-equivalent compatibility** (AE2, IC2, GregTech, Thermal Expansion,
   EnderIO, etc.) - `ShopBlockEntity` only implements vanilla `WorldlyContainer`, which covers
   hoppers/droppers. Most modern tech mods push items via the NeoForge Capabilities API
