@@ -264,6 +264,19 @@ dependencies {
     // neoforge's version (loaderVersion="*"), only minecraft in [1.21, 1.21.1], satisfied.
     localRuntime "maven.modrinth:lithium:mc1.21.1-0.15.4-neoforge"
 
+    // Dev-only, adds whole new structures (fortresses, dungeons, etc.) with real loot - gives
+    // this mod's Explore-tab teleports (now up to 1,000,000 blocks out, see Config.java) more
+    // worth actually finding. Version number "2.1.68" collides across fabric/neoforge (both
+    // loaders share it) - pinned to the neoforge release's Modrinth version id instead. Needs
+    // neoforge>=21.0.0-beta, satisfied by our neo_version (21.1.176).
+    localRuntime "maven.modrinth:when-dungeons-arise:XIRJSFQ0"
+
+    // Dev-only, points at the nearest structure of a chosen type - pairs well with the above,
+    // since a random Explore-tab teleport plus this means "land somewhere, then find what's
+    // nearby" instead of wandering blind. No version-number collision (unique to this neoforge
+    // build). Needs neoforge>=21.0.0-beta, satisfied.
+    localRuntime "maven.modrinth:explorers-compass:1.21.1-3.4.0-neoforge"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"

@@ -30,6 +30,8 @@ version-pinning rationale next to each line; this file is just the quick-referen
 | [Cloth Config API](https://modrinth.com/mod/cloth-config) | 15.0.140+neoforge | Config-screen library hard-required by Building Wands. |
 | [Building Wands](https://modrinth.com/mod/building-wands) | 3.0.5_beta_neoforge_1.21.1 | Extends a placed block along a line/plane, consuming matching blocks from inventory - less tedious building of long runs. |
 | [Lithium](https://modrinth.com/mod/lithium) | mc1.21.1-0.15.4-neoforge | General game-logic performance optimization (not a rendering mod like Sodium, which is Fabric-only) - the NeoForge port carries the same name, not a rebrand. |
+| [When Dungeons Arise](https://modrinth.com/mod/when-dungeons-arise) | `XIRJSFQ0` (2.1.68) | Adds whole new structures (fortresses, dungeons, etc.) with real loot - gives this mod's Explore-tab teleports more worth actually finding. |
+| [Explorer's Compass](https://modrinth.com/mod/explorers-compass) | 1.21.1-3.4.0-neoforge | Points at the nearest structure of a chosen type - pairs with the above, "land somewhere, then find what's nearby" instead of wandering blind. |
 
 Not added: IC2 (no NeoForge/1.21.1 release exists for any IC2-lineage mod as of writing) and
 Thermal Expansion (last release is 1.20.1 Forge-only). Re-check Modrinth if either ships one.

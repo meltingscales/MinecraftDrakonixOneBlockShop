@@ -13,8 +13,9 @@ expand the border.
 
 ## How it works
 
-- You start with an iron pickaxe, a Drakonix Block Shop item, a guide book, and 4 oak logs,
-  inside a 1x1 world border centered on your spawn point. Straying more than 5 blocks past the
+- You start with an iron pickaxe, a Drakonix Block Shop item, a guide book, 4 oak logs, and (if
+  Explorer's Compass is installed) an Explorer's Compass, inside a 1x1 world border centered on
+  your spawn point. Straying more than 5 blocks past the
   border teleports you back to its center. `keepInventory` and `mobGriefing` are set for you
   automatically on first join - a 1-block border makes both spawning over lava/void and a stray
   creeper/enderman a much bigger deal than usual, and not something you could realistically

@@ -12,7 +12,9 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.world.entity.player.Player;
@@ -70,6 +72,10 @@ public final class StarterKit
         player.getInventory().add(cursedUnsellable(new ItemStack(OneBlockShopMod.SHOP_BLOCK_ITEM.get()), player));
         player.getInventory().add(cursedUnsellable(guideBook(), player));
         player.getInventory().add(new ItemStack(Items.OAK_LOG, 4));
+
+        ItemStack compass = explorersCompass();
+        if (!compass.isEmpty())
+            player.getInventory().add(cursedUnsellable(compass, player));
     }
 
     // Marked with the Unsellable curse so a stray hopper (or an absent-minded drop into the
@@ -79,6 +85,17 @@ public final class StarterKit
         EnchantmentHelper.updateEnchantments(stack, mutable ->
                 mutable.set(player.level().registryAccess().holderOrThrow(OneBlockShopMod.UNSELLABLE), 1));
         return stack;
+    }
+
+    private static final ResourceLocation EXPLORERS_COMPASS_ID = ResourceLocation.fromNamespaceAndPath("explorerscompass", "explorerscompass");
+
+    // Dev-only/optional mod (see RECOMMENDED-MODS.md) - a manual install without the modpack
+    // won't have it, so this just skips the gift rather than crash if it's missing.
+    private static ItemStack explorersCompass()
+    {
+        if (!BuiltInRegistries.ITEM.containsKey(EXPLORERS_COMPASS_ID))
+            return ItemStack.EMPTY;
+        return new ItemStack(BuiltInRegistries.ITEM.get(EXPLORERS_COMPASS_ID));
     }
 
     private static ItemStack guideBook()

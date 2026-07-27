@@ -3,6 +3,18 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- `StarterKit.giveItems` now also gives an Explorer's Compass (`explorerscompass:
+  explorerscompass`, confirmed via its recipe result) alongside the pickaxe/shop block/guide
+  book/oak logs, same Unsellable curse as the rest - skips the gift gracefully (checked via
+  `BuiltInRegistries.ITEM.containsKey`) if the mod isn't installed, since it's a dev-only/
+  optional dependency, not a real one.
+- Added When Dungeons Arise (whole new structures with real loot) and Explorer's Compass
+  (points at the nearest structure of a chosen type) - gives the now-1,000,000-block Explore
+  teleport range more worth actually finding. "when-dungeons-arise"'s version number "2.1.68"
+  collides across fabric/neoforge (both loaders share it) - pinned to the neoforge release's
+  Modrinth version id instead; Explorer's Compass has no collision. Both need
+  neoforge>=21.0.0-beta, satisfied; no Modrinth-declared dependencies for either. Synced via
+  `just modpack-sync` (25 mods total now).
 - ~~Expedition's teleport range was a hardcoded 10,000-block constant, no config system existed
   in this mod at all~~ — bumped the default to 1,000,000 and built a standard NeoForge TOML
   config from scratch (new `Config.java`, registered as `ModConfig.Type.COMMON` in

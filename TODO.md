@@ -20,7 +20,10 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
-- What are some mods that encourage exploration? Roguelike dungeons etc? baubles? artifact mods with powerful gear that spawns in chests?
+- Exploration-encouraging mods: added When Dungeons Arise + Explorer's Compass (see
+  TODO-DONE.md). Still open: baubles/accessory-slot mods (Curios API is the modern successor,
+  real and available for NeoForge 1.21.1) and artifact mods with powerful gear that spawns in
+  chests - not picked yet, no candidates vetted.
 
 - **Tech-mod item pipe/pipe-equivalent compatibility** (AE2, IC2, GregTech, Thermal Expansion,
   EnderIO, etc.) - `ShopBlockEntity` only implements vanilla `WorldlyContainer`, which covers
