@@ -9,6 +9,7 @@ expand the border.
 - [CurseForge](https://www.curseforge.com/minecraft/mc-mods/drakonix-one-block-shop)
 - [Modrinth](https://modrinth.com/project/drakonix-one-block-shop)
 - [Download the mod from GitHub releases](https://github.com/meltingscales/MinecraftDrakonixOneBlockShop/releases)
+  - You can install it with NeoForge directly or import it with Prism Launcher.
 
 ## How it works
 
