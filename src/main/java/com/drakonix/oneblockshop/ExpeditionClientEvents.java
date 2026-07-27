@@ -25,5 +25,9 @@ public final class ExpeditionClientEvents
     {
         if (event.getEffectInstance().getEffect().value() == Expedition.EFFECT.get())
             event.getTooltip().add(Component.translatable("effect.drakonixoneblockshop.expedition.description"));
+        // RETURN_EFFECT is instantaneous - it never lingers, so it never shows up in this HUD and
+        // doesn't need a description line here.
+        if (event.getEffectInstance().getEffect().value() == Expedition.PORTAL_IMMUNITY_EFFECT.get())
+            event.getTooltip().add(Component.translatable("effect.drakonixoneblockshop.portal_immunity.description"));
     }
 }

@@ -341,6 +341,11 @@ public final class Expedition
         potion.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.empty(), List.of(
                 new MobEffectInstance(RETURN_EFFECT, 1, 0),
                 new MobEffectInstance(PORTAL_IMMUNITY_EFFECT, (int) PORTAL_IMMUNITY_TICKS, 0))));
+        // Without this, an empty PotionContents.potion() falls back to vanilla's own
+        // "item.minecraft.potion.effect.empty" ("Uninteresting Potion") - ITEM_NAME (not
+        // CUSTOM_NAME, which renders italic like a real anvil rename) is the supported way to
+        // give a vanilla-item-based stack its own plain localized display name.
+        potion.set(DataComponents.ITEM_NAME, Component.translatable("item.drakonixoneblockshop.expedition_return_potion"));
         EnchantmentHelper.updateEnchantments(potion, mutable ->
                 mutable.set(player.level().registryAccess().holderOrThrow(OneBlockShopMod.UNSELLABLE), 1));
         return potion;
