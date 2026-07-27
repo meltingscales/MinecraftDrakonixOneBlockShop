@@ -3,6 +3,10 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Follow-up to the packs below: AE2's gained the full-block `ae2:energy_acceptor` alongside the
+  small cable-part `ae2:cable_energy_acceptor` it already had (two distinct real items,
+  confirmed via separate recipe result ids); EnderIO's Energetic Photovoltaic Module count went
+  from 4 to 12.
 - ~~The EnderIO starter pack skipped conduits entirely - granting a plain `enderio:conduit` item
   would've been a blank/untyped "<MISSING> Conduit" since EnderIO's conduits are all one shared
   item typed via a mod-specific data component set at craft time, and this mod has no

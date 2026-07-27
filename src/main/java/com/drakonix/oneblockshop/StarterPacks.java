@@ -58,6 +58,10 @@ public final class StarterPacks
                     PackItem.item("ae2:drive", 1),
                     PackItem.item("ae2:interface", 1),
                     PackItem.item("ae2:crafting_terminal", 1),
+                    // Both the full block and the small cable-part version - "ae2:energy_acceptor"
+                    // and "ae2:cable_energy_acceptor" are two distinct real items, confirmed via
+                    // their separate recipe result ids.
+                    PackItem.item("ae2:energy_acceptor", 1),
                     PackItem.item("ae2:cable_energy_acceptor", 1),
                     PackItem.item("ae2:energy_cell", 2),
                     PackItem.item("ae2:item_storage_cell_1k", 4),
@@ -86,7 +90,7 @@ public final class StarterPacks
                     // Base tier of EnderIO's real solar generator block (its tooltip literally
                     // reads "Solar Power!") - "pulsating"/"vibrant" are higher alloy tiers above
                     // this "energetic" one, same naming convention as its other machine tiers.
-                    PackItem.item("enderio:energetic_photovoltaic_module", 4),
+                    PackItem.item("enderio:energetic_photovoltaic_module", 12),
                     PackItem.item("enderio:basic_capacitor_bank", 1),
                     PackItem.enderioConduit("enderio:energy", 8),
                     PackItem.enderioConduit("enderio:item", 8),
