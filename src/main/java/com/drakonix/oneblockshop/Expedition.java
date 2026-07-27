@@ -74,16 +74,22 @@ public final class Expedition
 
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, OneBlockShopMod.MODID);
+    // .copyOnDeath() on all five of these: a serializable attachment is NOT copied onto the new
+    // player entity a death/respawn creates by default (only .serialize() alone, which is just
+    // for surviving a chunk unload/server restart on the *same* entity) - without it, dying
+    // mid-expedition would silently reset isAway() to false on respawn (the attachment's default
+    // value), leaving Border.EXPEDITIONS_ACTIVE permanently incremented (same bug class
+    // onPlayerLogout's watchdog exists for) and losing the "away" status. See onPlayerRespawn.
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Long>> END_TICK = ATTACHMENTS.register(
-            "expedition_end_tick", () -> AttachmentType.builder(() -> NOT_ON_EXPEDITION).serialize(Codec.LONG).build());
+            "expedition_end_tick", () -> AttachmentType.builder(() -> NOT_ON_EXPEDITION).serialize(Codec.LONG).copyOnDeath().build());
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> RETURN_X = ATTACHMENTS.register(
-            "expedition_return_x", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).build());
+            "expedition_return_x", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).copyOnDeath().build());
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> RETURN_Y = ATTACHMENTS.register(
-            "expedition_return_y", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).build());
+            "expedition_return_y", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).copyOnDeath().build());
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> RETURN_Z = ATTACHMENTS.register(
-            "expedition_return_z", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).build());
+            "expedition_return_z", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).copyOnDeath().build());
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Integer>> NEXT_WARNING = ATTACHMENTS.register(
-            "expedition_next_warning", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
+            "expedition_next_warning", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).copyOnDeath().build());
 
     // Portal state is ServerLevel-scoped (the overworld), not per-player - only one portal open
     // at a time across the whole server. Ponytail: simplest thing that works for this mod's
@@ -466,6 +472,23 @@ public final class Expedition
     {
         if (event.getEntity() instanceof ServerPlayer player && isAway(player))
             returnHome(player, false);
+    }
+
+    // Dying mid-expedition should send the player back to where they left from, not wherever
+    // vanilla's own bed/anchor/world-spawn logic would otherwise put them - fires after vanilla
+    // has already repositioned the (new, respawned) player entity, so this just overrides that
+    // with the real return point. Relies on END_TICK/RETURN_X/Y/Z surviving onto the new entity
+    // via .copyOnDeath() above; without that, isAway() here would already be back to its default
+    // (false) and this would never fire.
+    @SubscribeEvent
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event)
+    {
+        if (event.getEntity() instanceof ServerPlayer player && isAway(player))
+        {
+            returnHome(player, false);
+            player.sendSystemMessage(Component.literal(
+                    "You died on your expedition - returned to where you left from.").withStyle(ChatFormatting.AQUA));
+        }
     }
 
     // Blocks placing a *new* shop block while away, so it's obvious which one is "home" - has no

@@ -3,6 +3,25 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~The Explore-tab return potion and its two custom effects (Expedition Return, Portal
+  Immunity) had no lang entries - the potion in particular displayed as vanilla's own
+  "Uninteresting Potion" (`item.minecraft.potion.effect.empty`, since `PotionContents.potion()`
+  is empty for a customEffects-only potion)~~ — added `item.drakonixoneblockshop.
+  expedition_return_potion` plus name/description keys for both effects, and set the potion
+  stack's `DataComponents.ITEM_NAME` (not `CUSTOM_NAME`, which renders italic like a real anvil
+  rename) to the new key. Portal Immunity also got a `GatherEffectScreenTooltipsEvent` hover
+  line, extending the same pattern `ExpeditionClientEvents` already used for the Expedition
+  effect; skipped for Expedition Return since it's instantaneous and never lingers in that HUD.
+- ~~Dying mid-expedition respawned the player at their bed/world-spawn instead of the expedition's
+  origin point, and silently corrupted shared state: `END_TICK`/`RETURN_X/Y/Z` are NeoForge
+  attachments, which reset to their defaults on the *new* player entity a respawn creates unless
+  explicitly marked `.copyOnDeath()` (confirmed in `AttachmentType`'s own docs) - so `isAway()`
+  would already read false again post-respawn, permanently leaking `Border.EXPEDITIONS_ACTIVE`
+  the same way `onPlayerLogout`'s watchdog exists to prevent for disconnects~~ — added
+  `.copyOnDeath()` to all five per-player expedition attachments and a `PlayerRespawnEvent`
+  handler that, now that `isAway()` still reads correctly, overrides vanilla's respawn position
+  with `returnHome` (teleport to the expedition's origin, clear away-state, close out the
+  border hold) exactly like a normal early return.
 - ~~Expedition teleports could drop a player in open ocean, or (rarer) in a flooded underwater
   cave passage, with nothing to stand on~~ — `Expedition.rollDestination` rerolls the whole
   column (fresh x/z, up to `MAX_LOCATION_ATTEMPTS`) whenever the sampled surface's biome is
