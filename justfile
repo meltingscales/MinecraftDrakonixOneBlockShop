@@ -1,3 +1,14 @@
+# Bumps mod_version (gradle.properties) and the modpack's own version (modpack/pack.toml) to
+# the same value together, so they can't quietly drift apart (see CLAUDE.md's Git/commits
+# section) - nothing in CI or tooling actually checks the two match, packwiz's version field is
+# just a display string in packwiz-aware launchers, so a stale one is easy to miss otherwise.
+bump-version version:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    sed -i 's/^mod_version=.*/mod_version={{ version }}/' gradle.properties
+    sed -i 's/^version = ".*"/version = "{{ version }}"/' modpack/pack.toml
+    echo "Bumped mod_version and modpack/pack.toml version to {{ version }}"
+
 # Tag and push a GitHub release for the current mod_version (gradle.properties).
 # release.yml builds the jar and publishes a GitHub Release once the tag lands on GitHub -
 # its version check fails the build if the tag doesn't match mod_version exactly, so this

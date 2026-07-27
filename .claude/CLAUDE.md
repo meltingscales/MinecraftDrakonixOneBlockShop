@@ -95,7 +95,10 @@ commits). Never `--no-verify`, never force-push, never amend a commit that's alr
 Bump `mod_version` in `gradle.properties` when committing real changes (features, fixes,
 content) - it's the single source of truth `release.yml` checks a pushed tag against (see
 README.md's Releasing section). Skip the bump for changes that don't affect the mod itself
-(this file, CI config tweaks, typo fixes in comments).
+(this file, CI config tweaks, typo fixes in comments). Bump `modpack/pack.toml`'s `version`
+field to the same value at the same time (`just bump-version <version>` does both in one step) -
+nothing in CI actually checks the two match, it's just a display string in packwiz-aware
+launchers, but a stale one is confusing and easy to forget separately.
 
 Committing and bumping `mod_version` does NOT cut a release by itself - GitHub Releases only
 come from a pushed `vX.Y.Z` tag (`release.yml` triggers on tag push, not on commits to `main`;
