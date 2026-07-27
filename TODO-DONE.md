@@ -19,6 +19,12 @@ entries at the top; oldest (original MVP build-out) at the bottom.
   dependency on EnderIO (the same open problem already tracked for EnderIO's item pipes in
   TODO.md), so both packs simply skip the slot they can't fill safely rather than hand out a
   broken/blank item.
+- Follow-up to the above: AE2's pack gained a Crafting Terminal and four 1k storage cells;
+  Mekanism's gained a Basic Induction Cell/Provider pair (its actual modular big-battery
+  system - still no true generator block, see above); EnderIO's gained four Energetic
+  Photovoltaic Modules, the mod's real solar generator (its tooltip literally says "Solar
+  Power!" - found by grepping its lang data for "solar" after the initial pass had missed it
+  under that block's actual `photovoltaic` name).
 - ~~Token coin sprite was a flat hue-shifted circle with a plain highlight blob, didn't read as
   a coin or tie into the mod's theme~~ — `tools/generate_tokens.py`'s `coin_sprite` now shades
   the fill/rim toward a desaturated metallic tone and stamps a dragon wing (parametric fan of

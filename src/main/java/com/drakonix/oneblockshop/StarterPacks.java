@@ -39,17 +39,23 @@ public final class StarterPacks
                     new PackItem("ae2:controller", 1),
                     new PackItem("ae2:drive", 1),
                     new PackItem("ae2:interface", 1),
+                    new PackItem("ae2:crafting_terminal", 1),
                     new PackItem("ae2:cable_energy_acceptor", 1),
                     new PackItem("ae2:energy_cell", 2),
+                    new PackItem("ae2:item_storage_cell_1k", 4),
                     new PackItem("ae2:fluix_smart_cable", 8))),
             // Modern Mekanism (10.x) no longer ships a dedicated power-generator block - the old
-            // Heat/Solar/Bio/Wind Generators were cut from the mod years ago. Basic Energy Cube
-            // (a power buffer) is the closest real substitute, so this pack has no separate
-            // "generator" entry.
+            // Heat/Solar/Bio/Wind Generators were cut from the mod years ago (confirmed: no
+            // "generator" or "solar panel" block anywhere in this version's lang data). Basic
+            // Energy Cube plus a Basic Induction Cell/Provider pair (the modular big-battery
+            // system, real Mekanism blocks) are the closest substitutes - several different real
+            // energy machines, just storage/buffering rather than generation.
             new Pack("mekanism", "Mekanism", List.of(
                     new PackItem("mekanism:enrichment_chamber", 1),
                     new PackItem("mekanism:crusher", 1),
                     new PackItem("mekanism:basic_energy_cube", 1),
+                    new PackItem("mekanism:basic_induction_cell", 1),
+                    new PackItem("mekanism:basic_induction_provider", 1),
                     new PackItem("mekanism:basic_universal_cable", 8))),
             // EnderIO's conduits are all one shared "enderio:conduit" item, typed via a
             // mod-specific data component set at craft time (confirmed in its recipe JSON) -
@@ -61,6 +67,10 @@ public final class StarterPacks
                     new PackItem("enderio:alloy_smelter", 1),
                     new PackItem("enderio:sag_mill", 1),
                     new PackItem("enderio:stirling_generator", 1),
+                    // Base tier of EnderIO's real solar generator block (its tooltip literally
+                    // reads "Solar Power!") - "pulsating"/"vibrant" are higher alloy tiers above
+                    // this "energetic" one, same naming convention as its other machine tiers.
+                    new PackItem("enderio:energetic_photovoltaic_module", 4),
                     new PackItem("enderio:basic_capacitor_bank", 1))));
 
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
