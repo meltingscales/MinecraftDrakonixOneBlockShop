@@ -32,6 +32,8 @@ version-pinning rationale next to each line; this file is just the quick-referen
 | [Lithium](https://modrinth.com/mod/lithium) | mc1.21.1-0.15.4-neoforge | General game-logic performance optimization (not a rendering mod like Sodium, which is Fabric-only) - the NeoForge port carries the same name, not a rebrand. |
 | [When Dungeons Arise](https://modrinth.com/mod/when-dungeons-arise) | `XIRJSFQ0` (2.1.68) | Adds whole new structures (fortresses, dungeons, etc.) with real loot - gives this mod's Explore-tab teleports more worth actually finding. |
 | [Explorer's Compass](https://modrinth.com/mod/explorers-compass) | 1.21.1-3.4.0-neoforge | Points at the nearest structure of a chosen type - pairs with the above, "land somewhere, then find what's nearby" instead of wandering blind. |
+| [Curios API](https://modrinth.com/mod/curios) | 9.5.1+1.21.1 | Modern successor to Baubles (accessory slots) - added mainly so Artifacts below can use real accessory slots instead of its no-Curios fallback. |
+| [Artifacts](https://modrinth.com/mod/artifacts) | `rGPw090r` (13.2.1) | "Adds various treasure items that can be found through exploration" (its own description) - exact match for finding powerful gear while out on an Explore-tab trip. |
 
 Not added: IC2 (no NeoForge/1.21.1 release exists for any IC2-lineage mod as of writing) and
 Thermal Expansion (last release is 1.20.1 Forge-only). Re-check Modrinth if either ships one.

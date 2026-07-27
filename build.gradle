@@ -277,6 +277,20 @@ dependencies {
     // build). Needs neoforge>=21.0.0-beta, satisfied.
     localRuntime "maven.modrinth:explorers-compass:1.21.1-3.4.0-neoforge"
 
+    // Dev-only, modern successor to Baubles (accessory slots) - Curios itself has no hard
+    // dependents in this pack, added mainly so Artifacts below can use real accessory slots
+    // instead of its no-Curios fallback. No collision (unique to this neoforge build). Needs
+    // neoforge>=21.1.60, satisfied by our neo_version (21.1.176).
+    localRuntime "maven.modrinth:curios:9.5.1+1.21.1"
+
+    // Dev-only - its own Modrinth description: "Adds various treasure items that can be found
+    // through exploration", an exact match for finding powerful gear while out on an Explore-tab
+    // trip. Optionally integrates with Curios (added above) and Cloth Config (already have it,
+    // from Building Wands) rather than hard-requiring either. Version number "13.2.1" collides
+    // across fabric/neoforge (both loaders share it) - pinned to the neoforge release's Modrinth
+    // version id instead. Needs neoforge>=21.0.133-beta, satisfied.
+    localRuntime "maven.modrinth:artifacts:rGPw090r"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"

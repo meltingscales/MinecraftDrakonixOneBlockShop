@@ -20,11 +20,6 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
-- Exploration-encouraging mods: added When Dungeons Arise + Explorer's Compass (see
-  TODO-DONE.md). Still open: baubles/accessory-slot mods (Curios API is the modern successor,
-  real and available for NeoForge 1.21.1) and artifact mods with powerful gear that spawns in
-  chests - not picked yet, no candidates vetted.
-
 - **Tech-mod item pipe/pipe-equivalent compatibility** (AE2, IC2, GregTech, Thermal Expansion,
   EnderIO, etc.) - `ShopBlockEntity` only implements vanilla `WorldlyContainer`, which covers
   hoppers/droppers. Most modern tech mods push items via the NeoForge Capabilities API

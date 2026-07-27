@@ -3,6 +3,16 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~Exploration-encouraging mods TODO item's remaining half: baubles/accessory-slot mods and
+  artifact mods with powerful gear that spawns in chests, not picked yet~~ — added Curios API
+  (modern Baubles successor) and Artifacts, whose own Modrinth description is literally "Adds
+  various treasure items that can be found through exploration." Artifacts only optionally
+  integrates with Curios (and Cloth Config, already present from Building Wands) rather than
+  hard-requiring either. "artifacts"'s version number collides across fabric/neoforge (both
+  loaders share it) - pinned to the neoforge release's Modrinth version id instead; Curios has
+  no collision. Both need neoforge versions well below our pin (21.1.60/21.0.133-beta vs
+  21.1.176), satisfied. Synced via `just modpack-sync` (27 mods total now). This closes out the
+  whole "exploration-encouraging mods" TODO item.
 - `StarterKit.giveItems` now also gives an Explorer's Compass (`explorerscompass:
   explorerscompass`, confirmed via its recipe result) alongside the pickaxe/shop block/guide
   book/oak logs, same Unsellable curse as the rest - skips the gift gracefully (checked via
