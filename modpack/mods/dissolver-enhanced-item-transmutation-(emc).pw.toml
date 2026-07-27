@@ -1,0 +1,13 @@
+name = "Dissolver Enhanced - Item Transmutation (EMC)"
+filename = "dissolver-enhanced-1.5.31-neoforge-mc1.21.x-c1.3.2.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/yEX3Y3na/versions/8iSA87JJ/dissolver-enhanced-1.5.31-neoforge-mc1.21.x-c1.3.2.jar"
+hash-format = "sha512"
+hash = "e3729e3483940b17cfe573f180a2d5c4373464a27beb3dfe9806a15cebdfb150dc7339423a6556ddd107e9c5c9723a427ec6a7f2b97bb4056b86f376295d9d74"
+
+[update]
+[update.modrinth]
+mod-id = "yEX3Y3na"
+version = "8iSA87JJ"

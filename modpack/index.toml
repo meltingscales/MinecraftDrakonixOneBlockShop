@@ -20,6 +20,11 @@ hash = "2acaff560bbda5741538528a2967355ec86a8f7564adba0b2316989c66892374"
 metafile = true
 
 [[files]]
+file = "mods/dissolver-enhanced-item-transmutation-(emc).pw.toml"
+hash = "4d3520406f980b37ebf4f9ce0704a758ad6a3547905673750cb24419d9fd4933"
+metafile = true
+
+[[files]]
 file = "mods/enderio.pw.toml"
 hash = "66c8f8fe8c3a84a171e3c39649271a6da8b6b7c0205dff878f1fe4406bcef888"
 metafile = true

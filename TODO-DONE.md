@@ -3,6 +3,15 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~ProjectE was requested as a dev-runtime mod~~ — the real ProjectE (and every fork/
+  continuation checked) has no Modrinth listing at all, not just missing this version - confirmed
+  by slug lookup, search, and a search by its original author (sinkillerj); likely
+  CurseForge-exclusive, same class of gap as FastMove earlier. Added Dissolver Enhanced instead,
+  a real actively-maintained NeoForge 1.21.1 mod explicitly described (in its own Modrinth
+  listing) as "inspired by ProjectE and Equivalent Exchange." Pinned by Modrinth project id
+  (`yEX3Y3na`) rather than its slug, which has literal parentheses that risk misparsing as a
+  Gradle dependency coordinate - confirmed both actually resolve against Modrinth's maven repo
+  before picking the id. Synced via `just modpack-sync`, boot-tested clean.
 - Follow-up to the packs below: AE2's gained the full-block `ae2:energy_acceptor` alongside the
   small cable-part `ae2:cable_energy_acceptor` it already had (two distinct real items,
   confirmed via separate recipe result ids); EnderIO's Energetic Photovoltaic Module count went

@@ -228,6 +228,17 @@ dependencies {
     // collision (unique to this neoforge build). Needs neoforge>=21.0.110-beta, satisfied.
     localRuntime "maven.modrinth:geore:6.2.3"
 
+    // Dev-only, EMC-style item transmutation. The real ProjectE (and every fork/continuation of
+    // it checked) has no Modrinth listing at all, not just missing this version - confirmed by
+    // slug lookup, search, and a search by its original author (sinkillerj); likely
+    // CurseForge-exclusive. Dissolver Enhanced is a real, actively-maintained substitute
+    // explicitly "inspired by ProjectE and Equivalent Exchange" (its own Modrinth description).
+    // Pinned by Modrinth project id (yEX3Y3na), not its slug - the slug has literal parentheses
+    // ("...-item-transmutation-(emc)") that risk misparsing as a Gradle dependency coordinate.
+    // No version-number collision (unique to this neoforge build). Needs neoforge in [21.0,22),
+    // minecraft in [1.21,1.22), both satisfied by our pins.
+    localRuntime "maven.modrinth:yEX3Y3na:1.5.31-neoforge-1.21.x"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
