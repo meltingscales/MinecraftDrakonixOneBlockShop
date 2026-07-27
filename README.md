@@ -91,6 +91,15 @@ compatibility testing, etc.) - see `RECOMMENDED-MODS.md` for the current list an
 there, and `FUTURE-MOD-COMPAT.md` for ones verified compatible before but deliberately not
 currently included (e.g. GregTech CEu Modern).
 
+## Modpack
+
+`./modpack/` is a [packwiz](https://packwiz.infra.link/) pack mirroring `build.gradle`'s
+`localRuntime` mods - run `just modpack-sync` after adding/removing/repinning one there (or
+`python3 tools/generate_modpack.py` directly) to regenerate `modpack/mods/*.pw.toml`, and
+`just modpack-serve` to test it with a packwiz-compatible launcher (e.g. Prism). CI fails if the
+committed `modpack/` ever drifts from `build.gradle`. See `TODO.md` for what's still undecided
+(which mods actually belong in a *shipped* pack vs. this dev-convenience list, light questing).
+
 ## Releasing
 
 `gradle.properties`' `mod_version` is the single source of truth for the mod's version. To cut

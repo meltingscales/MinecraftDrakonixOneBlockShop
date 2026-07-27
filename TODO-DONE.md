@@ -3,6 +3,31 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~No real modpack, just a TODO note asking how to approach one~~ — `./modpack/` is a real
+  `packwiz` pack (`packwiz init`, NeoForge 1.21.1/21.1.176 to match `gradle.properties`). New
+  `tools/generate_modpack.py` regenerates `modpack/mods/*.pw.toml` from `build.gradle`'s
+  `localRuntime "maven.modrinth:..."` lines - those are already the single, vetted source of
+  truth (see `RECOMMENDED-MODS.md`), so this avoids hand-maintaining a second mod list.
+  - `packwiz modrinth add` takes Modrinth project+version *IDs*, not Maven-style
+    slug:version-or-id coordinates, so the script resolves each pin against the live API first
+    (tries treating the pinned string as a version id directly, falls back to scanning the
+    project's version list for a matching `version_number` on a `neoforge` build - same
+    disambiguation this project already does by hand when vetting a new mod).
+  - Wipes and regenerates `modpack/mods/` every run rather than diffing in place - simpler, and
+    matches how `tools/generate_tokens.py` treats its own output as fully generated, never
+    hand-edited. Runs `packwiz refresh` immediately after the wipe (before re-adding anything),
+    since otherwise `index.toml` still references the just-deleted files and packwiz's own
+    dependency-tracking (AE2 pulling in GuideMe) warns trying to read them mid-loop.
+  - `justfile` gained `modpack-sync` (runs the script) and `modpack-serve` (`packwiz serve`, for
+    testing with a packwiz-compatible launcher like Prism) recipes.
+  - `.github/workflows/build.yml` gained a `modpack` job: installs `packwiz` via `go install`
+    (no prebuilt-binary GitHub Action for it), regenerates, then `git diff --exit-code` against
+    the committed `modpack/` - fails CI if a mod's pin drifts from what's actually committed, or
+    if a pinned version ever gets removed/yanked from Modrinth (the regenerate step itself would
+    fail first, not just the diff).
+  - Deliberately out of scope for this pass (see "Modpack" in TODO.md): which mods actually
+    belong in a *shipped* pack vs. this dev-convenience list, light questing, and including this
+    mod's own jar in the pack.
 - ~~The "Expedition" potion-icon countdown could drift out of sync with the real `END_TICK` -
   e.g. `devcheat expedition fastforward` moving the return time earlier, an admin `/effect`
   command, or milk bucket/death wiping the applied effect entirely while `isAway()` still says

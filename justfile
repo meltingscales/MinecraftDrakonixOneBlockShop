@@ -18,3 +18,13 @@ release:
     git tag "$tag"
     git push origin "$tag"
     echo "Pushed $tag - release build: https://github.com/meltingscales/MinecraftDrakonixOneBlockShop/actions"
+
+# Regenerates modpack/mods/*.pw.toml from build.gradle's localRuntime mods (see
+# tools/generate_modpack.py) and validates the pack. Rerun after adding/removing/repinning a
+# localRuntime mod - requires the packwiz CLI on PATH.
+modpack-sync:
+    python3 tools/generate_modpack.py
+
+# Serves the modpack locally for testing with a packwiz-compatible launcher (e.g. Prism).
+modpack-serve:
+    cd modpack && packwiz serve

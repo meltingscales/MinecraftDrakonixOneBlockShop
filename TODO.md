@@ -3,7 +3,20 @@
 Tracked against README.md's feature list.
 
 ## Modpack
-- Modpack- how should we go about adding a modpack featuring the OneBlockShop mod? lives in `./modpack/`? light questing? use existing `justfile` for common build commands? what modpack CLI tools exist out there?
+- `./modpack/` is a real `packwiz` pack now (see "Fixed" in TODO-DONE.md for how it's wired up).
+  Still open: it currently mirrors *every* `localRuntime` mod in `build.gradle` 1:1, including
+  ones that were added purely for dev/playtesting convenience (Twerk Crop Growth, JEI, Xaero's
+  Minimap, VeinMiner, TreeChop) rather than as something meant to ship to players. Worth a real
+  decision on whether the shipped pack should be that full list, or a curated subset - if the
+  latter, `tools/generate_modpack.py` would need a way to mark a `localRuntime` line as
+  "dev-only, don't ship" (a comment convention it greps for?) rather than syncing 1:1.
+- No light-questing setup yet (e.g. FTB Quests / Better Questing pointed at this mod's
+  progression) - deliberately deferred, a sizable feature on its own; revisit once the base pack
+  above is confirmed working.
+- Our own mod isn't in the pack yet - `packwiz modrinth add drakonix-one-block-shop` would work
+  the same way once/if a given `mod_version` is actually published to Modrinth (the README
+  already links a Modrinth project page), but that's a separate question from what this session
+  built (syncing the *dependency* mods only).
 
 - When this mod actually gets bundled into a modpack (not just a dev-only `localRuntime` dep),
   set VeinMiner's `mustSneak` setting to `true` by default (`/veinminer settings mustSneak

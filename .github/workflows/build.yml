@@ -37,3 +37,32 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build
+
+  modpack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Setup Go (for packwiz)
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Install packwiz
+        run: go install github.com/packwiz/packwiz@latest
+
+      # Catches drift between build.gradle's localRuntime pins and modpack/mods/*.pw.toml -
+      # tools/generate_modpack.py resolves every pin against Modrinth's live API, so this fails
+      # if a mod's version ever gets removed/yanked, not just if the two files disagree.
+      - name: Regenerate and validate modpack
+        run: |
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          export PATH="$(go env GOPATH)/bin:$PATH"
+          python3 tools/generate_modpack.py
+          git diff --exit-code -- modpack/ || (echo "::error::modpack/ is out of sync with build.gradle - run 'just modpack-sync' and commit the result" && exit 1)

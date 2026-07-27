@@ -1,0 +1,56 @@
+hash-format = "sha256"
+
+[[files]]
+file = "mods/ae2.pw.toml"
+hash = "ed45c352a49b65c7221e57d979d0c6935522dfef4968aa5b7421f4d3e670ce40"
+metafile = true
+
+[[files]]
+file = "mods/enderio.pw.toml"
+hash = "66c8f8fe8c3a84a171e3c39649271a6da8b6b7c0205dff878f1fe4406bcef888"
+metafile = true
+
+[[files]]
+file = "mods/guideme.pw.toml"
+hash = "f7448243d61c3e7c5941896816afb91dd069cef492a2d93ceba9f48e391cdf44"
+metafile = true
+
+[[files]]
+file = "mods/jade.pw.toml"
+hash = "b6e0a61fea06f8d6d8e1672cf07b682625c4b74efd548d5093cd9c1fed167eec"
+metafile = true
+
+[[files]]
+file = "mods/jei.pw.toml"
+hash = "da9be0546df74454a23be94eebebb4a1e6590ee9d20b1c030971751ec5ca8612"
+metafile = true
+
+[[files]]
+file = "mods/kotlin-lang-forge.pw.toml"
+hash = "6d211d9120c2f1938908f8163b75105d1540ee7ea5e11538728653883e021f30"
+metafile = true
+
+[[files]]
+file = "mods/mekanism.pw.toml"
+hash = "f376fde0de0f58f52d9e49617907549bfc833979a9c21e8668839bae63b822f2"
+metafile = true
+
+[[files]]
+file = "mods/treechop.pw.toml"
+hash = "da1c1cf28e8d5ffe377998d29d59eae29a2020f2de7a0aea7f7253acdc695cfd"
+metafile = true
+
+[[files]]
+file = "mods/twerk-crop-growth.pw.toml"
+hash = "5ab4edf7204874f4be0a09a8d26ba55ab8d90dffb0ffa7bd968b5bc7cb4e021b"
+metafile = true
+
+[[files]]
+file = "mods/veinminer.pw.toml"
+hash = "03a9564d7cdb16578f46c6f58dcc261968bb440c243ad90229d8ce58aaccc0d3"
+metafile = true
+
+[[files]]
+file = "mods/xaeros-minimap.pw.toml"
+hash = "4c336c9a00838ff5b5bbf6cd8ae35927186fdfa42258ca15513835e1b12ced2f"
+metafile = true

@@ -51,6 +51,11 @@ See `RECOMMENDED-MODS.md` for the full checklist (Modrinth API query -> inspect
 across loaders -> boot-test). Add new `localRuntime` mods there, not just in `build.gradle`, so
 the table stays the source of truth for what's already been added and why.
 
+After changing `build.gradle`'s `localRuntime` mods, run `just modpack-sync`
+(`tools/generate_modpack.py`) and commit the resulting `modpack/mods/*.pw.toml` changes -
+`build.gradle` is the single source of truth the modpack mirrors, and CI (`build.yml`'s
+`modpack` job) fails if the two drift apart. Requires the `packwiz` CLI on PATH.
+
 ## Economy / pricing
 
 Every item is sellable - never add a hardcoded per-item price map. `Pricing.priceOf` prices raw
