@@ -3,6 +3,13 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- `GUIDE.md` (the in-game guide book, read live from this file at first login - no separate
+  generator script) hadn't been touched since most of this session's features shipped. Added
+  paragraphs covering: Cave Only expedition mode, the death-during-expedition resume potion,
+  `mobGriefing` being off, the shop GUI's Packs tab (AE2/Mekanism/EnderIO starter kits), GeOre's
+  ore clusters, Explorer's Compass/When Dungeons Arise/Artifacts, and Dissolver Enhanced's EMC
+  economy - matching the book's existing conversational voice rather than a changelog tone.
+  Comes out to ~13 pages, comfortably under vanilla's written-book page limit.
 - ~~Exploration-encouraging mods TODO item's remaining half: baubles/accessory-slot mods and
   artifact mods with powerful gear that spawns in chests, not picked yet~~ — added Curios API
   (modern Baubles successor) and Artifacts, whose own Modrinth description is literally "Adds

@@ -2,9 +2,11 @@ Welcome to Drakonix One Block Shop!
 
 You start on a single block with an iron pickaxe and a Drakonix Block Shop. Place the shop, then start breaking and growing.
 
-If you just spawned, I highly recommend going on an expedition. Place the Drakonix Block Shop, select "Explore", and click "Open Portal" - a portal appears above the shop for 30 seconds, and walking into it is what actually sends you off. If a friend walks in with you, you go together to the same spot.
+If you just spawned, I highly recommend going on an expedition. Place the Drakonix Block Shop, select "Explore", and click "Open Portal" - a portal appears above the shop for 30 seconds, and walking into it is what actually sends you off. If a friend walks in with you, you go together to the same spot. Prefer digging to wandering? "Open Portal (Cave Only)" guarantees you land underground instead of on the surface.
 
-Keep Inventory is on by default in this world. A 1-block start means you can land somewhere rough - lava, void, whatever's below spawn - and that's not a risk you signed up for. Dying still costs you the run, just not your items.
+Dying on an expedition doesn't end it. You'll respawn normally and find a potion in your inventory - drink it whenever you're ready and it teleports you back to exactly where you died (with a stretch of near-total damage resistance, so you're not just handed straight back to whatever killed you) so you can pick up where you left off. Ignore it and you're still auto-returned home once your 10 minutes are up either way.
+
+Keep Inventory is on by default in this world. A 1-block start means you can land somewhere rough - lava, void, whatever's below spawn - and that's not a risk you signed up for. Dying still costs you the run, just not your items. Mob griefing is off too, so a stray creeper or enderman can't undo your building.
 
 Right-click the shop to sell items by hand. It also buys rare items at a high price if you can't produce them yet, like lava buckets or sugarcane.
 
@@ -14,6 +16,12 @@ Money is physical: selling pays out Drakonix OneBlockShop Tokens (denominations 
 
 Sell enough and your border expands outward, giving you more room to build farms. Every expansion after your first calls in a monster wave from just past the new edge - bigger each time - so have a weapon and some armor ready before you buy one. Expansions also have a 30-second cooldown, so you can't just spam the button.
 
-Good early farms: a simple mob farm for drops, an AFK fishing spot for enchanted loot, sugarcane on a redstone clock, and cactus on a redstone clock. All four can run untouched into a hopper feeding the shop.
+Don't want to build up a tech mod's automation chain by hand? The shop's Packs tab gives free starter kits for AE2, Mekanism, and EnderIO - blocks, machines, power, and conduits to jumpstart with. No cost, just a 1-hour cooldown per pack.
+
+Good early farms: a simple mob farm for drops, an AFK fishing spot for enchanted loot, sugarcane on a redstone clock, and cactus on a redstone clock. All four can run untouched into a hopper feeding the shop. Keep an eye out for GeOre's geode-style ore clusters too - a denser way to gather raw resources, and they drop their full item whether or not you're using Silk Touch.
+
+Your Explorer's Compass points you at the nearest structure of whatever type you pick, and When Dungeons Arise scatters real ones worth finding. Chests out there might turn up an Artifacts treasure - accessories with real effects, wearable in a Curios slot once you find one.
+
+Dissolver Enhanced adds its own EMC-style economy alongside the shop's tokens: learn an item, dissolve extras of it into stored value, then spend that value to recreate anything else you've already learned. Handy for turning a glut of one resource into whatever you're actually short on.
 
 Automate first, sell second. The fastest way to grow your border is a farm you never have to babysit.
