@@ -15,7 +15,10 @@ expand the border.
 
 - You start with an iron pickaxe, a Drakonix Block Shop item, a guide book, and 4 oak logs,
   inside a 1x1 world border centered on your spawn point. Straying more than 5 blocks past the
-  border teleports you back to its center.
+  border teleports you back to its center. `keepInventory` and `mobGriefing` are set for you
+  automatically on first join - a 1-block border makes both spawning over lava/void and a stray
+  creeper/enderman a much bigger deal than usual, and not something you could realistically
+  prepare for or wall off yet.
 - The Drakonix Block Shop block (craftable from 8 gold ingots around a hopper) has a GUI with
   four tabs:
   - **Sell** — drop an item in to sell it instantly. Every item is sellable: raw resources use

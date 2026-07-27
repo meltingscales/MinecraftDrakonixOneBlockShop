@@ -3,6 +3,10 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Border.initIfNeeded now also sets `mobGriefing` to `false` on first join, alongside the
+  existing `keepInventory` - same fairness reasoning: a creeper/enderman griefing the 1-block
+  starting border (or whatever's been built up since) is a much bigger deal than on a normal
+  base, and not something the player can realistically wall off yet.
 - ~~Playtest report: shift-clicking a sellable item into the Sell slot could rarely delete tokens
   from inventory or leave a smaller balance than expected~~ — root cause: `ShopMenu.
   quickMoveStack`'s post-transfer cleanup (`slot.set(ItemStack.EMPTY)` on the shift-click's

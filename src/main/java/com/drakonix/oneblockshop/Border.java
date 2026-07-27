@@ -106,6 +106,10 @@ public final class Border
         // Fairness: a 1-block border means spawning over lava/void is a real risk the player
         // never chose. keepInventory softens that without touching difficulty/mob damage.
         overworld.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, overworld.getServer());
+        // Same reasoning: a creeper (or enderman, etc.) griefing the tiny starting border's one
+        // block - or whatever's been built up since - is a much bigger deal than on a normal-
+        // sized base, and not something the player can realistically wall off yet.
+        overworld.getGameRules().getRule(GameRules.RULE_MOBGRIEFING).set(false, overworld.getServer());
     }
 
     // Called on every login - see MULTIPLAYER_MIN_SIZE. Safe to call unconditionally: a no-op
