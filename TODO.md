@@ -36,6 +36,13 @@ Tracked against README.md's feature list.
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
+- Death-during-expedition respawn positioning (`Expedition.onPlayerRespawn`) is a defensive
+  double-teleport (immediate + a delayed recheck a few seconds later) rather than a confirmed
+  fix - a real playtest report had a player land underground below their base after dying in a
+  cave expedition, but the actual root cause was never identified (couldn't reproduce without a
+  live client). If it recurs even with the recheck in place, the real culprit is still out
+  there - worth adding server-side logging of the position right before/after each teleport
+  call to catch it next time, rather than guessing further blind.
 - Buy tab button labels ("Mangrove Propagule (3)", "Dark Oak Sapling (3)") are longer than the
   ~88px button width comfortably fits - vanilla `Button` just center-clips long text rather than
   erroring, so it's cosmetic, not broken. Would need shorter labels (icons instead of full names?)

@@ -3,6 +3,14 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~Playtest report: dying in a cave expedition landed the player underground below their base
+  instead of exactly on `RETURN_X/Y/Z`~~ — never root-caused (leading suspect is some vanilla
+  post-respawn positioning step still running after `PlayerRespawnEvent` returns, since the
+  block at the exact return spot could differ from expedition-start time if the player's built
+  over it since); `onPlayerRespawn` now also schedules a second, delayed re-teleport to the same
+  `RETURN_X/Y/Z` a few seconds later (`RESPAWN_RECHECK_TICK`, consumed in `onPlayerTick`, cheap
+  and idempotent if the first teleport actually stuck) as a defensive mitigation - see the
+  "Known shortcuts" entry in TODO.md, unconfirmed until a real death-in-a-cave playtest.
 - ~~The Explore-tab return potion and its two custom effects (Expedition Return, Portal
   Immunity) had no lang entries - the potion in particular displayed as vanilla's own
   "Uninteresting Potion" (`item.minecraft.potion.effect.empty`, since `PotionContents.potion()`

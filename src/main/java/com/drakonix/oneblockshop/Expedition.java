@@ -71,6 +71,15 @@ public final class Expedition
     // potion could immediately suck them right back through it. See RETURN_EFFECT/
     // PORTAL_IMMUNITY_EFFECT and the onLevelTick walk-in check below.
     private static final long PORTAL_IMMUNITY_TICKS = 30L * 20L;
+    // A death-respawn teleport landed a player underground below their base once in testing
+    // instead of exactly on RETURN_X/Y/Z - never root-caused (vanilla's own post-respawn
+    // positioning, e.g. an "unstuck from blocks" pass, is the leading suspect, since the return
+    // spot could differ from when the expedition started if the player's built over it since).
+    // Rather than trust a single teleport call made mid-respawn, onPlayerRespawn re-checks and
+    // re-applies RETURN_X/Y/Z a few seconds later too - cheap and idempotent if the first one
+    // actually did stick.
+    private static final long RESPAWN_RECHECK_DELAY_TICKS = 5L * 20L;
+    private static final long NO_RECHECK_PENDING = Long.MIN_VALUE;
 
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, OneBlockShopMod.MODID);
@@ -90,6 +99,11 @@ public final class Expedition
             "expedition_return_z", () -> AttachmentType.builder(() -> 0.0).serialize(Codec.DOUBLE).copyOnDeath().build());
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Integer>> NEXT_WARNING = ATTACHMENTS.register(
             "expedition_next_warning", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).copyOnDeath().build());
+    // Set by onPlayerRespawn, consumed by onPlayerTick - see RESPAWN_RECHECK_DELAY_TICKS above.
+    // No .copyOnDeath(): only ever read/written on an already-respawned (live) player, never
+    // needs to survive a death itself.
+    private static final DeferredHolder<AttachmentType<?>, AttachmentType<Long>> RESPAWN_RECHECK_TICK = ATTACHMENTS.register(
+            "expedition_respawn_recheck_tick", () -> AttachmentType.builder(() -> NO_RECHECK_PENDING).serialize(Codec.LONG).build());
 
     // Portal state is ServerLevel-scoped (the overworld), not per-player - only one portal open
     // at a time across the whole server. Ponytail: simplest thing that works for this mod's
@@ -424,6 +438,17 @@ public final class Expedition
     {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.level().isClientSide)
             return;
+
+        // Runs even after isAway() has already gone false (returnHome clears that but never
+        // touches RETURN_X/Y/Z) - a pending recheck means onPlayerRespawn's own teleport might
+        // not have stuck, so re-apply the same destination once more here.
+        long recheckTick = player.getData(RESPAWN_RECHECK_TICK);
+        if (recheckTick != NO_RECHECK_PENDING && player.level().getGameTime() >= recheckTick)
+        {
+            player.setData(RESPAWN_RECHECK_TICK, NO_RECHECK_PENDING);
+            player.teleportTo(player.getData(RETURN_X), player.getData(RETURN_Y), player.getData(RETURN_Z));
+        }
+
         if (!isAway(player))
             return;
 
@@ -486,6 +511,11 @@ public final class Expedition
         if (event.getEntity() instanceof ServerPlayer player && isAway(player))
         {
             returnHome(player, false);
+            // Belt-and-suspenders: re-apply the same teleport a few seconds from now too, in case
+            // something later in vanilla's own respawn handling (still in flight at this exact
+            // point) repositions the player again after this event returns - see
+            // RESPAWN_RECHECK_DELAY_TICKS.
+            player.setData(RESPAWN_RECHECK_TICK, player.level().getGameTime() + RESPAWN_RECHECK_DELAY_TICKS);
             player.sendSystemMessage(Component.literal(
                     "You died on your expedition - returned to where you left from.").withStyle(ChatFormatting.AQUA));
         }
