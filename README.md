@@ -45,8 +45,10 @@ expand the border.
     instead of typing a command; it also grants 30 seconds of immunity to being pulled back
     through a still-open portal, since it returns you to right where you left from. Dying on an
     expedition doesn't end it - you just respawn normally and get handed a second potion that
-    teleports you back to exactly where you died so you can pick up where you left off (or wait
-    it out; either way you're still auto-returned to base once your 10 minutes are up).
+    teleports you back to exactly where you died (with 30 seconds of near-total damage
+    resistance, so you're not just dropped straight back into whatever killed you) so you can
+    pick up where you left off - or wait it out; either way you're still auto-returned to base
+    once your 10 minutes are up.
 - Hopper items into the shop block to auto-sell them. Every 5 minutes you get a chat report
   prefixed `[Drakonix Shop]` of what your hopper automation sold (or "No hopper automation" if
   none sold anything) - the prefix makes it obvious which mod that recurring message is from.

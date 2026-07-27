@@ -3,6 +3,13 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Follow-up to the Expedition Resume Potion below: drinking it while an expedition's still
+  active now also grants 30 seconds of Resistance V (`RESUME_INVINCIBILITY_TICKS`) - landing
+  right back at a death spot is otherwise a near-guaranteed repeat death (still in whatever
+  killed them). Amplifier 4 zeroes out damage entirely per vanilla's own
+  `getDamageAfterMagicAbsorb` reduction formula (`(amplifier+1)*5%`, confirmed in decompiled
+  source), for anything not tagged `BYPASSES_RESISTANCE` (void, starvation, etc. still apply) -
+  the well-known "practical invincibility" trick, not a true invulnerability flag.
 - ~~The defensive double-teleport below (immediate + delayed recheck) didn't fix the reported
   underground-landing bug - a second real playtest still hit it~~ — replaced the whole
   forced-teleport-on-respawn approach: `onPlayerRespawn` no longer touches the player's position

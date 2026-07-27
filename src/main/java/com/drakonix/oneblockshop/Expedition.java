@@ -19,6 +19,7 @@ import net.minecraft.world.effect.InstantenousMobEffect;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -72,6 +73,7 @@ public final class Expedition
     // potion could immediately suck them right back through it. See RETURN_EFFECT/
     // PORTAL_IMMUNITY_EFFECT and the onLevelTick walk-in check below.
     private static final long PORTAL_IMMUNITY_TICKS = 30L * 20L;
+    private static final long RESUME_INVINCIBILITY_TICKS = 30L * 20L;
 
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, OneBlockShopMod.MODID);
@@ -159,7 +161,16 @@ public final class Expedition
                     if (livingEntity instanceof ServerPlayer player)
                     {
                         if (isAway(player))
+                        {
                             player.teleportTo(player.getData(DEATH_X), player.getData(DEATH_Y), player.getData(DEATH_Z));
+                            // Landing right back where they just died is otherwise a near-guaranteed
+                            // repeat death (still in the mob/fall/lava that killed them) - amplifier 4
+                            // is Resistance V, which zeroes out damage entirely per vanilla's own
+                            // getDamageAfterMagicAbsorb (confirmed in decompiled source: reduction
+                            // is (amplifier+1)*5%, capped at 100% at amplifier 4) for anything not
+                            // tagged BYPASSES_RESISTANCE (void, starvation, etc. still apply).
+                            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, (int) RESUME_INVINCIBILITY_TICKS, 4, false, true));
+                        }
                         else
                             player.sendSystemMessage(Component.literal(
                                     "That expedition has already ended.").withStyle(ChatFormatting.RED));
