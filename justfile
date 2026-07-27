@@ -49,3 +49,9 @@ tokens-sync:
 # tools/generate_expedition_icon.py). Rerun if the effect's color or icon design changes.
 expedition-icon-sync:
     python3 tools/generate_expedition_icon.py
+
+# Regenerates GeOre cluster loot table overrides (see tools/generate_geore_overrides.py) so
+# every geode cluster drops its full item with or without Silk Touch. Rerun after bumping the
+# pinned GeOre version in build.gradle in case its ore list changed.
+geore-overrides-sync:
+    python3 tools/generate_geore_overrides.py

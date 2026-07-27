@@ -3,6 +3,15 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~GeOre's ore geode clusters only dropped their real item with Silk Touch equipped, a lesser
+  "shard" otherwise (same pattern as vanilla's Amethyst Cluster) - didn't fit this mod's own
+  "sell raw resources" economy well~~ — `tools/generate_geore_overrides.py` (`just
+  geore-overrides-sync`) generates a loot table override per ore GeOre supports (29 of them,
+  extracted from its own jar, not guessed) that always drops the full cluster item regardless of
+  tool. Lives in *this* mod's own `data/geore/...` folder rather than a real GeOre dependency or
+  a per-world datapack - a mod's own `data/` folder is the only reliably always-on datapack
+  contribution with no per-world "enable this" step, and it's inert/harmless if GeOre isn't
+  installed.
 - ~~No QoL mods in the dev-runtime/modpack beyond the tech-mod-compat and playtesting-speed
   set~~ — added five, each checked against real Modrinth NeoForge 1.21.1 releases first (not
   guessed): Inventory Tweaks: ReFoxed, AppleSkin, Clumps (version-number collided across

@@ -22,7 +22,7 @@ version-pinning rationale next to each line; this file is just the quick-referen
 | [AppleSkin](https://modrinth.com/mod/appleskin) | 3.0.9+mc1.21 | Hunger/saturation HUD - handy while playtesting hopper-automation Sell loops. |
 | [Clumps](https://modrinth.com/mod/clumps) | `jo7lDoK4` (19.0.0.1) | Merges XP orbs - less lag/clutter around the guide book's suggested mob farms. |
 | [ParCool!](https://modrinth.com/mod/parcool) | 3.4.3.3 | Real parkour movement (wall-run/slide/mantle/roll) - the closest NeoForge substitute for FastMove - Parkour Movement, which has no Forge/NeoForge release at all (Fabric/Quilt only, confirmed exhaustively). |
-| [GeOre](https://modrinth.com/mod/geore) | 6.2.3 | Geode-style ore veins - fits this mod's own "sell raw resources" economy with more/better ore to gather. |
+| [GeOre](https://modrinth.com/mod/geore) | 6.2.3 | Geode-style ore veins - fits this mod's own "sell raw resources" economy with more/better ore to gather. Its cluster loot tables are overridden (`tools/generate_geore_overrides.py`, `just geore-overrides-sync`) to always drop the full item regardless of Silk Touch - bump that script's ore list too if this pin ever changes. |
 
 Not added: IC2 (no NeoForge/1.21.1 release exists for any IC2-lineage mod as of writing) and
 Thermal Expansion (last release is 1.20.1 Forge-only). Re-check Modrinth if either ships one.
