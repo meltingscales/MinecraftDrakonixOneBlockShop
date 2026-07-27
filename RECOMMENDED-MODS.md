@@ -18,6 +18,11 @@ version-pinning rationale next to each line; this file is just the quick-referen
 | [Jade](https://modrinth.com/mod/jade) | 15.10.5+neoforge | WAILA-equivalent tooltip HUD - see note below, not literally WAILA. |
 | [KotlinLangForge](https://modrinth.com/mod/kotlin-lang-forge) | 2.12.2-k2.4.10-3.0+neoforge | Kotlin mod-loader-language provider - hard-required by VeinMiner. |
 | [VeinMiner](https://modrinth.com/mod/veinminer) | `syKekkIm` (2.11.2) | Mines a whole ore vein in one break - fast resources for Sell/Explore playtesting, same reasoning as TreeChop. |
+| [Inventory Tweaks: ReFoxed](https://modrinth.com/mod/inventory-tweaks-refoxed) | 1.21.1-1.2.0 | Bulk inventory sort/move-into-storage QoL. |
+| [AppleSkin](https://modrinth.com/mod/appleskin) | 3.0.9+mc1.21 | Hunger/saturation HUD - handy while playtesting hopper-automation Sell loops. |
+| [Clumps](https://modrinth.com/mod/clumps) | `jo7lDoK4` (19.0.0.1) | Merges XP orbs - less lag/clutter around the guide book's suggested mob farms. |
+| [ParCool!](https://modrinth.com/mod/parcool) | 3.4.3.3 | Real parkour movement (wall-run/slide/mantle/roll) - the closest NeoForge substitute for FastMove - Parkour Movement, which has no Forge/NeoForge release at all (Fabric/Quilt only, confirmed exhaustively). |
+| [GeOre](https://modrinth.com/mod/geore) | 6.2.3 | Geode-style ore veins - fits this mod's own "sell raw resources" economy with more/better ore to gather. |
 
 Not added: IC2 (no NeoForge/1.21.1 release exists for any IC2-lineage mod as of writing) and
 Thermal Expansion (last release is 1.20.1 Forge-only). Re-check Modrinth if either ships one.

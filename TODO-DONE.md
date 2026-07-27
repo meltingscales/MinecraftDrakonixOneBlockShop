@@ -3,6 +3,18 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~No QoL mods in the dev-runtime/modpack beyond the tech-mod-compat and playtesting-speed
+  set~~ — added five, each checked against real Modrinth NeoForge 1.21.1 releases first (not
+  guessed): Inventory Tweaks: ReFoxed, AppleSkin, Clumps (version-number collided across
+  forge/fabric/neoforge, pinned by Modrinth version id like twerk-crop-growth/JEI/VeinMiner
+  before it), and GeOre. The fifth was going to be FastMove - Parkour Movement, but that mod has
+  zero Forge/NeoForge releases in its entire history (Fabric/Quilt only, confirmed exhaustively
+  across every version it's ever published) - added ParCool! instead as the closest real
+  NeoForge substitute (wall-run/slide/mantle/roll). ParCool's own `neoforge.mods.toml` ships an
+  unresolved `${neo_forge_version}` template placeholder instead of a literal version range
+  (likely a build-config oversight on the author's end) rather than the usual verifiable range,
+  so unlike the other four this one was trusted on a real boot-test alone, not the manifest -
+  confirmed loading fine.
 - Follow-up to the Expedition Resume Potion below: drinking it while an expedition's still
   active now also grants 30 seconds of Resistance V (`RESUME_INVINCIBILITY_TICKS`) - landing
   right back at a death spot is otherwise a near-guaranteed repeat death (still in whatever
