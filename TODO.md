@@ -20,6 +20,8 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
+- What are some mods that encourage exploration? Roguelike dungeons etc? baubles? artifact mods with powerful gear that spawns in chests?
+
 - **Tech-mod item pipe/pipe-equivalent compatibility** (AE2, IC2, GregTech, Thermal Expansion,
   EnderIO, etc.) - `ShopBlockEntity` only implements vanilla `WorldlyContainer`, which covers
   hoppers/droppers. Most modern tech mods push items via the NeoForge Capabilities API

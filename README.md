@@ -35,7 +35,8 @@ expand the border.
     player.
   - **Explore** — "Open Portal" and "Open Portal (Cave Only)" don't teleport you instantly:
     each opens a portal (particle effect, no real block) above that shop block for 30 seconds
-    with one random destination up to 10,000 blocks out, rerolled if it would land in an ocean.
+    with one random destination up to 1,000,000 blocks out (configurable - `exploreRange` in
+    `config/drakonixoneblockshop-common.toml`), rerolled if it would land in an ocean.
     Anyone who walks into it before it closes goes there together - a free team trip if more
     than one of you is nearby, purely by walking in at the same time, no separate team button or
     setup needed. Each traveler still gets their own 10-minute stay and personal auto-return to

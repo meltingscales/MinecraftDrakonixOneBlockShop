@@ -3,6 +3,18 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- ~~Expedition's teleport range was a hardcoded 10,000-block constant, no config system existed
+  in this mod at all~~ — bumped the default to 1,000,000 and built a standard NeoForge TOML
+  config from scratch (new `Config.java`, registered as `ModConfig.Type.COMMON` in
+  `OneBlockShopMod`'s constructor - it already received an unused `ModContainer` parameter),
+  lands at `config/drakonixoneblockshop-common.toml` like any other mod's config, editable
+  without recompiling. `exploreRange`'s max is capped at `Integer.MAX_VALUE / 4`, not
+  `MAX_VALUE` itself - `Expedition.rollDestination` spreads it into `range * 2 + 1` to roll a
+  coordinate, which would silently overflow int and wrap negative above that cap.
+  `SAFE_BORDER_SIZE` (derived from the range) went from a static-final field to a method,
+  computed fresh each teleport, so a config reload takes effect without a restart. Boot-tested
+  and confirmed the generated TOML directly: `exploreRange = 1000000`, correct comment, correct
+  `1 ~ 536870911` range.
 - Added Lithium (general game-logic performance optimization - not a rendering mod like Sodium,
   which is Fabric-only; the NeoForge port keeps the same name). No collision, no Modrinth-
   declared dependencies, and its own `neoforge.mods.toml` doesn't even constrain neoforge's

@@ -53,7 +53,6 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 @EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class Expedition
 {
-    static final int RANGE = 10_000;
     private static final long DURATION_TICKS = 10L * 60L * 20L;
     private static final long PORTAL_DURATION_TICKS = 30L * 20L;
     // How often the vanilla potion-icon countdown gets forced back in sync with END_TICK - see
@@ -62,9 +61,6 @@ public final class Expedition
     // Countdown warnings before auto-return, seconds remaining, descending - each fires once as
     // the remaining time crosses it.
     private static final int[] WARNING_SECONDS = {300, 180, 120, 60};
-    // Margin beyond RANGE so landing near the edge of the roll still can't trip the 5-block
-    // stray-safety-net in Border.onPlayerTick.
-    private static final double SAFE_BORDER_SIZE = 2.0 * (RANGE + 64) + 1.0;
     private static final long NOT_ON_EXPEDITION = Long.MIN_VALUE;
     private static final long PORTAL_INACTIVE = Long.MIN_VALUE;
     // Deliberately equal to PORTAL_DURATION_TICKS: returnHome puts the player right back where
@@ -245,11 +241,12 @@ public final class Expedition
 
     private static BlockPos rollDestination(ServerLevel overworld, RandomSource random, boolean caveOnly)
     {
+        int range = Config.EXPLORE_RANGE.get();
         BlockPos lastSurface = BlockPos.ZERO;
         for (int attempt = 0; attempt < MAX_LOCATION_ATTEMPTS; attempt++)
         {
-            int x = random.nextInt(RANGE * 2 + 1) - RANGE;
-            int z = random.nextInt(RANGE * 2 + 1) - RANGE;
+            int x = random.nextInt(range * 2 + 1) - range;
+            int z = random.nextInt(range * 2 + 1) - range;
             // A random spot this far out is essentially guaranteed to be in an unloaded chunk -
             // Level.getHeight/getHeightmapPos silently falls back to getMinBuildHeight() (the
             // void floor) for a chunk that isn't loaded yet, rather than generating it, which is
@@ -359,9 +356,17 @@ public final class Expedition
         }
     }
 
+    // Margin beyond the configured range so landing near the edge of the roll still can't trip
+    // the 5-block stray-safety-net in Border.onPlayerTick. Computed fresh (not cached) since
+    // Config.EXPLORE_RANGE can change via a config reload without a restart.
+    private static double safeBorderSize()
+    {
+        return 2.0 * (Config.EXPLORE_RANGE.get() + 64) + 1.0;
+    }
+
     private static void enterPortal(ServerPlayer player, ServerLevel overworld, double destX, double destY, double destZ)
     {
-        Border.beginExpeditionHold(overworld, SAFE_BORDER_SIZE);
+        Border.beginExpeditionHold(overworld, safeBorderSize());
 
         player.setData(RETURN_X, player.getX());
         player.setData(RETURN_Y, player.getY());
