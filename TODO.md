@@ -20,6 +20,8 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
+- Make sure Drakonix Shop Block sell prices are set up for almost all Minecraft items, as well as base items for our current mod pack.
+
 - **Tech-mod item pipe/pipe-equivalent compatibility** (AE2, IC2, GregTech, Thermal Expansion,
   EnderIO, etc.) - `ShopBlockEntity` only implements vanilla `WorldlyContainer`, which covers
   hoppers/droppers. Most modern tech mods push items via the NeoForge Capabilities API
