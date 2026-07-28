@@ -3,6 +3,52 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Audited Drakonix Shop Block sell pricing for real gaps instead of guessing which items needed
+  seeding. Method: temporarily dumped `BuiltInRegistries.ITEM.keySet()` during a real boot (all
+  4146 items across vanilla + every `localRuntime` mod), parsed every vanilla recipe JSON's
+  `result` field plus the same for EnderIO/Mekanism/AE2/Create/GeOre (recursively unzipping
+  EnderIO's jarjar-nested sub-jars, since its own top-level jar has no `data/` recipes at all),
+  and diffed "items with neither a seed price nor a recipe output" against `seed_prices.json` -
+  425 vanilla gaps, ~500 modded gaps once GeOre's own items were excluded. Fixed the ones that
+  actually matter economically (left cosmetic/creative-only items like flowers, corals, spawn
+  eggs, and command blocks at the harmless `DEFAULT_PRICE` fallback):
+  - Vanilla ore blocks (`minecraft:iron_ores`, `gold_ores`, etc. - vanilla ships these as real
+    tags, one per metal, each already bundling the deepslate/nether variant) were priced at 1
+    despite requiring mining - now match their raw-material seed price via `seed_prices_by_tag.json`.
+  - Stripped logs/wood/stems and both Nether stems were all defaulting to 1 despite being the
+    same material as their already-priced non-stripped form (stripping is a player interaction,
+    not a recipe, so the recursive pricer could never reach them) - one `minecraft:logs` tag
+    entry (that vanilla tag already bundles every species' stripped/unstripped/log/wood forms)
+    fixes all of them at once.
+  - Pottery sherds (`minecraft:decorated_pot_sherds` tag) and the common creeper-drop music discs
+    (`minecraft:creeper_drop_music_discs` tag) were undervalued at 1 despite being real loot,
+    now priced as a group; the rarer structure-only discs and the Pigstep-disc fragment got
+    individual seed prices instead since they're not in that tag.
+  - Copper oxidation states (exposed/weathered/oxidized block + door + trapdoor) aren't reachable
+    by recipe (oxidizing is a time-based world effect, not a recipe) - seeded to match their
+    unoxidized counterparts.
+  - Notable no-recipe rare loot (totem of undying, elytra, trident, heart of the sea, enchanted
+    golden apple, saddle, name tag, goat horn, armadillo scute, heavy core, breeze rod, trial
+    keys, disc fragment, sniffer egg, experience bottle, dragon breath, dragon egg, banner
+    patterns) was defaulting to the same price as dirt - now priced by rarity.
+  - GeOre: every one of its 29 ore materials' `_shard` and `_cluster` items got a real price
+    (previously ALL defaulted to 1 - GeOre uses its own per-material item IDs, not any tag our
+    existing table covered) - reused this project's existing per-metal tiers where the material
+    overlaps a vanilla/common one, and added new tiers for GeOre-only fictional materials
+    (allthemodium/vibranium/unobtainium roughly following All The Mods' own progression order,
+    ruby/sapphire/topaz as mid gems, tungsten/monazite/uraninite/black_quartz as new real-mineral
+    tiers).
+  - Mekanism's entire ore-processing chain (ore/raw/dust/shard/crystal/dirty_dust/clump, for
+    copper/gold/iron/lead/osmium/tin/uranium) plus its standalone materials (fluorite, salt,
+    sulfur, lithium, bronze, steel, refined obsidian, netherite dust, sawdust) were all
+    unreachable by recipe (its processing recipes are custom machine recipe types, not standard
+    `Ingredient`-based crafting/smelting) - added via new `c:shards`/`c:crystals`/
+    `c:dirty_dusts`/`c:clumps` tag categories (verified these `c:` tags actually exist in
+    Mekanism's own jar before relying on them) plus new `c:dusts`/`c:ores` entries for the
+    materials that didn't already have one.
+  - Create's crusher-output "crushed raw <metal>" items (an alternate raw-ore processing stage,
+    untagged even though the ore/raw-material forms already are) and AE2's certus quartz family
+    (crystal/charged crystal/dust, via `c:gems` and `c:dusts`) got the same treatment.
 - Follow-up fixes after a self-review of the three items just above (chest banking, obsidian
   recipe, difficulty config):
   - Removed the `modpack/config/dissolver-enhanced/dissolver_enhanced.properties` override -

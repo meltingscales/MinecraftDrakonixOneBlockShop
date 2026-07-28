@@ -20,8 +20,6 @@ Tracked against README.md's feature list.
 
 ## Not built yet
 
-- Make sure Drakonix Shop Block sell prices are set up for almost all Minecraft items, as well as base items for our current mod pack.
-
 - **Tech-mod item pipe/pipe-equivalent compatibility** (AE2, IC2, GregTech, Thermal Expansion,
   EnderIO, etc.) - `ShopBlockEntity` only implements vanilla `WorldlyContainer`, which covers
   hoppers/droppers. Most modern tech mods push items via the NeoForge Capabilities API
@@ -77,13 +75,17 @@ Tracked against README.md's feature list.
   constants in `ShopScreen` (no layout system) - fine at 176x166 with 4 buy offers, would need
   re-tuning if the offer list or image size grows much.
   - Idea: ShopScreen should scroll or resize dynamically to fit the offer list and image size.
-- Tag-based tech-mod pricing (`pricing/seed_prices_by_tag.json`) only covers `c:raw_materials`,
-  `c:ores`, and `c:dusts` for a bounded list of common metals (copper, tin, zinc, aluminum,
-  lead, nickel, silver, osmium, platinum, uranium, iridium) - not gems, and not every metal a
-  given tech mod might add. Deliberately narrow: those three tag families are the recipe-less
-  root of an ore-processing chain (nothing crafts them), so they're the one tier the recursive
-  pricer genuinely can't reach on its own. Expand the metal list or add gem tags if a real gap
-  shows up in practice.
+- Tag- and seed-based pricing was audited against a real registry dump (every item across
+  vanilla + every `localRuntime` mod, cross-referenced against every recipe output vanilla and
+  each tech mod ships, including EnderIO's jarjar-nested sub-jars) rather than guessed - see
+  TODO-DONE.md. Covers vanilla ore blocks/stripped logs/pottery sherds/music discs/copper
+  oxidation states/rare no-recipe loot, plus every GeOre material, Mekanism's full ore-processing
+  chain (ore/raw/dust/shard/crystal/dirty_dust/clump), Create's crushed-raw ores, and AE2's
+  certus quartz family. Not literally exhaustive - vanilla's ~250 remaining recipe-less items
+  (flowers, corals, saplings, vines, spawn eggs, command/technical blocks) are cosmetic/creative-
+  only and were deliberately left at the `DEFAULT_PRICE` fallback rather than hand-priced, along
+  with EnderIO/Create/Mekanism/AE2 items whose names didn't look like a raw-resource root when
+  audited. Re-run the same audit if a new mod's raw resource turns out to default to 1.
 - The 26 token combine/split recipes (`tools/generate_tokens.py`) have no recipe-book unlock
   advancement - they still work fine in survival (a crafting-grid match doesn't require the
   recipe to be "known", only the recipe book's highlighting does), they just won't show up in
