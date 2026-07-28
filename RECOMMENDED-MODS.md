@@ -44,7 +44,12 @@ what current packs use in its place. Same story for ProjectE - no Modrinth listi
 all (not just missing this version), checked by slug, by search, and by a search for its
 original author (sinkillerj); likely CurseForge-exclusive. Also not FastMove - Parkour Movement,
 which is Fabric/Quilt-only with zero Forge/NeoForge releases ever - ParCool! (already in the
-table above) is its NeoForge substitute.
+table above) is its NeoForge substitute. Also not Bonsai Trees (ferreusveritas, the CurseForge
+mod for passively growing miniature trees in a pot) - no Modrinth listing under any slug tried;
+likely CurseForge-exclusive. "WASD Bonsai Pots" is a different, unrelated project that happens
+to serve the same purpose and does exist on Modrinth for 1.21.1, but as a pure vanilla datapack
+(loader "datapack", not a mod jar) - would need bundling differently than everything else in
+this table if it's ever picked up instead.
 
 Removed for now: GregTech CEu Modern - see [FUTURE-MOD-COMPAT.md](FUTURE-MOD-COMPAT.md) for the
 version/compatibility notes to pick back up when it's re-added.
