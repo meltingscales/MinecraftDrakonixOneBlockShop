@@ -3,6 +3,14 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Fixed the Drakonix Block Shop losing its Unsellable curse when broken and picked back up.
+  The curse was only ever applied to the ItemStack handed out at first login
+  (`StarterKit.cursedUnsellable`) - breaking a placed block goes through its loot table instead,
+  which just dropped a fresh, uncursed `ItemStack(this)` with no memory of the curse. Added a
+  `minecraft:set_enchantments` function to the block's loot table entry
+  (`data/drakonixoneblockshop/loot_table/blocks/drakonix_block_shop.json`) so every drop -
+  however it was broken - always carries `drakonixoneblockshop:unsellable` at level 1, matching
+  the curse it's given with at login.
 - Added a "Drakonix Guide" entry to the shop GUI's Packs tab so a player who lost their guide
   book can pull a fresh (re-cursed, current-version-titled) one, same 1-hour cooldown as the
   tech-mod packs rather than a special free-for-all. `StarterPacks.tryClaim` special-cases this

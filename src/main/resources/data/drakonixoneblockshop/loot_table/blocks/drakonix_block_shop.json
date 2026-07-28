@@ -8,7 +8,18 @@
         { "condition": "minecraft:survives_explosion" }
       ],
       "entries": [
-        { "type": "minecraft:item", "name": "drakonixoneblockshop:drakonix_block_shop" }
+        {
+          "type": "minecraft:item",
+          "name": "drakonixoneblockshop:drakonix_block_shop",
+          "functions": [
+            {
+              "function": "minecraft:set_enchantments",
+              "enchantments": {
+                "drakonixoneblockshop:unsellable": 1
+              }
+            }
+          ]
+        }
       ]
     }
   ]
