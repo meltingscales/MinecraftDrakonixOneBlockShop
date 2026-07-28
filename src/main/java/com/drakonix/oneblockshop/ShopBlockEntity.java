@@ -23,8 +23,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -102,7 +102,7 @@ public class ShopBlockEntity extends BlockEntity implements WorldlyContainer, Me
     {
         if (total <= 0)
             return 0L;
-        ChestBlockEntity chest = findAdjacentChest(serverLevel);
+        Container chest = findAdjacentChest(serverLevel);
         if (chest == null)
             return 0L;
 
@@ -117,14 +117,24 @@ public class ShopBlockEntity extends BlockEntity implements WorldlyContainer, Me
         return deposited;
     }
 
+    // ChestBlock.getContainer is the same vanilla helper hoppers themselves use to resolve a
+    // chest neighbor (HopperBlockEntity.getContainerAt) - it transparently returns the merged
+    // 54-slot CompoundContainer for a double chest instead of just one 27-slot half, and
+    // override=true bypasses the "blocked" check (cat/hostile-mob-on-top) the same way a real
+    // hopper does, so this never treats a technically-blocked chest as absent.
     @Nullable
-    private ChestBlockEntity findAdjacentChest(ServerLevel serverLevel)
+    private Container findAdjacentChest(ServerLevel serverLevel)
     {
         for (Direction direction : Direction.values())
         {
-            BlockEntity neighbor = serverLevel.getBlockEntity(this.getBlockPos().relative(direction));
-            if (neighbor instanceof ChestBlockEntity chest)
-                return chest;
+            BlockPos neighborPos = this.getBlockPos().relative(direction);
+            BlockState neighborState = serverLevel.getBlockState(neighborPos);
+            if (neighborState.getBlock() instanceof ChestBlock chestBlock)
+            {
+                Container container = ChestBlock.getContainer(chestBlock, neighborState, serverLevel, neighborPos, true);
+                if (container != null)
+                    return container;
+            }
         }
         return null;
     }

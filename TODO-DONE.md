@@ -3,6 +3,30 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Follow-up fixes after a self-review of the three items just above (chest banking, obsidian
+  recipe, difficulty config):
+  - Removed the `modpack/config/dissolver-enhanced/dissolver_enhanced.properties` override -
+    verified via `javap` disassembly of the mod's own `ModConfig.class` that it only writes
+    defaults when the file doesn't already exist (`Files.exists` guard before generating), so
+    the override could only ever help brand-new instances - anyone with an already-generated
+    config from before this change would keep whatever `difficulty` they already had regardless
+    of what we shipped. Not worth the false confidence; removed rather than kept as dead weight.
+  - `dissolver_enhanced:crystal_frame_item` (the ingredient the new obsidian recipe still needs)
+    now has its diamond swapped for an iron ingot via a same-path datapack override
+    (`data/dissolver_enhanced/recipe/crystal_frame_item.json` bundled in our own mod - same
+    override-by-exact-path mechanism already used for GeOre's loot tables) - the diamond was the
+    real cost gatekeeper, not the amethyst/redstone. Keeps the recipe's shape and flavor, cuts
+    the actual barrier.
+  - `ShopBlockEntity.findAdjacentChest` now resolves neighbors via `ChestBlock.getContainer(...,
+    override=true)` - the same vanilla helper real hoppers use (`HopperBlockEntity.getContainerAt`)
+    - instead of a raw `getBlockEntity() instanceof ChestBlockEntity` check. Fixes two bugs: a
+    double chest was only ever getting one 27-slot half banked into (the other half sat unused
+    even when the first was full), and a "blocked" chest (mob/cat sitting on top) would've been
+    treated as no-chest-found instead of still being usable, exactly like a real hopper can still
+    use a blocked chest.
+  - Documented in `GUIDE.md` that tokens stored inside a backpack/bag don't count toward the
+    balance the shop can see or spend (`Wallet.get`/`removeAllTokens` only scan the player's
+    main inventory slots) - not a bug, just needed to be said somewhere a player would read it.
 - Added a new `drakonixoneblockshop:dissolver_block_obsidian` crafting recipe (data-driven, in
   our own mod's data folder even though the output is `dissolver_enhanced:dissolver_block`) as an
   extra way to craft the Dissolver Enhanced block: 8x `dissolver_enhanced:crystal_frame_item`

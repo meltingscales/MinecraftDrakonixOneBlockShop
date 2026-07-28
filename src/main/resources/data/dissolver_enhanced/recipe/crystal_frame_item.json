@@ -1,0 +1,17 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        "RAR",
+        "ADA",
+        "RAR"
+    ],
+    "key": {
+        "A": { "item": "minecraft:amethyst_shard" },
+        "D": { "item": "minecraft:iron_ingot" },
+        "R": { "item": "minecraft:redstone" }
+    },
+    "result": {
+        "id": "dissolver_enhanced:crystal_frame_item"
+    }
+}

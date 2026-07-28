@@ -12,7 +12,7 @@ Right-click the shop to sell items by hand. It also buys rare items at a high pr
 
 Feed a hopper into the shop to auto-sell. Every item has a price - raw resources are hand-set, anything craftable is priced off its cheapest recipe. Put a chest next to the shop and hopper sales will bank their tokens there for you to collect, instead of minting straight into your inventory.
 
-Money is physical: selling pays out Drakonix OneBlockShop Tokens (denominations 1 through 8192, doubling each time) straight into your inventory, and buying/expanding takes them back with correct change. Craft two matching tokens together to combine them into the next size up, or craft a single token alone to split it into two of the size below.
+Money is physical: selling pays out Drakonix OneBlockShop Tokens (denominations 1 through 8192, doubling each time) straight into your inventory, and buying/expanding takes them back with correct change. Craft two matching tokens together to combine them into the next size up, or craft a single token alone to split it into two of the size below. Your balance is whatever's sitting loose in your hotbar and main inventory - tokens tucked away inside a backpack or other bag don't count toward it, so take them out before you try to spend them.
 
 Sell enough and your border expands outward, giving you more room to build farms. Every expansion after your first calls in a monster wave from just past the new edge - bigger each time - so have a weapon and some armor ready before you buy one. Expansions also have a 30-second cooldown, so you can't just spam the button.
 
