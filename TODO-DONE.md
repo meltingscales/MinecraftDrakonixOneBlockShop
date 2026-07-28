@@ -3,6 +3,15 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Added Create - real deep automation via rotational "mechanical" power, a genuinely different
+  playstyle than AE2/Mekanism/EnderIO's item-pipe style, and a good source of new sellable
+  materials. Latest (6.0.10+mc1.21.1) needs `neoforge>=21.1.219`, above this project's pinned
+  `neo_version` (21.1.176) - pinned to 6.0.0 instead, the oldest 1.21.1 Modrinth build, whose
+  `neoforge.mods.toml` only needs `neoforge>=21.1.125`, satisfied. Its two hard-required
+  dependencies (Flywheel, Ponder) plus Registrate are all jarjar'd inside Create's own jar
+  (confirmed via its `META-INF/jarjar` contents) - no separate `localRuntime` lines needed for
+  them, same mechanism already relied on for EnderIO's own nested jars. No version-number
+  collision. Synced via `just modpack-sync` (28 mods total now).
 - `GUIDE.md` (the in-game guide book, read live from this file at first login - no separate
   generator script) hadn't been touched since most of this session's features shipped. Added
   paragraphs covering: Cave Only expedition mode, the death-during-expedition resume potion,

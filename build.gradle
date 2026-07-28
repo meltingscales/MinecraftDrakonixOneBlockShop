@@ -291,6 +291,17 @@ dependencies {
     // version id instead. Needs neoforge>=21.0.133-beta, satisfied.
     localRuntime "maven.modrinth:artifacts:rGPw090r"
 
+    // Dev-only tech mod, real deep automation (rotational "mechanical" power, not item-pipe-based
+    // like AE2/Mekanism/EnderIO) - a genuinely different playstyle, and a good source of new
+    // sellable materials. NOT latest (6.0.10+mc1.21.1 needs neoforge>=21.1.219, above our
+    // neo_version): pinned to 6.0.0, the oldest 1.21.1 build on Modrinth, whose neoforge.mods.toml
+    // only needs neoforge>=21.1.125, satisfied by our neo_version (21.1.176). No version-number
+    // collision (unique to this neoforge build). Its two hard-required dependencies (flywheel,
+    // ponder) plus Registrate are all jarjar'd inside Create's own jar (confirmed via its
+    // META-INF/jarjar contents) - no separate localRuntime lines needed for them, same mechanism
+    // already relied on for EnderIO's own nested jars.
+    localRuntime "maven.modrinth:create:1.21.1-6.0.0"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"

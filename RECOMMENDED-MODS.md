@@ -34,6 +34,7 @@ version-pinning rationale next to each line; this file is just the quick-referen
 | [Explorer's Compass](https://modrinth.com/mod/explorers-compass) | 1.21.1-3.4.0-neoforge | Points at the nearest structure of a chosen type - pairs with the above, "land somewhere, then find what's nearby" instead of wandering blind. |
 | [Curios API](https://modrinth.com/mod/curios) | 9.5.1+1.21.1 | Modern successor to Baubles (accessory slots) - added mainly so Artifacts below can use real accessory slots instead of its no-Curios fallback. |
 | [Artifacts](https://modrinth.com/mod/artifacts) | `rGPw090r` (13.2.1) | "Adds various treasure items that can be found through exploration" (its own description) - exact match for finding powerful gear while out on an Explore-tab trip. |
+| [Create](https://modrinth.com/mod/create) | 1.21.1-6.0.0 | Real deep automation via rotational "mechanical" power, a different playstyle than AE2/Mekanism/EnderIO's item-pipe style. Pinned older than latest (6.0.10 needs neoforge>=21.1.219, above our pin) - 6.0.0 only needs neoforge>=21.1.125. Its Flywheel/Ponder/Registrate dependencies are jarjar'd inside its own jar, no separate lines needed. |
 
 Not added: IC2 (no NeoForge/1.21.1 release exists for any IC2-lineage mod as of writing) and
 Thermal Expansion (last release is 1.20.1 Forge-only). Re-check Modrinth if either ships one.
