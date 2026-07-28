@@ -36,7 +36,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 public final class StarterKit
 {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final int PAGE_BUDGET = 260;
+    private static final int PAGE_BUDGET = 250;
 
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, OneBlockShopMod.MODID);

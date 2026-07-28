@@ -3,6 +3,9 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Guide book pages were still running a bit tight visually even after the word-wrap pagination
+  fix above - trimmed `StarterKit.PAGE_BUDGET` from 260 to 250 chars/page.
+
 - Fixed the Drakonix Guide book's text getting visually cut off on some pages.
   `StarterKit.pages()` split `GUIDE.md` on blank lines and only checked whether a *whole*
   paragraph would fit before adding it to the current page - a paragraph longer than
