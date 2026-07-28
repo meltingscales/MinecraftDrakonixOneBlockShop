@@ -10,7 +10,7 @@ Keep Inventory is on by default in this world. A 1-block start means you can lan
 
 Right-click the shop to sell items by hand. It also buys rare items at a high price if you can't produce them yet, like lava buckets or sugarcane.
 
-Feed a hopper into the shop to auto-sell. Every item has a price - raw resources are hand-set, anything craftable is priced off its cheapest recipe.
+Feed a hopper into the shop to auto-sell. Every item has a price - raw resources are hand-set, anything craftable is priced off its cheapest recipe. Put a chest next to the shop and hopper sales will bank their tokens there for you to collect, instead of minting straight into your inventory.
 
 Money is physical: selling pays out Drakonix OneBlockShop Tokens (denominations 1 through 8192, doubling each time) straight into your inventory, and buying/expanding takes them back with correct change. Craft two matching tokens together to combine them into the next size up, or craft a single token alone to split it into two of the size below.
 
@@ -22,6 +22,6 @@ Good early farms: a simple mob farm for drops, an AFK fishing spot for enchanted
 
 Your Explorer's Compass points you at the nearest structure of whatever type you pick, and When Dungeons Arise scatters real ones worth finding. Chests out there might turn up an Artifacts treasure - accessories with real effects, wearable in a Curios slot once you find one.
 
-Dissolver Enhanced adds its own EMC-style economy alongside the shop's tokens: learn an item, dissolve extras of it into stored value, then spend that value to recreate anything else you've already learned. Handy for turning a glut of one resource into whatever you're actually short on.
+Dissolver Enhanced adds its own EMC-style economy alongside the shop's tokens: learn an item, dissolve extras of it into stored value, then spend that value to recreate anything else you've already learned. Handy for turning a glut of one resource into whatever you're actually short on. Don't have a nether star yet? Craft the Dissolver block with a block of obsidian in the center instead, surrounded by crystal frames - same result, no End trip required.
 
 Automate first, sell second. The fastest way to grow your border is a farm you never have to babysit.

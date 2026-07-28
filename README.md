@@ -57,6 +57,9 @@ expand the border.
 - Hopper items into the shop block to auto-sell them. Every 5 minutes you get a chat report
   prefixed `[Drakonix Shop]` of what your hopper automation sold (or "No hopper automation" if
   none sold anything) - the prefix makes it obvious which mod that recurring message is from.
+  If a vanilla chest sits next to the shop block, hopper-triggered sales bank their proceeds as
+  physical tokens in that chest instead of your inventory - handy for an always-on sell line that
+  piles up cash for you to collect later rather than needing you online to receive it.
 - Starter items (pickaxe, shop block, guide book) carry an `Unsellable` curse so they can't be
   accidentally sold or hoppered away.
 - Money is physical: Drakonix OneBlockShop Token items, denominations 1 through 8192 (doubling

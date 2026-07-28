@@ -102,7 +102,7 @@ public final class StarterKit
     {
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
         book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(
-                Filterable.passThrough("Drakonix Guide"), "Drakonix", 0, pages(), true));
+                Filterable.passThrough("Drakonix Guide v" + OneBlockShopMod.modVersion), "Drakonix", 0, pages(), true));
         return book;
     }
 

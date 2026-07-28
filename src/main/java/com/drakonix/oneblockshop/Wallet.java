@@ -1,6 +1,8 @@
 package com.drakonix.oneblockshop;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -8,6 +10,7 @@ import javax.annotation.Nullable;
 
 import com.mojang.serialization.Codec;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
@@ -108,6 +111,15 @@ public final class Wallet
 
     private static void mint(Player player, long amount)
     {
+        for (ItemStack stack : mintTokens(player.level().registryAccess(), amount))
+            giveOrDrop(player, stack);
+    }
+
+    // Also used by ShopBlockEntity to physically bank hopper-sale proceeds into an adjacent
+    // chest instead of the owner's inventory - same greedy denomination decomposition either way.
+    public static List<ItemStack> mintTokens(HolderLookup.Provider registries, long amount)
+    {
+        List<ItemStack> stacks = new ArrayList<>();
         long[] counts = TokenDenominations.decompose(amount);
         for (int i = 0; i < TokenDenominations.DESCENDING.length; i++)
         {
@@ -116,10 +128,11 @@ public final class Wallet
             for (int given = 0; given < count; )
             {
                 int stackSize = Math.min(64, count - given);
-                giveOrDrop(player, cursedToken(player, value, stackSize));
+                stacks.add(cursedToken(registries, value, stackSize));
                 given += stackSize;
             }
         }
+        return stacks;
     }
 
     private static void giveOrDrop(Player player, ItemStack stack)
@@ -130,11 +143,11 @@ public final class Wallet
 
     // Unsellable, same as the starter kit's items (StarterKit.cursedUnsellable) - otherwise nothing
     // stops selling a token back through the shop for more tokens.
-    private static ItemStack cursedToken(Player player, long value, int count)
+    private static ItemStack cursedToken(HolderLookup.Provider registries, long value, int count)
     {
         ItemStack stack = new ItemStack(OneBlockShopMod.tokenItem(value), count);
         EnchantmentHelper.updateEnchantments(stack, mutable ->
-                mutable.set(player.level().registryAccess().holderOrThrow(OneBlockShopMod.UNSELLABLE), 1));
+                mutable.set(registries.holderOrThrow(OneBlockShopMod.UNSELLABLE), 1));
         return stack;
     }
 

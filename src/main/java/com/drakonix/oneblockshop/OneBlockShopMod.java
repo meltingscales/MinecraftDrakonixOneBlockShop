@@ -39,6 +39,11 @@ public class OneBlockShopMod
     public static final String MODID = "drakonixoneblockshop";
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    // Set from the real running mod's own metadata (neoforge.mods.toml's version="${mod_version}"
+    // is filled in from gradle.properties at build time) rather than hand-duplicating
+    // mod_version as a second Java constant that could drift out of sync with it.
+    public static String modVersion = "unknown";
+
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
@@ -102,6 +107,8 @@ public class OneBlockShopMod
 
     public OneBlockShopMod(IEventBus modEventBus, ModContainer modContainer)
     {
+        modVersion = modContainer.getModInfo().getVersion().toString();
+
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         BLOCK_ENTITIES.register(modEventBus);

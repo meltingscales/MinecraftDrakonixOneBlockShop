@@ -3,6 +3,37 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Added a new `drakonixoneblockshop:dissolver_block_obsidian` crafting recipe (data-driven, in
+  our own mod's data folder even though the output is `dissolver_enhanced:dissolver_block`) as an
+  extra way to craft the Dissolver Enhanced block: 8x `dissolver_enhanced:crystal_frame_item`
+  around a `minecraft:obsidian` center, instead of the mod's own hard-coded `DynamicDissolverRecipe`
+  (a Java `CustomRecipe`, not data-driven - confirmed via `javap` disassembly of the mod's own
+  class, since no sources jar exists for it) which centers on a nether star at "hard" difficulty
+  (default) or redstone/phantom membrane at "easy"/"normal". This is additive, not a replacement -
+  the mod's own difficulty-tiered recipe still exists alongside it; players can use whichever
+  ingredient they have on hand. Coexists safely if Dissolver Enhanced isn't installed - a missing-
+  item recipe just fails to parse and gets skipped by vanilla's per-file recipe loading, no crash.
+- Drakonix Shop Block sales triggered by a hopper now prefer physically banking their sale
+  proceeds (real minted token items, via `HopperBlockEntity.addItem` - vanilla's own generic
+  container-insertion helper, verified against decompiled source) into an adjacent vanilla chest
+  if one exists next to the shop block, instead of minting straight into the owner's inventory.
+  Falls back to the normal `Wallet.add`/`creditOffline` path for any shortfall (no chest, or chest
+  full) so a sale is never silently lost. GUI-triggered sales are unaffected - only hopper-driven
+  ones (`pendingHopperInsertion`) look for a chest. `Wallet.mint`'s denomination-decomposition
+  logic was factored out into a public `Wallet.mintTokens(HolderLookup.Provider, long)` so both
+  the player-inventory path and this new chest path share the same greedy minting.
+- Dissolver Enhanced's crafting-difficulty config (`config/dissolver-enhanced/
+  dissolver_enhanced.properties`, key `difficulty`) now ships overridden to `easy` in the modpack
+  (`modpack/config/dissolver-enhanced/dissolver_enhanced.properties`, delivered via packwiz's
+  `overrides/` mechanism, same as the existing VeinMiner `mustSneak` override) - the mod's default
+  `hard` recipe was judged too punishing for this pack's early game. Verified end-to-end with a
+  real `packwiz refresh` + `packwiz modrinth export` test that the file lands correctly inside the
+  exported `.mrpack`.
+- The Drakonix Guide book's title now includes the mod's own running version
+  (`"Drakonix Guide v" + OneBlockShopMod.modVersion`) instead of a bare "Drakonix Guide" -
+  `modVersion` is read once at mod construction from the real `ModContainer`'s own metadata
+  (`modContainer.getModInfo().getVersion().toString()`, which resolves `neoforge.mods.toml`'s
+  `version="${mod_version}"` templating), not a second hand-duplicated constant that could drift.
 - Added Create - real deep automation via rotational "mechanical" power, a genuinely different
   playstyle than AE2/Mekanism/EnderIO's item-pipe style, and a good source of new sellable
   materials. Latest (6.0.10+mc1.21.1) needs `neoforge>=21.1.219`, above this project's pinned

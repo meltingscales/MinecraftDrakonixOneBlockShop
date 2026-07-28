@@ -1,0 +1,16 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+    ],
+    "key": {
+        "C": { "item": "dissolver_enhanced:crystal_frame_item" },
+        "D": { "item": "minecraft:obsidian" }
+    },
+    "result": {
+        "id": "dissolver_enhanced:dissolver_block"
+    }
+}

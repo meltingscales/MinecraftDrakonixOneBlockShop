@@ -24,6 +24,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 // Backs both the right-click GUI slot and hopper insertion, so an item dropped in from either
@@ -74,16 +76,57 @@ public class ShopBlockEntity extends BlockEntity implements WorldlyContainer, Me
         long unitPrice = Pricing.priceOf(stack.getItem(), this.level.getRecipeManager(), this.level.registryAccess());
         long total = unitPrice * stack.getCount();
 
-        ServerPlayer owner = serverLevel.getServer().getPlayerList().getPlayer(this.ownerUUID);
-        if (owner != null)
-            Wallet.add(owner, total);
-        else
-            Wallet.creditOffline(serverLevel, this.ownerUUID, total);
+        long banked = viaHopper ? depositIntoAdjacentChest(serverLevel, total) : 0L;
+        long remainder = total - banked;
+        if (remainder > 0)
+        {
+            ServerPlayer owner = serverLevel.getServer().getPlayerList().getPlayer(this.ownerUUID);
+            if (owner != null)
+                Wallet.add(owner, remainder);
+            else
+                Wallet.creditOffline(serverLevel, this.ownerUUID, remainder);
+        }
 
         if (viaHopper)
             HopperSalesTracker.recordSale(this.ownerUUID, stack.getItem(), stack.getCount());
         playSaleFeedback(serverLevel);
         this.items.set(0, ItemStack.EMPTY);
+    }
+
+    // Hopper-triggered sales prefer physically banking proceeds in an adjacent vanilla chest (a
+    // "cash register" drawer) over minting straight into the owner's inventory - lets an
+    // automated sell line pile up collectible tokens while the owner's off exploring. Returns how
+    // much of `total` actually got deposited; any shortfall (no chest, or chest too full) still
+    // falls back to the normal Wallet credit path in trySell so a sale is never silently lost.
+    private long depositIntoAdjacentChest(ServerLevel serverLevel, long total)
+    {
+        if (total <= 0)
+            return 0L;
+        ChestBlockEntity chest = findAdjacentChest(serverLevel);
+        if (chest == null)
+            return 0L;
+
+        long deposited = 0L;
+        for (ItemStack tokenStack : Wallet.mintTokens(serverLevel.registryAccess(), total))
+        {
+            long value = OneBlockShopMod.tokenValue(tokenStack.getItem());
+            int before = tokenStack.getCount();
+            ItemStack leftover = HopperBlockEntity.addItem(null, chest, tokenStack, null);
+            deposited += value * (before - leftover.getCount());
+        }
+        return deposited;
+    }
+
+    @Nullable
+    private ChestBlockEntity findAdjacentChest(ServerLevel serverLevel)
+    {
+        for (Direction direction : Direction.values())
+        {
+            BlockEntity neighbor = serverLevel.getBlockEntity(this.getBlockPos().relative(direction));
+            if (neighbor instanceof ChestBlockEntity chest)
+                return chest;
+        }
+        return null;
     }
 
     // Cheap juice: a sale should feel like a sale. Broadcasts to everyone nearby, not just the

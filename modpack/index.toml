@@ -5,6 +5,10 @@ file = "config/Veinminer/settings.json"
 hash = "22531bd2883d48198bc6b77a94ec127be9c7c9b942bb0914fd4ae0074da475c2"
 
 [[files]]
+file = "config/dissolver-enhanced/dissolver_enhanced.properties"
+hash = "0df49637f6333fd1f618fa97cb6409eb2b57dc06e69b55498e83be965d3d0dd7"
+
+[[files]]
 file = "mods/ae2.pw.toml"
 hash = "ed45c352a49b65c7221e57d979d0c6935522dfef4968aa5b7421f4d3e670ce40"
 metafile = true
