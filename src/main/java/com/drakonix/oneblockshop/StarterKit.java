@@ -80,7 +80,7 @@ public final class StarterKit
 
     // Marked with the Unsellable curse so a stray hopper (or an absent-minded drop into the
     // shop's GUI slot) can't vanish your only pickaxe, guide, or shop block.
-    private static ItemStack cursedUnsellable(ItemStack stack, Player player)
+    static ItemStack cursedUnsellable(ItemStack stack, Player player)
     {
         EnchantmentHelper.updateEnchantments(stack, mutable ->
                 mutable.set(player.level().registryAccess().holderOrThrow(OneBlockShopMod.UNSELLABLE), 1));
@@ -98,7 +98,9 @@ public final class StarterKit
         return new ItemStack(BuiltInRegistries.ITEM.get(EXPLORERS_COMPASS_ID));
     }
 
-    private static ItemStack guideBook()
+    // Package-visible so StarterPacks can re-issue a fresh copy from the shop's Packs tab
+    // (e.g. a lost/dropped book) without duplicating the version-titled book-building logic.
+    static ItemStack guideBook()
     {
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
         book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(

@@ -52,7 +52,15 @@ public final class StarterPacks
     // items from, and GregTech was removed (see FUTURE-MOD-COMPAT.md). Every item id below was
     // checked against that mod's real recipe/lang data (extracted from the actual jar) before
     // being added here, not guessed.
+    // Not a tech-mod bundle - lets a player pull a fresh (re-cursed, current-version-titled)
+    // Drakonix Guide from the Packs tab if they lost their original, same 1-hour cooldown as
+    // every other pack rather than a special-cased free-for-all. Handled separately in
+    // tryClaim() since its item isn't a plain registry id/count (StarterKit.guideBook() builds
+    // a WRITTEN_BOOK with dynamic page/version content), so its PackItem list stays empty.
+    private static final String GUIDE_PACK_ID = "guide";
+
     public static final List<Pack> PACKS = List.of(
+            new Pack(GUIDE_PACK_ID, "Drakonix Guide", List.of()),
             new Pack("ae2", "Applied Energistics 2", List.of(
                     PackItem.item("ae2:controller", 1),
                     PackItem.item("ae2:drive", 1),
@@ -139,6 +147,14 @@ public final class StarterPacks
         Map<String, Long> claims = new HashMap<>(player.getData(LAST_CLAIM_TICKS));
         claims.put(packId, player.level().getGameTime());
         player.setData(LAST_CLAIM_TICKS, claims);
+
+        if (packId.equals(GUIDE_PACK_ID))
+        {
+            ItemStack book = StarterKit.cursedUnsellable(StarterKit.guideBook(), player);
+            if (!player.getInventory().add(book))
+                player.drop(book, false);
+            return true;
+        }
 
         for (PackItem entry : pack.items())
         {

@@ -3,6 +3,14 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Added a "Drakonix Guide" entry to the shop GUI's Packs tab so a player who lost their guide
+  book can pull a fresh (re-cursed, current-version-titled) one, same 1-hour cooldown as the
+  tech-mod packs rather than a special free-for-all. `StarterPacks.tryClaim` special-cases this
+  pack id before the generic `PackItem` loop since a written book with dynamic page/version
+  content doesn't fit that model's plain itemId+count shape; `StarterKit.guideBook()` and
+  `cursedUnsellable()` were widened from `private` to package-private so `StarterPacks` could
+  reuse the exact same book-building logic instead of duplicating it.
+
 - Audited Drakonix Shop Block sell pricing for real gaps instead of guessing which items needed
   seeding. Method: temporarily dumped `BuiltInRegistries.ITEM.keySet()` during a real boot (all
   4146 items across vanilla + every `localRuntime` mod), parsed every vanilla recipe JSON's

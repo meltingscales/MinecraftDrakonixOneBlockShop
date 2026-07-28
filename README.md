@@ -32,8 +32,8 @@ expand the border.
     lava bucket, water bucket) at a flat price.
   - **Packs** — free tech-mod starter kits (blocks/machines/power/conduits) for AE2, Mekanism,
     and EnderIO, an easier on-ramp for players who'd rather skip building up that mod's
-    automation chain from scratch. No cost, but each pack has its own 1-hour cooldown per
-    player.
+    automation chain from scratch, plus a "Drakonix Guide" entry to reissue a fresh guide book
+    if you lost yours. No cost, but each pack has its own 1-hour cooldown per player.
   - **Explore** — "Open Portal" and "Open Portal (Cave Only)" don't teleport you instantly:
     each opens a portal (particle effect, no real block) above that shop block for 30 seconds
     with one random destination up to 1,000,000 blocks out (configurable - `exploreRange` in

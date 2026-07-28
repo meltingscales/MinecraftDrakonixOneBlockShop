@@ -16,7 +16,7 @@ Money is physical: selling pays out Drakonix OneBlockShop Tokens (denominations 
 
 Sell enough and your border expands outward, giving you more room to build farms. Every expansion after your first calls in a monster wave from just past the new edge - bigger each time - so have a weapon and some armor ready before you buy one. Expansions also have a 30-second cooldown, so you can't just spam the button.
 
-Don't want to build up a tech mod's automation chain by hand? The shop's Packs tab gives free starter kits for AE2, Mekanism, and EnderIO - blocks, machines, power, and conduits to jumpstart with. No cost, just a 1-hour cooldown per pack.
+Don't want to build up a tech mod's automation chain by hand? The shop's Packs tab gives free starter kits for AE2, Mekanism, and EnderIO - blocks, machines, power, and conduits to jumpstart with. No cost, just a 1-hour cooldown per pack. Lost your guide book? The Packs tab has a "Drakonix Guide" entry too - same cooldown, free replacement.
 
 Good early farms: a simple mob farm for drops, an AFK fishing spot for enchanted loot, sugarcane on a redstone clock, and cactus on a redstone clock. All four can run untouched into a hopper feeding the shop. Keep an eye out for GeOre's geode-style ore clusters too - a denser way to gather raw resources, and they drop their full item whether or not you're using Silk Touch.
 
