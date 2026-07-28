@@ -108,6 +108,10 @@ public final class StarterKit
         return book;
     }
 
+    // Word-wraps rather than assuming each "\n\n"-separated paragraph fits a page on its own -
+    // GUIDE.md's paragraphs have grown well past PAGE_BUDGET over time, and cramming an
+    // oversized one onto a single page overflows the book screen's visible area instead of
+    // actually splitting across pages.
     private static List<Filterable<Component>> pages()
     {
         List<Filterable<Component>> pages = new ArrayList<>();
@@ -116,14 +120,19 @@ public final class StarterKit
         {
             if (paragraph.isBlank())
                 continue;
-            if (page.length() > 0 && page.length() + paragraph.length() > PAGE_BUDGET)
+            boolean firstWordOfParagraph = true;
+            for (String word : paragraph.trim().split("\\s+"))
             {
-                pages.add(Filterable.passThrough(Component.literal(page.toString())));
-                page.setLength(0);
+                String separator = page.length() == 0 ? "" : firstWordOfParagraph ? "\n\n" : " ";
+                if (page.length() > 0 && page.length() + separator.length() + word.length() > PAGE_BUDGET)
+                {
+                    pages.add(Filterable.passThrough(Component.literal(page.toString())));
+                    page.setLength(0);
+                    separator = "";
+                }
+                page.append(separator).append(word);
+                firstWordOfParagraph = false;
             }
-            if (page.length() > 0)
-                page.append("\n\n");
-            page.append(paragraph.trim());
         }
         if (page.length() > 0)
             pages.add(Filterable.passThrough(Component.literal(page.toString())));

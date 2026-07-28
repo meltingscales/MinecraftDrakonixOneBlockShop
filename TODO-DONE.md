@@ -3,6 +3,16 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Fixed the Drakonix Guide book's text getting visually cut off on some pages.
+  `StarterKit.pages()` split `GUIDE.md` on blank lines and only checked whether a *whole*
+  paragraph would fit before adding it to the current page - a paragraph longer than
+  `PAGE_BUDGET` (260 chars) still went onto a single page in full instead of being split, and
+  several of GUIDE.md's paragraphs had grown past 2x that budget (up to 544 chars) as more
+  sentences got appended to them over time. Rewrote it to word-wrap instead: it now walks
+  word-by-word and flushes to a new page as soon as the budget would be exceeded, so no single
+  page can ever overflow regardless of how long a paragraph gets. Verified against the real
+  GUIDE.md text (17 pages now, all ≤ 259 chars, versus the old algorithm producing pages up to
+  544 chars).
 - Fixed the Drakonix Block Shop losing its Unsellable curse when broken and picked back up.
   The curse was only ever applied to the ItemStack handed out at first login
   (`StarterKit.cursedUnsellable`) - breaking a placed block goes through its loot table instead,
