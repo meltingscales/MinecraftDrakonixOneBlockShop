@@ -23,6 +23,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -215,5 +216,29 @@ public final class Pricing
         long price = best == -1 ? DEFAULT_PRICE : best;
         priceCache.put(item, price);
         return price;
+    }
+
+    // Backs the shop GUI's "randomize prices" Settings toggle (PlayerSettings) - deterministic
+    // per (world, item) so it's the same "random" economy all game, both directions (buy and
+    // sell share one multiplier per item rather than rolling independently), and identical on
+    // client and server without a round trip: synced as a 32-bit hash of the real seed (see
+    // ShopMenu.getSeedHash) rather than the raw 64-bit ServerLevel.getSeed(), since ClientLevel
+    // has no getSeed() of its own to compute this from independently. 32 bits is already far
+    // more entropy than a single continuous [0.25, 4.0) roll needs.
+    private static final double MIN_MULTIPLIER = 0.25;
+    private static final double MAX_MULTIPLIER = 4.0;
+
+    public static double randomizedMultiplier(int seedHash, Item item)
+    {
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+        RandomSource random = RandomSource.create(seedHash ^ (long) id.toString().hashCode());
+        return MIN_MULTIPLIER + random.nextDouble() * (MAX_MULTIPLIER - MIN_MULTIPLIER);
+    }
+
+    public static long applyRandomization(long basePrice, int seedHash, Item item, boolean enabled)
+    {
+        if (!enabled)
+            return basePrice;
+        return Math.max(1L, Math.round(basePrice * randomizedMultiplier(seedHash, item)));
     }
 }

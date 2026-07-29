@@ -3,6 +3,27 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Added a new per-player `PlayerSettings` attachment (`price_randomization`, `expedition_minutes`,
+  `hard_mode_locked`) and a 6th shop GUI tab, Settings, to expose them:
+  - Randomize Prices toggles a seeded 0.25x-4x multiplier on every buy/sell price. Deterministic
+    per (world seed, item) so it's the same "random" economy the whole game, computed
+    identically on both client and server without a round trip: `ServerLevel.getSeed()` is
+    synced to the client as a 32-bit hash (`ShopMenu.seedHash`) rather than the raw 64-bit seed,
+    since `ClientLevel` has no `getSeed()` of its own to compute this independently - see
+    `Pricing.randomizedMultiplier`/`applyRandomization`. Buy tab button labels and the Sell tab's
+    hover tooltip both now show the live, exact randomized price this way, not an approximation.
+  - Expedition time (previously a fixed `Expedition.DURATION_TICKS` constant, 10 minutes) is now
+    per-player and adjustable in 5-minute steps (1-60 minute range) via a +/- stepper, replacing
+    the constant with `PlayerSettings.getExpeditionMinutes`.
+  - Permanent Hard Mode is a one-way lock a player can throw on themselves that freezes both
+    settings above - `PlayerSettings.tryEnableHardMode` never undoes itself; the only way back is
+    a new op-only `/drakonixoneblockshop hardmode unlock <player>` subcommand
+    (`PlayerSettings.adminUnlock`), mirroring every other admin subcommand's `requires(level 2)`
+    gate.
+  - Known simplification: an offline shop owner's hopper-triggered sale uses the plain
+    (unrandomized) price for that one sale rather than loading their saved player data just to
+    check the toggle - see TODO.md.
+
 - Fixed crafted tokens (combine/split recipes) losing the Unsellable curse - same class of bug
   as the shop block's loot table fix above: `tools/generate_tokens.py`'s recipe output was a
   plain `{"id", "count"}` result with no components, so combining/splitting a cursed token

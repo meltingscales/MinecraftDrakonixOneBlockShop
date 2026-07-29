@@ -21,7 +21,7 @@ expand the border.
   creeper/enderman a much bigger deal than usual, and not something you could realistically
   prepare for or wall off yet.
 - The Drakonix Block Shop block (craftable from 8 gold ingots around a hopper) has a GUI with
-  four tabs:
+  six tabs:
   - **Sell** — drop an item in to sell it instantly. Every item is sellable: raw resources use
     a hand-set price, crafted items derive their price recursively from their cheapest recipe.
     Hover an item for its sell price.
@@ -40,20 +40,26 @@ expand the border.
     `config/drakonixoneblockshop-common.toml`), rerolled if it would land in an ocean.
     Anyone who walks into it before it closes goes there together - a free team trip if more
     than one of you is nearby, purely by walking in at the same time, no separate team button or
-    setup needed. Each traveler still gets their own 10-minute stay and personal auto-return to
-    wherever they individually left from, with chat/GUI warnings at 5, 3, 2, and 1 minute(s)
-    left; can't walk into another portal while you're still away. The normal button lands on the
-    surface most of the time with a chance of dropping you into a (dry - never underwater) cave
-    instead; the Cave Only button always finds one. An "Expedition" status effect for the trip's
-    duration (hover it for a tooltip explaining why) blocks placing a new shop block while you're
-    away. You also get an unsellable potion on arrival - drink it any time to come back early
-    instead of typing a command; it also grants 30 seconds of immunity to being pulled back
-    through a still-open portal, since it returns you to right where you left from. Dying on an
-    expedition doesn't end it - you just respawn normally and get handed a second potion that
-    teleports you back to exactly where you died (with 30 seconds of near-total damage
-    resistance, so you're not just dropped straight back into whatever killed you) so you can
-    pick up where you left off - or wait it out; either way you're still auto-returned to base
-    once your 10 minutes are up.
+    setup needed. Each traveler still gets their own stay (per-player, configurable on the
+    Settings tab - default 10 minutes) and personal auto-return to wherever they individually
+    left from, with chat/GUI warnings at 5, 3, 2, and 1 minute(s) left; can't walk into another
+    portal while you're still away. The normal button lands on the surface most of the time with
+    a chance of dropping you into a (dry - never underwater) cave instead; the Cave Only button
+    always finds one. An "Expedition" status effect for the trip's duration (hover it for a
+    tooltip explaining why) blocks placing a new shop block while you're away. You also get an
+    unsellable potion on arrival - drink it any time to come back early instead of typing a
+    command; it also grants 30 seconds of immunity to being pulled back through a still-open
+    portal, since it returns you to right where you left from. Dying on an expedition doesn't end
+    it - you just respawn normally and get handed a second potion that teleports you back to
+    exactly where you died (with 30 seconds of near-total damage resistance, so you're not just
+    dropped straight back into whatever killed you) so you can pick up where you left off - or
+    wait it out; either way you're still auto-returned to base once your timer is up.
+  - **Settings** — per-player difficulty options. "Randomize Prices" toggles a seed-based
+    multiplier (0.25x-4x) on every item's buy and sell price, deterministic per world so it's
+    the same "random" economy all game and identical for every player who turns it on; the
+    expedition-length stepper adjusts your own stay in 5-minute steps (1-60 minute range); and
+    "Enable Permanent Hard Mode" locks both of those settings for good - the only way back is an
+    op running `/drakonixoneblockshop hardmode unlock <player>`.
 - Hopper items into the shop block to auto-sell them. Every 5 minutes you get a chat report
   prefixed `[Drakonix Shop]` of what your hopper automation sold (or "No hopper automation" if
   none sold anything) - the prefix makes it obvious which mod that recurring message is from.

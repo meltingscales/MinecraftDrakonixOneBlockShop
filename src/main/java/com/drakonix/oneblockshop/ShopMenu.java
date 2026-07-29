@@ -42,7 +42,7 @@ public class ShopMenu extends AbstractContainerMenu
 {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public enum Tab { SELL, BORDER, BUY, EXPEDITION, PACKS }
+    public enum Tab { SELL, BORDER, BUY, EXPEDITION, PACKS, SETTINGS }
 
     public static final int TAB_SELL_BUTTON = 0;
     public static final int TAB_BORDER_BUTTON = 1;
@@ -52,10 +52,17 @@ public class ShopMenu extends AbstractContainerMenu
     public static final int TELEPORT_BUTTON = 5;
     public static final int TAB_PACKS_BUTTON = 6;
     public static final int TELEPORT_CAVE_BUTTON = 7;
+    public static final int TAB_SETTINGS_BUTTON = 8;
     public static final int BUY_ITEM_BUTTON_BASE = 10;
     // Well clear of BUY_ITEM_BUTTON_BASE's range (pricing/buy_offers.json has room to grow) -
     // StarterPacks.PACKS is a short, fixed list so this only ever needs a handful of ids.
     public static final int PACK_CLAIM_BUTTON_BASE = 100;
+    // Well clear of both ranges above, same reasoning - a short fixed list of Settings-tab
+    // controls (see PlayerSettings).
+    public static final int RANDOMIZE_TOGGLE_BUTTON = 150;
+    public static final int EXPEDITION_MINUTES_UP_BUTTON = 151;
+    public static final int EXPEDITION_MINUTES_DOWN_BUTTON = 152;
+    public static final int HARD_MODE_BUTTON = 153;
 
     public record BuyOffer(Item item, int count, long price) {}
 
@@ -112,6 +119,14 @@ public class ShopMenu extends AbstractContainerMenu
     // One per StarterPacks.PACKS entry, same order - each pack has its own independent
     // per-player cooldown (see StarterPacks.cooldownRemainingSeconds).
     private final List<DataSlot> packCooldownSeconds = new ArrayList<>();
+    // Settings tab (PlayerSettings) - all scoped to the viewing player, not the shop's owner.
+    // seedHash is a synced 32-bit hash of the real world seed (ClientLevel has no getSeed() of
+    // its own) so both sides can compute an identical Pricing.randomizedMultiplier without a
+    // round trip - see Pricing.applyRandomization.
+    private final DataSlot priceRandomization = DataSlot.standalone();
+    private final DataSlot expeditionMinutes = DataSlot.standalone();
+    private final DataSlot hardModeLocked = DataSlot.standalone();
+    private final DataSlot seedHash = DataSlot.standalone();
 
     // Client-side reconstruction from the network packet; slot 0's real contents get synced
     // over automatically regardless of which Container backs this local placeholder.
@@ -126,6 +141,10 @@ public class ShopMenu extends AbstractContainerMenu
         this.addDataSlot(this.expandCooldownSeconds);
         this.addDataSlot(this.portalRemainingSeconds);
         addPackCooldownSlots();
+        this.addDataSlot(this.priceRandomization);
+        this.addDataSlot(this.expeditionMinutes);
+        this.addDataSlot(this.hardModeLocked);
+        this.addDataSlot(this.seedHash);
         addSlots(this.container, playerInventory);
     }
 
@@ -140,10 +159,15 @@ public class ShopMenu extends AbstractContainerMenu
         this.addDataSlot(this.expandCooldownSeconds);
         this.addDataSlot(this.portalRemainingSeconds);
         addPackCooldownSlots();
+        this.addDataSlot(this.priceRandomization);
+        this.addDataSlot(this.expeditionMinutes);
+        this.addDataSlot(this.hardModeLocked);
+        this.addDataSlot(this.seedHash);
         refreshBalance();
         refreshCooldown();
         refreshExpedition();
         refreshPackCooldowns();
+        refreshSettings();
         addSlots(blockEntity, playerInventory);
     }
 
@@ -166,6 +190,7 @@ public class ShopMenu extends AbstractContainerMenu
         refreshCooldown();
         refreshExpedition();
         refreshPackCooldowns();
+        refreshSettings();
         super.broadcastChanges();
     }
 
@@ -196,6 +221,17 @@ public class ShopMenu extends AbstractContainerMenu
             long remaining = StarterPacks.cooldownRemainingSeconds(this.viewingPlayer, StarterPacks.PACKS.get(i).id());
             this.packCooldownSeconds.get(i).set((int) Math.min(Integer.MAX_VALUE, remaining));
         }
+    }
+
+    private void refreshSettings()
+    {
+        if (!(this.viewingPlayer instanceof ServerPlayer))
+            return;
+        this.priceRandomization.set(PlayerSettings.isPriceRandomizationEnabled(this.viewingPlayer) ? 1 : 0);
+        this.expeditionMinutes.set(PlayerSettings.getExpeditionMinutes(this.viewingPlayer));
+        this.hardModeLocked.set(PlayerSettings.isHardModeLocked(this.viewingPlayer) ? 1 : 0);
+        if (this.viewingPlayer instanceof ServerPlayer serverPlayer)
+            this.seedHash.set((int) serverPlayer.serverLevel().getServer().overworld().getSeed());
     }
 
     private void addSlots(Container sellContainer, Inventory playerInventory)
@@ -238,6 +274,36 @@ public class ShopMenu extends AbstractContainerMenu
     public int getPackCooldownSeconds(int packIndex)
     {
         return this.packCooldownSeconds.get(packIndex).get();
+    }
+
+    public boolean isPriceRandomizationEnabled()
+    {
+        return this.priceRandomization.get() != 0;
+    }
+
+    public int getExpeditionMinutes()
+    {
+        return this.expeditionMinutes.get();
+    }
+
+    public boolean isHardModeLocked()
+    {
+        return this.hardModeLocked.get() != 0;
+    }
+
+    public int getSeedHash()
+    {
+        return this.seedHash.get();
+    }
+
+    // What the Buy tab actually shows/charges for this offer - the flat pricing/buy_offers.json
+    // price, randomized the same way Pricing.applyRandomization randomizes a sell price, using
+    // the identical (seedHash, item) inputs so both directions move together per item rather
+    // than independently.
+    public long getBuyPrice(int offerIndex)
+    {
+        BuyOffer offer = BUY_OFFERS.get(offerIndex);
+        return Pricing.applyRandomization(offer.price(), getSeedHash(), offer.item(), isPriceRandomizationEnabled());
     }
 
     public Tab getActiveTab()
@@ -306,6 +372,7 @@ public class ShopMenu extends AbstractContainerMenu
         if (id == TAB_BUY_BUTTON) { setActiveTab(Tab.BUY); return true; }
         if (id == TAB_EXPEDITION_BUTTON) { setActiveTab(Tab.EXPEDITION); return true; }
         if (id == TAB_PACKS_BUTTON) { setActiveTab(Tab.PACKS); return true; }
+        if (id == TAB_SETTINGS_BUTTON) { setActiveTab(Tab.SETTINGS); return true; }
         if (id == EXPAND_BORDER_BUTTON && player instanceof ServerPlayer serverPlayer)
             return Border.tryExpand(serverPlayer);
         if (id == TELEPORT_BUTTON && player instanceof ServerPlayer
@@ -318,6 +385,14 @@ public class ShopMenu extends AbstractContainerMenu
             return StarterPacks.tryClaim(serverPlayer, StarterPacks.PACKS.get(id - PACK_CLAIM_BUTTON_BASE).id());
         if (id >= BUY_ITEM_BUTTON_BASE && id < BUY_ITEM_BUTTON_BASE + BUY_OFFERS.size() && player instanceof ServerPlayer serverPlayer)
             return tryBuy(serverPlayer, id - BUY_ITEM_BUTTON_BASE);
+        if (id == RANDOMIZE_TOGGLE_BUTTON && player instanceof ServerPlayer serverPlayer)
+            return PlayerSettings.trySetPriceRandomization(serverPlayer, !PlayerSettings.isPriceRandomizationEnabled(serverPlayer));
+        if (id == EXPEDITION_MINUTES_UP_BUTTON && player instanceof ServerPlayer serverPlayer)
+            return PlayerSettings.tryAdjustExpeditionMinutes(serverPlayer, PlayerSettings.EXPEDITION_MINUTES_STEP);
+        if (id == EXPEDITION_MINUTES_DOWN_BUTTON && player instanceof ServerPlayer serverPlayer)
+            return PlayerSettings.tryAdjustExpeditionMinutes(serverPlayer, -PlayerSettings.EXPEDITION_MINUTES_STEP);
+        if (id == HARD_MODE_BUTTON && player instanceof ServerPlayer serverPlayer)
+            return PlayerSettings.tryEnableHardMode(serverPlayer);
         return super.clickMenuButton(player, id);
     }
 
@@ -326,9 +401,11 @@ public class ShopMenu extends AbstractContainerMenu
         if (offerIndex < 0 || offerIndex >= BUY_OFFERS.size())
             return false;
         BuyOffer offer = BUY_OFFERS.get(offerIndex);
-        if (Wallet.get(player) < offer.price())
+        long price = Pricing.applyRandomization(offer.price(), (int) player.serverLevel().getServer().overworld().getSeed(),
+                offer.item(), PlayerSettings.isPriceRandomizationEnabled(player));
+        if (Wallet.get(player) < price)
             return false;
-        Wallet.add(player, -offer.price());
+        Wallet.add(player, -price);
         ItemStack stack = new ItemStack(offer.item(), offer.count());
         if (!player.getInventory().add(stack))
             player.drop(stack, false);

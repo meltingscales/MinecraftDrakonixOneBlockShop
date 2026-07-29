@@ -118,6 +118,7 @@ public class OneBlockShopMod
         Border.ATTACHMENTS.register(modEventBus);
         Expedition.ATTACHMENTS.register(modEventBus);
         StarterPacks.ATTACHMENTS.register(modEventBus);
+        PlayerSettings.ATTACHMENTS.register(modEventBus);
         Expedition.EFFECTS.register(modEventBus);
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 

@@ -19,11 +19,12 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
-// /drakonixoneblockshop <balance|border|starterkit|devcheat> - op-only (level 2, same gate as
-// /gamemode) cheat commands for testing/admin use: adjust a player's wallet, adjust the shared
-// border directly (bypassing the shop's purchase cost), re-issue the starter kit, or trigger
+// /drakonixoneblockshop <balance|border|starterkit|devcheat|hardmode> - op-only (level 2, same
+// gate as /gamemode) cheat commands for testing/admin use: adjust a player's wallet, adjust the
+// shared border directly (bypassing the shop's purchase cost), re-issue the starter kit, trigger
 // various things (expedition teleport/countdown, hopper report, border wave, portal) instantly
-// instead of waiting out their real timers.
+// instead of waiting out their real timers, or remove a player's own Permanent Hard Mode lock
+// (PlayerSettings) - the one setting a player genuinely can't undo themselves by design.
 // /drakonixoneblockshop <expedition|help> - open to any player: end your own Explore-tab trip
 // early, or list what's available.
 // The requires(level 2) check is on each admin subcommand's own literal, not the root - a
@@ -71,6 +72,11 @@ public final class AdminCommands
                 .then(Commands.literal("expedition")
                         .then(Commands.literal("end")
                                 .executes(AdminCommands::expeditionEnd)))
+                .then(Commands.literal("hardmode")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("unlock")
+                                .then(Commands.argument("target", EntityArgument.player())
+                                        .executes(AdminCommands::hardModeUnlock))))
                 .then(Commands.literal("devcheat")
                         .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("expedition")
@@ -197,6 +203,17 @@ public final class AdminCommands
         return 1;
     }
 
+    // The only way off of a player's own Permanent Hard Mode lock (PlayerSettings) once they've
+    // set it themselves - deliberately requires an op, same as every other admin subcommand here.
+    private static int hardModeUnlock(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException
+    {
+        ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
+        PlayerSettings.adminUnlock(target);
+        ctx.getSource().sendSuccess(() -> Component.literal(
+                "Unlocked " + target.getName().getString() + "'s Permanent Hard Mode settings."), true);
+        return 1;
+    }
+
     private static int devHopperReport(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException
     {
         // HopperSalesTracker.devForceReport already sends its own message(s).
@@ -240,7 +257,8 @@ public final class AdminCommands
                 "/drakonixoneblockshop devcheat expedition fastforward <seconds> - op: jump your expedition countdown to N seconds left",
                 "/drakonixoneblockshop devcheat hopperreport - op: force your hopper-sales report to fire now",
                 "/drakonixoneblockshop devcheat borderwave - op: spawn a border-expansion mob wave without buying one",
-                "/drakonixoneblockshop devcheat closeportal - op: force-close a stuck/open Explore-tab portal");
+                "/drakonixoneblockshop devcheat closeportal - op: force-close a stuck/open Explore-tab portal",
+                "/drakonixoneblockshop hardmode unlock <player> - op: remove a player's self-imposed Permanent Hard Mode lock");
         for (String line : lines)
             ctx.getSource().sendSuccess(() -> Component.literal(line), false);
         return lines.size();

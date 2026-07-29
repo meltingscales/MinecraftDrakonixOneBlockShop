@@ -34,6 +34,11 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     private static final int PACKS_ROW_HEIGHT = 22;
     // Explore tab's second (cave-only) button sits right below the normal one.
     private static final int EXPEDITION_CAVE_ACTION_Y = ACTION_Y + 22;
+    // Settings tab (PlayerSettings): randomize-prices toggle, then the expedition-minutes
+    // +/- stepper, then the permanent hard mode lock, one row each.
+    private static final int SETTINGS_ACTION_Y = 58;
+    private static final int SETTINGS_ROW_HEIGHT = 22;
+    private static final int SETTINGS_STEPPER_BUTTON_WIDTH = 20;
 
     // The buy grid's row count depends on however many offers are in pricing/buy_offers.json,
     // so the player inventory (and the whole GUI) is sized to fit it rather than a fixed guess -
@@ -43,8 +48,9 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     static final int PLAYER_INVENTORY_Y = ACTION_Y + BUY_GRID_ROWS * BUY_ROW_HEIGHT + 4;
     static final int HOTBAR_Y = PLAYER_INVENTORY_Y + 3 * 18 + 4;
 
-    // Tab row now has 5 tabs (Sell/Border/Buy/Explore/Packs) - the buy grid alone no longer
-    // guarantees a wide enough background, so the image width is whichever of the two is wider.
+    // Tab row now has 6 tabs (Sell/Border/Buy/Explore/Packs/Settings) - the buy grid alone no
+    // longer guarantees a wide enough background, so the image width is whichever of the two is
+    // wider.
     private static final int TAB_ROW_WIDTH = ShopMenu.Tab.values().length * TAB_WIDTH + (ShopMenu.Tab.values().length - 1) * 2;
 
     private Button sellTabButton;
@@ -52,9 +58,14 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     private Button buyTabButton;
     private Button expeditionTabButton;
     private Button packsTabButton;
+    private Button settingsTabButton;
     private Button expandButton;
     private Button teleportButton;
     private Button teleportCaveButton;
+    private Button randomizeToggleButton;
+    private Button minutesDownButton;
+    private Button minutesUpButton;
+    private Button hardModeButton;
     private final List<Button> buyButtons = new ArrayList<>();
     private final List<Button> packButtons = new ArrayList<>();
 
@@ -81,6 +92,8 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
                 .bounds(this.leftPos + 8 + (TAB_WIDTH + 2) * 3, this.topPos + TAB_Y, TAB_WIDTH, TAB_HEIGHT).build());
         this.packsTabButton = addRenderableWidget(Button.builder(Component.literal("Packs"), b -> pressTab(ShopMenu.TAB_PACKS_BUTTON))
                 .bounds(this.leftPos + 8 + (TAB_WIDTH + 2) * 4, this.topPos + TAB_Y, TAB_WIDTH, TAB_HEIGHT).build());
+        this.settingsTabButton = addRenderableWidget(Button.builder(Component.literal("Settings"), b -> pressTab(ShopMenu.TAB_SETTINGS_BUTTON))
+                .bounds(this.leftPos + 8 + (TAB_WIDTH + 2) * 5, this.topPos + TAB_Y, TAB_WIDTH, TAB_HEIGHT).build());
 
         this.expandButton = addRenderableWidget(Button.builder(Component.literal("Buy expansion"), b -> pressButton(ShopMenu.EXPAND_BORDER_BUTTON))
                 .bounds(this.leftPos + 8, this.topPos + BORDER_ACTION_Y, 160, 20).build());
@@ -88,6 +101,15 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
                 .bounds(this.leftPos + 8, this.topPos + ACTION_Y, 160, 20).build());
         this.teleportCaveButton = addRenderableWidget(Button.builder(Component.literal("Open Portal (Cave Only)"), b -> pressButton(ShopMenu.TELEPORT_CAVE_BUTTON))
                 .bounds(this.leftPos + 8, this.topPos + EXPEDITION_CAVE_ACTION_Y, 160, 20).build());
+
+        this.randomizeToggleButton = addRenderableWidget(Button.builder(Component.literal("Randomize Prices"), b -> pressButton(ShopMenu.RANDOMIZE_TOGGLE_BUTTON))
+                .bounds(this.leftPos + 8, this.topPos + SETTINGS_ACTION_Y, TAB_ROW_WIDTH, 20).build());
+        this.minutesDownButton = addRenderableWidget(Button.builder(Component.literal("-"), b -> pressButton(ShopMenu.EXPEDITION_MINUTES_DOWN_BUTTON))
+                .bounds(this.leftPos + 8, this.topPos + SETTINGS_ACTION_Y + SETTINGS_ROW_HEIGHT, SETTINGS_STEPPER_BUTTON_WIDTH, 20).build());
+        this.minutesUpButton = addRenderableWidget(Button.builder(Component.literal("+"), b -> pressButton(ShopMenu.EXPEDITION_MINUTES_UP_BUTTON))
+                .bounds(this.leftPos + 8 + SETTINGS_STEPPER_BUTTON_WIDTH + 4, this.topPos + SETTINGS_ACTION_Y + SETTINGS_ROW_HEIGHT, SETTINGS_STEPPER_BUTTON_WIDTH, 20).build());
+        this.hardModeButton = addRenderableWidget(Button.builder(Component.literal("Enable Permanent Hard Mode"), b -> pressButton(ShopMenu.HARD_MODE_BUTTON))
+                .bounds(this.leftPos + 8, this.topPos + SETTINGS_ACTION_Y + SETTINGS_ROW_HEIGHT * 2, TAB_ROW_WIDTH, 20).build());
 
         this.buyButtons.clear();
         List<ShopMenu.BuyOffer> offers = ShopMenu.BUY_OFFERS;
@@ -97,7 +119,7 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
             int buttonId = ShopMenu.BUY_ITEM_BUTTON_BASE + i;
             int col = i % BUY_COLS;
             int row = i / BUY_COLS;
-            Button button = addRenderableWidget(Button.builder(buyLabel(offer), b -> pressButton(buttonId))
+            Button button = addRenderableWidget(Button.builder(buyLabel(offer, offer.price()), b -> pressButton(buttonId))
                     .bounds(this.leftPos + 8 + col * BUY_COL_WIDTH, this.topPos + ACTION_Y + row * BUY_ROW_HEIGHT, BUY_COL_WIDTH - 4, BUY_ROW_HEIGHT - 2).build());
             this.buyButtons.add(button);
         }
@@ -139,9 +161,11 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
 
     // No "Buy " prefix - the tab it's on already says that, and several offer names (Mangrove
     // Propagule, Dark Oak Sapling) are long enough that every character counts in a ~88px button.
-    private static Component buyLabel(ShopMenu.BuyOffer offer)
+    // Takes the price separately (rather than reading offer.price() itself) since syncWidgets
+    // re-labels every tick with the live, possibly-randomized price from the menu.
+    private static Component buyLabel(ShopMenu.BuyOffer offer, long price)
     {
-        return Component.literal(offer.item().getDescription().getString() + " (" + offer.price() + ")");
+        return Component.literal(offer.item().getDescription().getString() + " (" + price + ")");
     }
 
     @Override
@@ -164,6 +188,10 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
             button.visible = tab == ShopMenu.Tab.BUY;
         for (Button button : this.packButtons)
             button.visible = tab == ShopMenu.Tab.PACKS;
+        this.randomizeToggleButton.visible = tab == ShopMenu.Tab.SETTINGS;
+        this.minutesDownButton.visible = tab == ShopMenu.Tab.SETTINGS;
+        this.minutesUpButton.visible = tab == ShopMenu.Tab.SETTINGS;
+        this.hardModeButton.visible = tab == ShopMenu.Tab.SETTINGS;
 
         if (tab == ShopMenu.Tab.BORDER && this.minecraft.level != null)
         {
@@ -186,7 +214,12 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
         {
             List<ShopMenu.BuyOffer> offers = ShopMenu.BUY_OFFERS;
             for (int i = 0; i < this.buyButtons.size() && i < offers.size(); i++)
-                this.buyButtons.get(i).active = this.menu.getBalance() >= offers.get(i).price();
+            {
+                long price = this.menu.getBuyPrice(i);
+                Button button = this.buyButtons.get(i);
+                button.setMessage(buyLabel(offers.get(i), price));
+                button.active = this.menu.getBalance() >= price;
+            }
         }
 
         if (tab == ShopMenu.Tab.EXPEDITION)
@@ -228,6 +261,29 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
                 }
             }
         }
+
+        if (tab == ShopMenu.Tab.SETTINGS)
+        {
+            boolean locked = this.menu.isHardModeLocked();
+            this.randomizeToggleButton.setMessage(Component.literal(
+                    "Randomize Prices: " + (this.menu.isPriceRandomizationEnabled() ? "ON" : "OFF")));
+            this.randomizeToggleButton.active = !locked;
+
+            int minutes = this.menu.getExpeditionMinutes();
+            this.minutesDownButton.active = !locked && minutes > PlayerSettings.MIN_EXPEDITION_MINUTES;
+            this.minutesUpButton.active = !locked && minutes < PlayerSettings.MAX_EXPEDITION_MINUTES;
+
+            if (locked)
+            {
+                this.hardModeButton.setMessage(Component.literal("Permanent Hard Mode: ON (locked)"));
+                this.hardModeButton.active = false;
+            }
+            else
+            {
+                this.hardModeButton.setMessage(Component.literal("Enable Permanent Hard Mode"));
+                this.hardModeButton.active = true;
+            }
+        }
     }
 
     private static String formatDuration(int seconds)
@@ -248,6 +304,7 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
             else
             {
                 long price = Pricing.priceOf(stack.getItem(), this.minecraft.level.getRecipeManager(), this.minecraft.level.registryAccess());
+                price = Pricing.applyRandomization(price, this.menu.getSeedHash(), stack.getItem(), this.menu.isPriceRandomizationEnabled());
                 tooltip.add(Component.literal("Sell price: " + price + " each").withStyle(ChatFormatting.GREEN));
             }
         }
@@ -285,6 +342,14 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
         {
             graphics.drawString(this.font, "Free tech mod starter kits - an easier way to get going", 8, INFO_Y, 0xA0A0A0, false);
             graphics.drawString(this.font, "One claim per pack every hour, no cost", 8, PACKS_SUBINFO_Y, 0xA0A0A0, false);
+        }
+        else if (this.menu.getActiveTab() == ShopMenu.Tab.SETTINGS)
+        {
+            graphics.drawString(this.font, "Configure your own difficulty options", 8, INFO_Y, 0xA0A0A0, false);
+            graphics.drawString(this.font, "Expedition Minutes: " + this.menu.getExpeditionMinutes(),
+                    8 + (SETTINGS_STEPPER_BUTTON_WIDTH + 4) * 2 + 4, SETTINGS_ACTION_Y + SETTINGS_ROW_HEIGHT + 6, 0xFFFFFF, false);
+            graphics.drawString(this.font, "Warning: hard mode is permanent until an admin unlocks it!",
+                    8, SETTINGS_ACTION_Y + SETTINGS_ROW_HEIGHT * 2 + 24, 0xFF5555, false);
         }
     }
 }

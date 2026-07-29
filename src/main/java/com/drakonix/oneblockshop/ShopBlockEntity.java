@@ -74,13 +74,19 @@ public class ShopBlockEntity extends BlockEntity implements WorldlyContainer, Me
             return;
 
         long unitPrice = Pricing.priceOf(stack.getItem(), this.level.getRecipeManager(), this.level.registryAccess());
+        ServerPlayer owner = serverLevel.getServer().getPlayerList().getPlayer(this.ownerUUID);
+        // Randomization (PlayerSettings' Settings-tab toggle) only applies when the owner is
+        // online to have a live setting to read - an offline owner's hopper sale just uses the
+        // plain price for that one sale rather than needing to load their saved player data just
+        // to check a boolean.
+        if (owner != null && PlayerSettings.isPriceRandomizationEnabled(owner))
+            unitPrice = Pricing.applyRandomization(unitPrice, (int) serverLevel.getServer().overworld().getSeed(), stack.getItem(), true);
         long total = unitPrice * stack.getCount();
 
         long banked = viaHopper ? depositIntoAdjacentChest(serverLevel, total) : 0L;
         long remainder = total - banked;
         if (remainder > 0)
         {
-            ServerPlayer owner = serverLevel.getServer().getPlayerList().getPlayer(this.ownerUUID);
             if (owner != null)
                 Wallet.add(owner, remainder);
             else

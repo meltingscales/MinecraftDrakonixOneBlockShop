@@ -36,6 +36,18 @@ Tracked against README.md's feature list.
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
+- The new Settings tab (Randomize Prices / expedition-minutes stepper / Permanent Hard Mode)
+  boot-tests clean but hasn't been interactively verified - no computer-use tool for the game
+  window to actually open the shop, click into the tab, and confirm nothing overlaps or reads
+  wrong. Worth a real playtest to confirm the layout before trusting it fully, same caveat as
+  the EnderIO conduit interop below.
+- `ShopBlockEntity.trySell`'s randomized-price lookup (PlayerSettings' Randomize Prices toggle)
+  only applies when the shop's owner is currently online - an offline owner's hopper-triggered
+  sale falls back to the plain price for that one sale, since checking the toggle needs a live
+  `Player` to read the attachment from and this mod doesn't have a way to peek at an offline
+  player's saved data without loading them. Rare in practice (only matters for the exact sales
+  that happen while randomization is on and the owner happens to be offline), and never loses
+  value - just occasionally uses the un-randomized price instead.
 - `StarterPacks.enderioConduit`'s generic runtime interop with EnderIO's `Conduit` registry
   (see TODO-DONE.md) boot-tests clean but hasn't been interactively verified - no computer-use
   tool for the game window to actually click "Claim: EnderIO" and inspect the resulting item.

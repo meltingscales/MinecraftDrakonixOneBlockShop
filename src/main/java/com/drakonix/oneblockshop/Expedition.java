@@ -53,7 +53,6 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 @EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class Expedition
 {
-    private static final long DURATION_TICKS = 10L * 60L * 20L;
     private static final long PORTAL_DURATION_TICKS = 30L * 20L;
     // How often the vanilla potion-icon countdown gets forced back in sync with END_TICK - see
     // onPlayerTick.
@@ -364,6 +363,13 @@ public final class Expedition
         return 2.0 * (Config.EXPLORE_RANGE.get() + 64) + 1.0;
     }
 
+    // PlayerSettings.getExpeditionMinutes (configurable per player on the shop GUI's Settings
+    // tab, default 10) rather than a fixed constant.
+    private static long durationTicks(Player player)
+    {
+        return PlayerSettings.getExpeditionMinutes(player) * 60L * 20L;
+    }
+
     private static void enterPortal(ServerPlayer player, ServerLevel overworld, double destX, double destY, double destZ)
     {
         Border.beginExpeditionHold(overworld, safeBorderSize());
@@ -372,17 +378,18 @@ public final class Expedition
         player.setData(RETURN_Y, player.getY());
         player.setData(RETURN_Z, player.getZ());
 
+        long durationTicks = durationTicks(player);
         player.teleportTo(destX, destY, destZ);
-        player.setData(END_TICK, overworld.getGameTime() + DURATION_TICKS);
+        player.setData(END_TICK, overworld.getGameTime() + durationTicks);
         player.setData(NEXT_WARNING, 0);
-        // Duration matches DURATION_TICKS so the vanilla potion-icon countdown and this class's
+        // Duration matches durationTicks so the vanilla potion-icon countdown and this class's
         // own GUI/chat countdown always agree.
-        player.addEffect(new MobEffectInstance(EFFECT, (int) DURATION_TICKS, 0, false, true));
+        player.addEffect(new MobEffectInstance(EFFECT, (int) durationTicks, 0, false, true));
         player.getInventory().add(returnPotion(player));
 
         player.sendSystemMessage(Component.literal(
-                "Through the portal! You'll be returned to base in 10 minutes. Drink the potion in"
-                        + " your inventory to come back early.").withStyle(ChatFormatting.AQUA));
+                "Through the portal! You'll be returned to base in " + PlayerSettings.getExpeditionMinutes(player)
+                        + " minutes. Drink the potion in your inventory to come back early.").withStyle(ChatFormatting.AQUA));
     }
 
     // A game-friendly alternative to typing "/drakonixoneblockshop expedition end": drinking this
