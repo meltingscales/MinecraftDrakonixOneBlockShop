@@ -11,6 +11,11 @@
   ],
   "result": {
     "id": "drakonixoneblockshop:token_64",
-    "count": 1
+    "count": 1,
+    "components": {
+      "minecraft:enchantments": {
+        "drakonixoneblockshop:unsellable": 1
+      }
+    }
   }
 }

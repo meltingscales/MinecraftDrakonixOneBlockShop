@@ -109,6 +109,11 @@ def main():
 
         if i > 0:
             half_value = DENOMINATIONS[i - 1]
+            # "components" on the result forces the Unsellable curse onto every crafted token,
+            # same as a minted one (Wallet.cursedToken) - without it, combining/splitting was a
+            # loophole that produced a clean, sellable token (crafting results don't inherit
+            # ingredient components automatically).
+            unsellable = {"minecraft:enchantments": {f"{MODID}:unsellable": 1}}
             write_json(RESOURCES / f"data/{MODID}/recipe/token_combine_{value}.json", {
                 "type": "minecraft:crafting_shapeless",
                 "category": "misc",
@@ -116,13 +121,13 @@ def main():
                     {"item": f"{MODID}:token_{half_value}"},
                     {"item": f"{MODID}:token_{half_value}"},
                 ],
-                "result": {"id": f"{MODID}:{item_id}", "count": 1},
+                "result": {"id": f"{MODID}:{item_id}", "count": 1, "components": unsellable},
             })
             write_json(RESOURCES / f"data/{MODID}/recipe/token_split_{value}.json", {
                 "type": "minecraft:crafting_shapeless",
                 "category": "misc",
                 "ingredients": [{"item": f"{MODID}:{item_id}"}],
-                "result": {"id": f"{MODID}:token_{half_value}", "count": 2},
+                "result": {"id": f"{MODID}:token_{half_value}", "count": 2, "components": unsellable},
             })
 
     write_json(lang_path, dict(sorted(lang.items())))

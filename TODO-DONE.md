@@ -3,6 +3,14 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Fixed crafted tokens (combine/split recipes) losing the Unsellable curse - same class of bug
+  as the shop block's loot table fix above: `tools/generate_tokens.py`'s recipe output was a
+  plain `{"id", "count"}` result with no components, so combining/splitting a cursed token
+  produced a clean, sellable one (crafting results don't inherit ingredient components
+  automatically). Added a `"components": {"minecraft:enchantments": {...}}` block to the
+  generator's result output (the same `ItemStack.STRICT_CODEC` "components" field EnderIO's own
+  conduit recipe uses) and reran `just tokens-sync` to regenerate all 26 recipe files.
+
 - Still a tiny bit of visual cutoff reported after the 250 trim - `PAGE_BUDGET` down to 230.
 - Guide book pages were still running a bit tight visually even after the word-wrap pagination
   fix above - trimmed `StarterKit.PAGE_BUDGET` from 260 to 250 chars/page.
