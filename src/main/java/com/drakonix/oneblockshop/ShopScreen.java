@@ -8,6 +8,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.border.WorldBorder;
@@ -28,8 +29,8 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
     // than ACTION_Y (which the buy grid still uses unchanged).
     private static final int BORDER_WARNING_Y = 46;
     private static final int BORDER_ACTION_Y = 58;
-    // Packs tab also has a second description line (see PACKS_SUBINFO_Y), same reason.
-    private static final int PACKS_SUBINFO_Y = 46;
+    // Packs tab also has a second description line (drawn dynamically below the first, since it
+    // can wrap - see renderLabels), same reason its button sits lower than ACTION_Y.
     private static final int PACKS_ACTION_Y = 58;
     private static final int PACKS_ROW_HEIGHT = 22;
     // Explore tab's second (cave-only) button sits right below the normal one.
@@ -321,35 +322,51 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu>
             graphics.fill(x + 79, y + 34, x + 79 + 18, y + 34 + 18, 0xFF404040);
     }
 
+    // AbstractContainerScreen/GuiGraphics has no built-in multi-line label drawing - several of
+    // this screen's info/warning lines are long enough to overflow the GUI's width otherwise.
+    // Returns the pixel height consumed so a caller can stack a following line right after it.
+    private int drawWrapped(GuiGraphics graphics, String text, int x, int y, int color)
+    {
+        int maxWidth = this.imageWidth - x - 8;
+        List<FormattedCharSequence> lines = this.font.split(Component.literal(text), maxWidth);
+        for (int i = 0; i < lines.size(); i++)
+            graphics.drawString(this.font, lines.get(i), x, y + i * this.font.lineHeight, color, false);
+        return lines.size() * this.font.lineHeight;
+    }
+
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY)
     {
         super.renderLabels(graphics, mouseX, mouseY);
-        graphics.drawString(this.font, "Balance: " + this.menu.getBalance(), 8, 16, 0x40FF40, false);
+        // Above TAB_Y (18) rather than overlapping it - this used to sit at y=16, clipping into
+        // the tab row right below it.
+        graphics.drawString(this.font, "Balance: " + this.menu.getBalance(), 8, 6, 0x40FF40, false);
 
         if (this.menu.getActiveTab() == ShopMenu.Tab.SELL)
             graphics.drawString(this.font, "Drop items to sell", 8, SELL_INFO_Y, 0xA0A0A0, false);
         else if (this.menu.getActiveTab() == ShopMenu.Tab.BORDER && this.minecraft.level != null)
         {
             graphics.drawString(this.font, "Border size: " + (int) this.minecraft.level.getWorldBorder().getSize(), 8, INFO_Y, 0xFFFFFF, false);
-            graphics.drawString(this.font, "Warning: expanding summons a monster wave!", 8, BORDER_WARNING_Y, 0xFF5555, false);
+            drawWrapped(graphics, "Warning: expanding summons a monster wave!", 8, BORDER_WARNING_Y, 0xFF5555);
         }
         else if (this.menu.getActiveTab() == ShopMenu.Tab.BUY)
-            graphics.drawString(this.font, "Buy what you can't produce yet", 8, INFO_Y, 0xA0A0A0, false);
+            drawWrapped(graphics, "Buy what you can't produce yet", 8, INFO_Y, 0xA0A0A0);
         else if (this.menu.getActiveTab() == ShopMenu.Tab.EXPEDITION)
-            graphics.drawString(this.font, "Opens a portal above the shop - walk in to go", 8, INFO_Y, 0xA0A0A0, false);
+            drawWrapped(graphics, "Opens a portal above the shop - walk in to go", 8, INFO_Y, 0xA0A0A0);
         else if (this.menu.getActiveTab() == ShopMenu.Tab.PACKS)
         {
-            graphics.drawString(this.font, "Free tech mod starter kits - an easier way to get going", 8, INFO_Y, 0xA0A0A0, false);
-            graphics.drawString(this.font, "One claim per pack every hour, no cost", 8, PACKS_SUBINFO_Y, 0xA0A0A0, false);
+            int consumed = drawWrapped(graphics, "Free tech mod starter kits - an easier way to get going", 8, INFO_Y, 0xA0A0A0);
+            drawWrapped(graphics, "One claim per pack every hour, no cost", 8, INFO_Y + consumed + 2, 0xA0A0A0);
         }
         else if (this.menu.getActiveTab() == ShopMenu.Tab.SETTINGS)
         {
-            graphics.drawString(this.font, "Configure your own difficulty options", 8, INFO_Y, 0xA0A0A0, false);
+            drawWrapped(graphics, "Configure your own difficulty options", 8, INFO_Y, 0xA0A0A0);
             graphics.drawString(this.font, "Expedition Minutes: " + this.menu.getExpeditionMinutes(),
                     8 + (SETTINGS_STEPPER_BUTTON_WIDTH + 4) * 2 + 4, SETTINGS_ACTION_Y + SETTINGS_ROW_HEIGHT + 6, 0xFFFFFF, false);
-            graphics.drawString(this.font, "Warning: hard mode is permanent until an admin unlocks it!",
-                    8, SETTINGS_ACTION_Y + SETTINGS_ROW_HEIGHT * 2 + 24, 0xFF5555, false);
+            // Spells out exactly what gets locked - "hard mode is permanent" alone left it
+            // unclear what a player was actually committing to before clicking.
+            drawWrapped(graphics, "Warning: locks in Randomize Prices and Expedition Minutes for"
+                    + " good - only an admin can undo it!", 8, SETTINGS_ACTION_Y + SETTINGS_ROW_HEIGHT * 2 + 24, 0xFF5555);
         }
     }
 }

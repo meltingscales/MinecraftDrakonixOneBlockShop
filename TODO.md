@@ -36,11 +36,12 @@ Tracked against README.md's feature list.
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
-- The new Settings tab (Randomize Prices / expedition-minutes stepper / Permanent Hard Mode)
-  boot-tests clean but hasn't been interactively verified - no computer-use tool for the game
-  window to actually open the shop, click into the tab, and confirm nothing overlaps or reads
-  wrong. Worth a real playtest to confirm the layout before trusting it fully, same caveat as
-  the EnderIO conduit interop below.
+- The new Settings tab (Randomize Prices / expedition-minutes stepper / Permanent Hard Mode) and
+  the word-wrapped info/warning lines added right after it (`ShopScreen.drawWrapped`, covering
+  every tab's description/warning text, not just Settings') boot-test clean but haven't been
+  interactively verified - no computer-use tool for the game window to actually open the shop,
+  click through each tab, and confirm nothing overlaps or reads wrong. Worth a real playtest to
+  confirm the layout before trusting it fully, same caveat as the EnderIO conduit interop below.
 - `ShopBlockEntity.trySell`'s randomized-price lookup (PlayerSettings' Randomize Prices toggle)
   only applies when the shop's owner is currently online - an offline owner's hopper-triggered
   sale falls back to the plain price for that one sale, since checking the toggle needs a live

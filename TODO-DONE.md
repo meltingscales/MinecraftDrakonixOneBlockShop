@@ -3,6 +3,19 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Shop GUI polish, both from user feedback on the new Settings tab:
+  - The "Enable Permanent Hard Mode" warning line now spells out exactly what it locks
+    (Randomize Prices and Expedition Minutes) instead of just "hard mode is permanent" - the
+    button alone was ambiguous about what committing actually meant.
+  - Added `ShopScreen.drawWrapped` (real word-wrap via `Font.split`, `GuiGraphics.drawString`
+    has no multi-line variant of its own) and switched every tab's info/warning text to it - the
+    Packs tab's two-line description and the new hard-mode warning are both long enough to
+    overflow the GUI's width otherwise. Lines that stack (Packs' two description lines) now
+    position the second one dynamically off the first's actual wrapped height instead of a fixed
+    Y guess.
+  - Fixed the balance label ("Balance: N") clipping into the tab button row right below it -
+    moved from y=16 up to y=6 (`TAB_Y` is 18).
+
 - Added a new per-player `PlayerSettings` attachment (`price_randomization`, `expedition_minutes`,
   `hard_mode_locked`) and a 6th shop GUI tab, Settings, to expose them:
   - Randomize Prices toggles a seeded 0.25x-4x multiplier on every buy/sell price. Deterministic
