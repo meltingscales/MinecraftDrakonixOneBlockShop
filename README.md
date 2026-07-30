@@ -7,6 +7,7 @@ expand the border.
 ## Links
 
 - [Mod Guide](./GUIDE.md)
+- [Quest Line](./QUEST-LINE.md) - starter quests to point a questing mod (FTB Quests) at
 - [CurseForge](https://www.curseforge.com/minecraft/mc-mods/drakonix-one-block-shop)
 - [Modrinth](https://modrinth.com/project/drakonix-one-block-shop)
 - [Download the mod from GitHub releases](https://github.com/meltingscales/MinecraftDrakonixOneBlockShop/releases)
@@ -28,7 +29,11 @@ expand the border.
     Hover an item for its sell price.
   - **Border** — spend your balance to expand the world border. Cost grows ~20% per purchase,
     there's a 30-second cooldown between purchases, and every expansion after the first calls
-    in a monster wave sized to how many you've already bought.
+    in a monster wave sized to how many you've already bought. Every successful expansion also
+    mints an unsellable Border Expansion Trophy straight into your inventory - one item id for
+    every tier, which purchase earned it is just a data tag on the item - handy as an easy
+    "has this player upgraded their border" check for a questing mod (see
+    [QUEST-LINE.md](./QUEST-LINE.md)).
   - **Buy** — buy a short list of items you can't easily produce early on (sugarcane, cactus,
     lava bucket, water bucket) at a flat price.
   - **Packs** — free tech-mod starter kits (blocks/machines/power/conduits) for AE2, Mekanism,

@@ -14,7 +14,7 @@ Feed a hopper into the shop to auto-sell. Every item has a price - raw resources
 
 Money is physical: selling pays out Drakonix OneBlockShop Tokens (denominations 1 through 8192, doubling each time) straight into your inventory, and buying/expanding takes them back with correct change. Craft two matching tokens together to combine them into the next size up, or craft a single token alone to split it into two of the size below. Your balance is whatever's sitting loose in your hotbar and main inventory - tokens tucked away inside a backpack or other bag don't count toward it, so take them out before you try to spend them.
 
-Sell enough and your border expands outward, giving you more room to build farms. Every expansion after your first calls in a monster wave from just past the new edge - bigger each time - so have a weapon and some armor ready before you buy one. Expansions also have a 30-second cooldown, so you can't just spam the button.
+Sell enough and your border expands outward, giving you more room to build farms. Every expansion after your first calls in a monster wave from just past the new edge - bigger each time - so have a weapon and some armor ready before you buy one. Expansions also have a 30-second cooldown, so you can't just spam the button. Each successful expansion also hands you a Border Expansion Trophy - unsellable, just proof of how far you've come.
 
 Don't want to build up a tech mod's automation chain by hand? The shop's Packs tab gives free starter kits for AE2, Mekanism, and EnderIO - blocks, machines, power, and conduits to jumpstart with. No cost, just a 1-hour cooldown per pack. Lost your guide book? The Packs tab has a "Drakonix Guide" entry too - same cooldown, free replacement.
 

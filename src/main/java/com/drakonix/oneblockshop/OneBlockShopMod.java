@@ -63,6 +63,13 @@ public class OneBlockShopMod
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShopBlockEntity>> SHOP_BLOCK_ENTITY = BLOCK_ENTITIES.register(
             "drakonix_block_shop", () -> BlockEntityType.Builder.of(ShopBlockEntity::new, SHOP_BLOCK.get()).build(null));
 
+    // Granted on every border expansion (see Border.tryExpand) - proof for questing mods (FTB
+    // Quests) that a player has upgraded their border, without needing a separate item id per
+    // expansion tier. Which expansion it was for is recorded as a custom data component
+    // (Border.trophyStack) instead, so a quest predicate can match on that NBT if it ever needs
+    // to distinguish tiers.
+    public static final DeferredItem<Item> BORDER_TROPHY = ITEMS.registerSimpleItem("border_trophy");
+
     // Data-driven (see data/drakonixoneblockshop/enchantment/unsellable.json) - not registered
     // in code, just referenced by key and resolved against registry access where needed.
     public static final ResourceKey<Enchantment> UNSELLABLE = ResourceKey.create(
@@ -130,8 +137,11 @@ public class OneBlockShopMod
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS)
             event.accept(SHOP_BLOCK_ITEM);
         if (event.getTabKey() == CreativeModeTabs.INGREDIENTS)
+        {
             for (DeferredItem<Item> tokenItem : TOKEN_ITEMS.values())
                 event.accept(tokenItem);
+            event.accept(BORDER_TROPHY);
+        }
     }
 
     @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)

@@ -6,6 +6,8 @@ import com.mojang.serialization.Codec;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,6 +16,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -180,6 +184,7 @@ public final class Border
         Wallet.add(player, -cost);
         border.setSize(border.getSize() + 2.0);
         player.setData(LAST_EXPANSION_TICK, player.level().getGameTime());
+        giveTrophy(player, purchaseCountBefore + 1, border.getSize());
 
         // Skip the very first expansion (1x1 -> 3x3) - a brand-new player with nothing built
         // yet has no way to defend against a wave.
@@ -187,6 +192,22 @@ public final class Border
             spawnMobWave(player, border, purchaseCountBefore);
 
         return true;
+    }
+
+    // One item id for every tier (see OneBlockShopMod.BORDER_TROPHY) rather than a separate item
+    // per expansion - which expansion earned it is recorded as a custom data component instead,
+    // so a quest mod's item predicate can still match on a specific tier via NBT if it needs to.
+    private static void giveTrophy(ServerPlayer player, int expansionNumber, double newBorderSize)
+    {
+        ItemStack trophy = new ItemStack(OneBlockShopMod.BORDER_TROPHY.get());
+        CustomData.update(DataComponents.CUSTOM_DATA, trophy, tag ->
+        {
+            tag.putInt("expansion_number", expansionNumber);
+            tag.putInt("border_size", (int) newBorderSize);
+        });
+        StarterKit.cursedUnsellable(trophy, player);
+        if (!player.getInventory().add(trophy))
+            player.drop(trophy, false);
     }
 
     // For /drakonixoneblockshop devcheat border wave - testing the wave without an actual

@@ -3,6 +3,15 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Added QUEST-LINE.md (5 starter quest descriptions for FTB Quests, design doc only - no actual
+  SNBT chapter authored yet) and a Border Expansion Trophy (`drakonixoneblockshop:border_trophy`)
+  minted on every successful Border purchase (`Border.giveTrophy`) as an easy item-based proof
+  for a questing mod to check. One item id for every expansion tier - which purchase earned it is
+  recorded as a `custom_data` component (`expansion_number`, `border_size`) instead of needing a
+  separate item per tier. Unsellable, same curse mechanism as starter kit items/tokens. Its 16x16
+  texture (`tools/generate_border_trophy_texture.py`, `just border-trophy-sync`) is generated via
+  an intermediate PPM (binary P6, magenta transparency key) converted to the final RGBA PNG,
+  unlike this repo's other icon generators which write PNG pixels directly.
 - New AE2 recipe: 9x `ae2:quartz_block` (Certus Quartz Block) -> 1 `ae2:flawless_budding_quartz`
   (`data/drakonixoneblockshop/recipe/flawless_budding_quartz.json`). Normally the top-tier
   budding quartz variant is meteorite-only (AE2's own transform chain only climbs
