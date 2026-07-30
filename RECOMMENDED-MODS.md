@@ -35,6 +35,9 @@ version-pinning rationale next to each line; this file is just the quick-referen
 | [Curios API](https://modrinth.com/mod/curios) | 9.5.1+1.21.1 | Modern successor to Baubles (accessory slots) - added mainly so Artifacts below can use real accessory slots instead of its no-Curios fallback. |
 | [Artifacts](https://modrinth.com/mod/artifacts) | `rGPw090r` (13.2.1) | "Adds various treasure items that can be found through exploration" (its own description) - exact match for finding powerful gear while out on an Explore-tab trip. |
 | [Create](https://modrinth.com/mod/create) | 1.21.1-6.0.0 | Real deep automation via rotational "mechanical" power, a different playstyle than AE2/Mekanism/EnderIO's item-pipe style. Pinned older than latest (6.0.10 needs neoforge>=21.1.219, above our pin) - 6.0.0 only needs neoforge>=21.1.125. Its Flywheel/Ponder/Registrate dependencies are jarjar'd inside its own jar, no separate lines needed. |
+| [FTB Library](https://www.curseforge.com/minecraft/mc-mods/ftb-library-forge) | `curse.maven:ftb-library-forge-404465:8519365` | Hard dependency of FTB Quests below. No Modrinth listing - CurseForge-exclusive, pulled via cursemaven (see note below). |
+| [FTB Teams](https://www.curseforge.com/minecraft/mc-mods/ftb-teams-forge) | `curse.maven:ftb-teams-forge-404468:7878281` | Hard dependency of FTB Quests below. Also CurseForge-exclusive, cursemaven. |
+| [FTB Quests](https://www.curseforge.com/minecraft/mc-mods/ftb-quests-forge) | `curse.maven:ftb-quests-forge-289412:8534556` | Questing mod, for writing light progression quests pointed at this mod's own features (border expansions, Explore-tab trips, starter packs). Its third hard dependency, Architectury API, is already above for Building Wands. CurseForge-exclusive, cursemaven. |
 
 Not added: IC2 (no NeoForge/1.21.1 release exists for any IC2-lineage mod as of writing) and
 Thermal Expansion (last release is 1.20.1 Forge-only). Re-check Modrinth if either ships one.
@@ -53,6 +56,14 @@ this table if it's ever picked up instead.
 
 Removed for now: GregTech CEu Modern - see [FUTURE-MOD-COMPAT.md](FUTURE-MOD-COMPAT.md) for the
 version/compatibility notes to pick back up when it's re-added.
+
+FTB Quests (and its FTB Library/Teams dependencies) have no Modrinth listing at all - same
+situation as ProjectE/IC2/Thermal Expansion above, but pulled anyway via the
+[cursemaven](https://cursemaven.com) proxy repo (`build.gradle`'s `repositories` block) instead
+of skipping it. Cursemaven mirrors CurseForge files as Gradle coordinates
+(`curse.maven:<slug>-<projectId>:<fileId>`) without needing the separate CurseForgeGradle
+publishing plugin. Worth revisiting ProjectE/IC2/Thermal Expansion the same way if either is ever
+wanted after all.
 
 ## Adding another
 
@@ -76,3 +87,13 @@ Same process every time, don't guess compatibility:
    `FATAL`/`Exception in thread`/`Skipping jar`) before trusting any of the above - a
    `neoforge.mods.toml` version range can look wrong (or look fine) and still not match how
    NeoForge actually resolves it at runtime.
+
+If the mod has no Modrinth listing at all (search by slug and by name - some, like FTB Quests,
+are CurseForge-exclusive), use [cursemaven](https://cursemaven.com) instead: find the numeric
+Project ID and the target file's File ID from the CurseForge page (file's URL or its "About
+Project"/file-details sidebar), then add
+`localRuntime "curse.maven:<any-slug>-<projectId>:<fileId>"` - the repo is already declared in
+`build.gradle`. Check the CurseForge page's "Relations > Dependencies" tab for hard
+dependencies (not always obvious from the main page) and pull those the same way. `./gradlew
+dependencies --configuration runtimeClasspath` resolves (or fails) the coordinate immediately,
+cheaper than a full boot-test for catching a typo'd id before it gets that far.

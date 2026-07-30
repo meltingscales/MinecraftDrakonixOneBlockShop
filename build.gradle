@@ -27,6 +27,17 @@ repositories {
         }
         filter { includeGroup 'maven.modrinth' }
     }
+    // Cursemaven: some mods (FTB Quests and its FTB Library/Teams dependencies) have no
+    // Modrinth listing at all, CurseForge-exclusive - same as ProjectE/Thermal Expansion/IC2,
+    // which we skip instead. Cursemaven proxies CurseForge files as Gradle coordinates
+    // (curse.maven:<slug>-<projectId>:<fileId>) without needing the separate CurseForgeGradle
+    // publishing plugin.
+    exclusiveContent {
+        forRepository {
+            maven { url = 'https://cursemaven.com' }
+        }
+        filter { includeGroup 'curse.maven' }
+    }
 }
 
 base {
@@ -301,6 +312,18 @@ dependencies {
     // META-INF/jarjar contents) - no separate localRuntime lines needed for them, same mechanism
     // already relied on for EnderIO's own nested jars.
     localRuntime "maven.modrinth:create:1.21.1-6.0.0"
+
+    // Dev-only questing mod, to write light progression quests pointed at this mod's own
+    // features (border expansions, Explore-tab trips, starter packs). No Modrinth listing exists
+    // for the actual FTB Quests mod or its two hard dependencies below (FTB Library, FTB Teams) -
+    // CurseForge-exclusive, pulled via the cursemaven proxy repo above instead of
+    // maven.modrinth. Coordinates are curse.maven:<slug>-<projectId>:<fileId>, all three pinned
+    // to their latest NeoForge 1.21.1 release as of writing. Architectury API (also a declared
+    // hard dependency of FTB Quests) is already present above for Building Wands - no separate
+    // line needed.
+    localRuntime "curse.maven:ftb-library-forge-404465:8519365"
+    localRuntime "curse.maven:ftb-teams-forge-404468:7878281"
+    localRuntime "curse.maven:ftb-quests-forge-289412:8534556"
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar

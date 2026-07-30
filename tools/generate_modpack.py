@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Regenerates modpack/mods/*.pw.toml from build.gradle's `localRuntime "maven.modrinth:..."`
-lines - those are already the single, vetted source of truth for every dev-dependency mod (see
-RECOMMENDED-MODS.md for the pin rationale next to each one). Rather than hand-maintaining a
-second mod list for the modpack, this parses build.gradle, resolves each slug:version-or-id pin
-to a real Modrinth project+version ID pair (needed because `packwiz modrinth add` takes IDs, not
-Maven-style coordinates), and shells out to the real `packwiz` CLI - it already knows how to
-fetch hashes/URLs correctly, no need to reimplement that here.
+"""Regenerates modpack/mods/*.pw.toml from build.gradle's `localRuntime "maven.modrinth:..."` and
+`localRuntime "curse.maven:..."` lines - those are already the single, vetted source of truth
+for every dev-dependency mod (see RECOMMENDED-MODS.md for the pin rationale next to each one).
+Rather than hand-maintaining a second mod list for the modpack, this parses build.gradle,
+resolves each Modrinth slug:version-or-id pin to a real project+version ID pair (needed because
+`packwiz modrinth add` takes IDs, not Maven-style coordinates) or each Cursemaven
+slug-projectId:fileId pin straight into its already-numeric ids, and shells out to the real
+`packwiz` CLI - it already knows how to fetch hashes/URLs correctly, no need to reimplement that
+here.
 
 Requires the `packwiz` CLI on PATH (see justfile's `modpack-sync` recipe) and network access to
-Modrinth's API. Rerun this after adding/removing/repinning a localRuntime mod in build.gradle -
-don't hand-edit modpack/mods/*.pw.toml, this wipes and regenerates that folder every time.
+Modrinth's/CurseForge's APIs. Rerun this after adding/removing/repinning a localRuntime mod in
+build.gradle - don't hand-edit modpack/mods/*.pw.toml, this wipes and regenerates that folder
+every time.
 """
 import json
 import re
@@ -23,7 +26,8 @@ ROOT = Path(__file__).resolve().parent.parent
 BUILD_GRADLE = ROOT / "build.gradle"
 MODPACK_DIR = ROOT / "modpack"
 
-DEPENDENCY_PATTERN = re.compile(r'localRuntime\s+"maven\.modrinth:([^:]+):([^"]+)"')
+MODRINTH_PATTERN = re.compile(r'localRuntime\s+"maven\.modrinth:([^:]+):([^"]+)"')
+CURSEFORGE_PATTERN = re.compile(r'localRuntime\s+"curse\.maven:[^":]+-(\d+):(\d+)"')
 
 
 def fetch_json(url: str):
@@ -54,9 +58,11 @@ def resolve_project_and_version(slug: str, pinned: str):
 
 
 def main():
-    dependencies = DEPENDENCY_PATTERN.findall(BUILD_GRADLE.read_text(encoding="utf-8"))
-    if not dependencies:
-        raise RuntimeError("No localRuntime maven.modrinth dependencies found in build.gradle")
+    build_gradle_text = BUILD_GRADLE.read_text(encoding="utf-8")
+    modrinth_deps = MODRINTH_PATTERN.findall(build_gradle_text)
+    curseforge_deps = CURSEFORGE_PATTERN.findall(build_gradle_text)
+    if not modrinth_deps and not curseforge_deps:
+        raise RuntimeError("No localRuntime maven.modrinth/curse.maven dependencies found in build.gradle")
 
     mods_dir = MODPACK_DIR / "mods"
     if mods_dir.exists():
@@ -66,7 +72,7 @@ def main():
         # trying to read them mid-loop below.
         subprocess.run(["packwiz", "refresh"], cwd=MODPACK_DIR, check=True)
 
-    for slug, pinned in dependencies:
+    for slug, pinned in modrinth_deps:
         project_id, version_id = resolve_project_and_version(slug, pinned)
         print(f"Adding {slug} ({pinned} -> project {project_id}, version {version_id})", flush=True)
         subprocess.run(
@@ -74,8 +80,15 @@ def main():
             cwd=MODPACK_DIR, check=True,
         )
 
+    for project_id, file_id in curseforge_deps:
+        print(f"Adding curseforge project {project_id} (file {file_id})", flush=True)
+        subprocess.run(
+            ["packwiz", "curseforge", "add", "--addon-id", project_id, "--file-id", file_id, "-y"],
+            cwd=MODPACK_DIR, check=True,
+        )
+
     subprocess.run(["packwiz", "refresh"], cwd=MODPACK_DIR, check=True)
-    print(f"Synced {len(dependencies)} mods into modpack/mods/")
+    print(f"Synced {len(modrinth_deps) + len(curseforge_deps)} mods into modpack/mods/")
 
 
 if __name__ == "__main__":

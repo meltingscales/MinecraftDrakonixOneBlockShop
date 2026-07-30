@@ -10,9 +10,11 @@ Tracked against README.md's feature list.
   decision on whether the shipped pack should be that full list, or a curated subset - if the
   latter, `tools/generate_modpack.py` would need a way to mark a `localRuntime` line as
   "dev-only, don't ship" (a comment convention it greps for?) rather than syncing 1:1.
-- No light-questing setup yet (e.g. FTB Quests / Better Questing pointed at this mod's
-  progression) - deliberately deferred, a sizable feature on its own; revisit once the base pack
-  above is confirmed working.
+- FTB Quests (+ its FTB Library/Teams dependencies) is now a `localRuntime` dev mod (see
+  RECOMMENDED-MODS.md - CurseForge-exclusive, pulled via cursemaven) but no actual quest content
+  pointed at this mod's own progression (border expansions, Explore-tab trips, starter packs) has
+  been authored yet - a sizable content-writing task on its own, separate from just having the
+  mod installed.
 - Our own mod isn't in the pack yet - `packwiz modrinth add drakonix-one-block-shop` would work
   the same way once/if a given `mod_version` is actually published to Modrinth (the README
   already links a Modrinth project page), but that's a separate question from what this session
