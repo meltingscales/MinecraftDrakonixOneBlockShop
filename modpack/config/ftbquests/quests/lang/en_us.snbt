@@ -5,4 +5,10 @@
 	quest.67D905EE00ED4D97.quest_desc: ["sell an item!"]
 	quest.67D905EE00ED4D97.quest_subtitle: "we're talkin serious money"
 	quest.67D905EE00ED4D97.title: "me first dollar"
+	quest.77B1AD89F7A1ED51.quest_desc: [
+		"Go on an expedition!"
+		""
+		"You can do this by right-clicking the Shop block, and "
+	]
+	task.475790EB01EA23E8.title: "expedition!"
 }

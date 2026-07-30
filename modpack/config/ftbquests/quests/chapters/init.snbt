@@ -42,6 +42,15 @@
 			dependencies: ["06CC90B244669D03"]
 			id: "67D905EE00ED4D97"
 			min_required_dependencies: 1
+			rewards: [{
+				count: 2
+				id: "08CC8408A32CD764"
+				item: {
+					count: 1
+					id: "minecraft:iron_block"
+				}
+				type: "item"
+			}]
 			tasks: [{
 				id: "305C267FF9BCEE78"
 				item: { count: 1, id: "drakonixoneblockshop:token_1" }
@@ -49,6 +58,15 @@
 			}]
 			x: 1.0d
 			y: 3.5d
+		}
+		{
+			id: "77B1AD89F7A1ED51"
+			tasks: [{
+				id: "475790EB01EA23E8"
+				type: "checkmark"
+			}]
+			x: -0.5d
+			y: 2.0d
 		}
 	]
 }
