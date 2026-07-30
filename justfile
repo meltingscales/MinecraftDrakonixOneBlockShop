@@ -40,6 +40,25 @@ modpack-sync:
 modpack-serve:
     cd modpack && packwiz serve
 
+# Copies FTB Quests chapter/task/reward definitions into modpack/config/ftbquests/quests and
+# re-syncs the pack - see README.md's "Adding the quest line to the modpack". Pass your real
+# instance's config/ftbquests/quests folder (NOT saves/<world>/ftbquests - that's per-world
+# progress, not quest definitions, and must never be bundled), e.g.:
+#   just quest-sync ~/.local/share/PrismLauncher/instances/<instance>/minecraft/config/ftbquests/quests
+quest-sync source_dir:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -f "{{ source_dir }}/data.snbt" ]; then
+        echo "{{ source_dir }} doesn't look like a config/ftbquests/quests folder (no data.snbt found)." >&2
+        echo "Point this at the instance's config/ftbquests/quests, not a save's ftbquests/ (that's progress data, not quest definitions)." >&2
+        exit 1
+    fi
+    rm -rf modpack/config/ftbquests/quests
+    mkdir -p modpack/config/ftbquests
+    cp -r "{{ source_dir }}" modpack/config/ftbquests/quests
+    just modpack-sync
+    echo "Synced quest definitions from {{ source_dir }} into modpack/config/ftbquests/quests"
+
 # Regenerates the 14 token item textures/models/lang/recipes (see tools/generate_tokens.py).
 # Rerun after changing the denomination list or the coin sprite design.
 tokens-sync:
