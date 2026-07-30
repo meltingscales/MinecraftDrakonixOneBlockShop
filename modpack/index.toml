@@ -10,7 +10,7 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/init.snbt"
-hash = "aa5fc27c6bba6692bb721b7e7c9f6fe82f81e9aed4a8fa8482abd8f3c3683709"
+hash = "640223aae3614f897f13164a9d495f35d0fea9d8f4e58455cfdcef498d9e0bf7"
 
 [[files]]
 file = "config/ftbquests/quests/data.snbt"
@@ -18,7 +18,7 @@ hash = "da77e416b557850f5cb1ab68d71de78f9fbc3cf3845e50cdb4dba3a8164f6e7f"
 
 [[files]]
 file = "config/ftbquests/quests/lang/en_us.snbt"
-hash = "1b461ce3293d599b50e959572d6a83d39a5c6d9adefd2e5b5101a9eb51d3ad6c"
+hash = "2ba3268652012ca6c9b20365d16ed3a119a4fd197f8d5eb0d5cae6c6e523cdf0"
 
 [[files]]
 file = "mods/ae2.pw.toml"

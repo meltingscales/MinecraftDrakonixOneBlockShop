@@ -2,13 +2,45 @@
 	chapter.3023700ED080B1A8.title: "init"
 	quest.06CC90B244669D03.quest_subtitle: "he go plonk"
 	quest.06CC90B244669D03.title: "place the shop :)"
+	quest.0F3EB265DB07A02E.quest_desc: [
+		"You can use the Dissolver to transmute items."
+		""
+		"I added this because I miss ProjectE. :3"
+	]
+	quest.0F3EB265DB07A02E.title: "emc?"
+	quest.26EB3C1B2D6B5031.quest_desc: [
+		"In the Shop block, there are free starter packs you can claim."
+		""
+		"I highly recommend doing this if you want an easier start :)"
+		""
+		"You should probably wait until you have space for a chest first."
+	]
+	quest.26EB3C1B2D6B5031.quest_subtitle: "yeah boyee"
+	quest.26EB3C1B2D6B5031.title: "free stuff??"
+	quest.29DE4C46BA0815A4.quest_desc: [
+		"You can hopper items into the Shop block to auto-sell."
+		""
+		"Adjacent chests will be given shop tokens."
+	]
+	quest.29DE4C46BA0815A4.title: "auto sell!"
 	quest.67D905EE00ED4D97.quest_desc: ["sell an item!"]
 	quest.67D905EE00ED4D97.quest_subtitle: "we're talkin serious money"
 	quest.67D905EE00ED4D97.title: "me first dollar"
+	quest.6F01B059718BB19C.quest_desc: ["Expand your border within the Shop block!"]
+	quest.6F01B059718BB19C.quest_subtitle: "humble beginnings"
 	quest.77B1AD89F7A1ED51.quest_desc: [
 		"Go on an expedition!"
 		""
-		"You can do this by right-clicking the Shop block, and "
+		"&4NOTE: You can NOT get back to old expedition sites, so please don't build or drop anything important there.&r"
+		""
+		"You can do this by right-clicking the Shop block, and then clicking \"Explore\" > \"Open Portal\"."
+		""
+		"Then, a portal will open above the Shop block."
+		""
+		"Make sure to gather as much as possible! "
+		""
+		"You will need it to sell later to expand your borders."
 	]
+	quest.77B1AD89F7A1ED51.quest_subtitle: "banished to ohio"
 	task.475790EB01EA23E8.title: "expedition!"
 }
