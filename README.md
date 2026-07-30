@@ -153,6 +153,38 @@ Every push and PR also runs `.github/workflows/build.yml` (compile + build, no r
 
 See `TODO.md` for known shortcuts and open items, or `TODO-DONE.md` for what's already shipped.
 
+## Adding the quest line to the modpack
+
+[QUEST-LINE.md](./QUEST-LINE.md) is a design doc (5 starter quests, goal/detection/reward each) -
+not an actual FTB Quests chapter file yet. Once it's built out for real in-game, here's how it
+gets into `./modpack/`:
+
+- Quest **definitions** (chapters, tasks, rewards) live in `config/ftbquests/quests/` -
+  `data.snbt`, `chapter_groups.snbt`, `chapters/*.snbt`, `lang/en_us.snbt`. This is ordinary
+  instance config, the same as any other mod's - it's *not* stored per-world.
+- Quest **progress** (which player/team has completed what) is the part that's per-world, kept
+  separate under `saves/<world>/ftbquests/` (team-UUID-named files) - never bundle this into the
+  modpack, or every player starts with someone else's progress already claimed.
+
+To author and ship a real quest line:
+
+1. Launch the pack, join a world, and run `/ftbquests editing_mode` (op-only) to turn on the
+   in-game quest editor.
+2. Build out the quests from QUEST-LINE.md using FTB Quests' own GUI - e.g. quest 3 ("Room to
+   Grow") as an "Item" task matching `drakonixoneblockshop:border_trophy`, quest 1 ("Open for
+   Business") as a "Placed Block" task matching `drakonixoneblockshop:drakonix_block_shop`, etc.
+   `/ftbquests reload` re-reads the `.snbt` files from disk without a restart if you hand-edit
+   them directly instead.
+3. Turn `editing_mode` back off (and optionally `/ftbquests locked` to lock the book) once done,
+   so players can't accidentally edit the shipped quest line themselves.
+4. Copy the resulting `config/ftbquests/quests/` folder into `modpack/config/ftbquests/quests/`
+   in this repo - same mechanism already used for `modpack/config/Veinminer/settings.json`,
+   packwiz ships any non-metafile placed under the pack root verbatim to every installed
+   instance. Do **not** copy anything from `saves/<world>/ftbquests/` - that's the progress data
+   from the previous step, not part of the pack.
+5. Run `just modpack-sync` (its trailing `packwiz refresh` picks up new non-mod override files
+   too, not just the `localRuntime` mod list) and commit the result.
+
 ## License
 
 Public domain — [CC0 1.0](LICENSE).
