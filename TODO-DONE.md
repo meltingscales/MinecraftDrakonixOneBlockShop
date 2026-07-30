@@ -3,6 +3,11 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- New AE2 recipe: 9x `ae2:quartz_block` (Certus Quartz Block) -> 1 `ae2:flawless_budding_quartz`
+  (`data/drakonixoneblockshop/recipe/flawless_budding_quartz.json`). Normally the top-tier
+  budding quartz variant is meteorite-only (AE2's own transform chain only climbs
+  damaged->chipped->flawed, never reaching flawless) - this gives players a farmable path to a
+  permanent, non-decaying quartz crystal generator instead of relying on meteor RNG.
 - Shop GUI polish, both from user feedback on the new Settings tab:
   - The "Enable Permanent Hard Mode" warning line now spells out exactly what it locks
     (Randomize Prices and Expedition Minutes) instead of just "hard mode is permanent" - the

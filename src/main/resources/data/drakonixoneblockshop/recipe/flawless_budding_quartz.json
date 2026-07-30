@@ -1,0 +1,18 @@
+{
+    "type": "minecraft:crafting_shapeless",
+    "category": "misc",
+    "ingredients": [
+        { "item": "ae2:quartz_block" },
+        { "item": "ae2:quartz_block" },
+        { "item": "ae2:quartz_block" },
+        { "item": "ae2:quartz_block" },
+        { "item": "ae2:quartz_block" },
+        { "item": "ae2:quartz_block" },
+        { "item": "ae2:quartz_block" },
+        { "item": "ae2:quartz_block" },
+        { "item": "ae2:quartz_block" }
+    ],
+    "result": {
+        "id": "ae2:flawless_budding_quartz"
+    }
+}
