@@ -45,6 +45,11 @@ public class ShopBlockEntity extends BlockEntity implements WorldlyContainer, Me
     @Nullable
     private UUID ownerUUID;
     private boolean pendingHopperInsertion;
+    // Not persisted - whoever currently has this block's GUI open (see ShopMenu's constructor),
+    // so a GUI sale credits the actual seller rather than always crediting the block's owner.
+    // Any player can open any shop block's GUI, so this can differ from ownerUUID.
+    @Nullable
+    private Player viewingPlayer;
 
     public ShopBlockEntity(BlockPos pos, BlockState state)
     {
@@ -63,6 +68,11 @@ public class ShopBlockEntity extends BlockEntity implements WorldlyContainer, Me
         return this.ownerUUID;
     }
 
+    public void setViewingPlayer(@Nullable Player viewingPlayer)
+    {
+        this.viewingPlayer = viewingPlayer;
+    }
+
     private void trySell(ItemStack stack)
     {
         boolean viaHopper = this.pendingHopperInsertion;
@@ -74,12 +84,18 @@ public class ShopBlockEntity extends BlockEntity implements WorldlyContainer, Me
             return;
 
         long unitPrice = Pricing.priceOf(stack.getItem(), this.level.getRecipeManager(), this.level.registryAccess());
-        ServerPlayer owner = serverLevel.getServer().getPlayerList().getPlayer(this.ownerUUID);
-        // Randomization (PlayerSettings' Settings-tab toggle) only applies when the owner is
+        // Hopper automation has no live player to credit - always the block's owner, same as
+        // before. A GUI sale credits whoever's actually standing at the shop and selling, which
+        // isn't necessarily the owner at all (any player can open any shop block's GUI) -
+        // crediting the owner unconditionally here used to silently pay the shop's owner instead
+        // of the seller whenever someone else's sale went through this block.
+        UUID sellerUUID = viaHopper || this.viewingPlayer == null ? this.ownerUUID : this.viewingPlayer.getUUID();
+        ServerPlayer seller = serverLevel.getServer().getPlayerList().getPlayer(sellerUUID);
+        // Randomization (PlayerSettings' Settings-tab toggle) only applies when the seller is
         // online to have a live setting to read - an offline owner's hopper sale just uses the
         // plain price for that one sale rather than needing to load their saved player data just
         // to check a boolean.
-        if (owner != null && PlayerSettings.isPriceRandomizationEnabled(owner))
+        if (seller != null && PlayerSettings.isPriceRandomizationEnabled(seller))
             unitPrice = Pricing.applyRandomization(unitPrice, (int) serverLevel.getServer().overworld().getSeed(), stack.getItem(), true);
         long total = unitPrice * stack.getCount();
 
@@ -87,10 +103,10 @@ public class ShopBlockEntity extends BlockEntity implements WorldlyContainer, Me
         long remainder = total - banked;
         if (remainder > 0)
         {
-            if (owner != null)
-                Wallet.add(owner, remainder);
+            if (seller != null)
+                Wallet.add(seller, remainder);
             else
-                Wallet.creditOffline(serverLevel, this.ownerUUID, remainder);
+                Wallet.creditOffline(serverLevel, sellerUUID, remainder);
         }
 
         if (viaHopper)

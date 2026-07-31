@@ -154,6 +154,9 @@ public class ShopMenu extends AbstractContainerMenu
         this.container = blockEntity;
         this.blockEntity = blockEntity;
         this.viewingPlayer = playerInventory.player;
+        // So a GUI sale credits whoever's actually selling, not always the block's owner - see
+        // ShopBlockEntity.trySell.
+        blockEntity.setViewingPlayer(this.viewingPlayer);
         this.addDataSlot(this.balance);
         this.addDataSlot(this.activeTab);
         this.addDataSlot(this.expandCooldownSeconds);
@@ -194,10 +197,14 @@ public class ShopMenu extends AbstractContainerMenu
         super.broadcastChanges();
     }
 
+    // The viewing player's own balance, not the shop's owner - any player can open any shop
+    // block's GUI, and Buy/Border/Sell all now operate against whoever's actually viewing (see
+    // ShopBlockEntity.trySell), so the displayed balance has to match that or afford checks
+    // would look wrong.
     private void refreshBalance()
     {
-        if (this.blockEntity != null && this.blockEntity.getLevel() instanceof ServerLevel serverLevel)
-            this.balance.set((int) Math.min(Integer.MAX_VALUE, Wallet.get(serverLevel.getServer(), this.blockEntity.getOwnerUUID())));
+        if (this.viewingPlayer instanceof ServerPlayer)
+            this.balance.set((int) Math.min(Integer.MAX_VALUE, Wallet.get(this.viewingPlayer)));
     }
 
     private void refreshCooldown()

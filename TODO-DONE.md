@@ -3,6 +3,17 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Fixed a real multiplayer bug: any player can open any shop block's GUI (no owner check on
+  opening), but `ShopBlockEntity.trySell`'s GUI-driven sale path unconditionally credited the
+  block's `ownerUUID`, not whoever actually dropped the item in - anyone selling at someone
+  else's shop silently paid that shop's owner instead of themselves. Fixed by threading the
+  viewing player through (`ShopMenu`'s constructor now calls `ShopBlockEntity.setViewingPlayer`,
+  a transient/non-persisted field) and crediting that player for GUI sales; hopper-triggered
+  sales (no live player present) still credit the owner, unchanged. Also fixed the Sell GUI's
+  "Balance" display, which had the same bug in reverse (always showed the owner's wallet, even
+  though Buy/Border already correctly charged whoever was actually viewing) - now shows the
+  viewing player's own balance, consistent with Buy/Border. Removed `Wallet.get(MinecraftServer,
+  UUID)`, dead code once the balance display stopped needing an offline-tolerant owner lookup.
 - Added QUEST-LINE.md (5 starter quest descriptions for FTB Quests, design doc only - no actual
   SNBT chapter authored yet) and a Border Expansion Trophy (`drakonixoneblockshop:border_trophy`)
   minted on every successful Border purchase (`Border.giveTrophy`) as an easy item-based proof

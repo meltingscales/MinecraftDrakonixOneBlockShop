@@ -13,7 +13,6 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -151,13 +150,4 @@ public final class Wallet
         return stack;
     }
 
-    // ponytail: only reads the balance if the owner is currently online (tokens live in their
-    // inventory); an offline owner just reads as 0 here. Fine for singleplayer/LAN.
-    public static long get(MinecraftServer server, @Nullable UUID uuid)
-    {
-        if (uuid == null)
-            return 0L;
-        ServerPlayer player = server.getPlayerList().getPlayer(uuid);
-        return player == null ? 0L : get(player);
-    }
 }
