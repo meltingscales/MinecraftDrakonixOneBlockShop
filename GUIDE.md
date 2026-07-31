@@ -24,7 +24,7 @@ Your Explorer's Compass points you at the nearest structure of whatever type you
 
 Dissolver Enhanced adds its own EMC-style economy alongside the shop's tokens: learn an item, dissolve extras of it into stored value, then spend that value to recreate anything else you've already learned. Handy for turning a glut of one resource into whatever you're actually short on. Don't have a nether star yet? Craft the Dissolver block with a block of obsidian in the center instead, surrounded by crystal frames - same result, no End trip required.
 
-Flawless Budding Certus Quartz normally only turns up in meteorites, but you can craft one from 9 Certus Quartz Blocks instead - a farmable way to get a permanent quartz crystal generator going.
+Flawless Budding Certus Quartz normally only turns up in meteorites, but you can craft one from 9 Certus Quartz Blocks instead - a farmable way to get a permanent quartz crystal generator going. Same idea for vanilla Budding Amethyst (normally geode-only, no vanilla recipe at all): 9 Amethyst Blocks gets you one, no cave diving required.
 
 The shop's Settings tab is all yours to tune: change your expedition timer up or down in 5-minute steps (1-60), or flip on Randomize Prices for a wilder, seed-based economy - some items dirt cheap, others outrageous, buying and selling alike. Want to commit to whatever you've picked? Enable Permanent Hard Mode and both settings lock for good - no changing your mind later, only an admin can undo it.
 

@@ -1,0 +1,18 @@
+{
+    "type": "minecraft:crafting_shapeless",
+    "category": "misc",
+    "ingredients": [
+        { "item": "minecraft:amethyst_block" },
+        { "item": "minecraft:amethyst_block" },
+        { "item": "minecraft:amethyst_block" },
+        { "item": "minecraft:amethyst_block" },
+        { "item": "minecraft:amethyst_block" },
+        { "item": "minecraft:amethyst_block" },
+        { "item": "minecraft:amethyst_block" },
+        { "item": "minecraft:amethyst_block" },
+        { "item": "minecraft:amethyst_block" }
+    ],
+    "result": {
+        "id": "minecraft:budding_amethyst"
+    }
+}

@@ -3,6 +3,12 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- New recipe: 9x `minecraft:amethyst_block` -> 1x `minecraft:budding_amethyst`
+  (`data/drakonixoneblockshop/recipe/budding_amethyst.json`) - same idea as the Flawless Budding
+  Certus Quartz recipe above, vanilla's own budding block is otherwise geode-only with no crafting
+  recipe at all. Unlike AE2's budding quartz (which demotes a tier when broken), vanilla's own
+  loot table for budding_amethyst drops nothing at all when mined - a placed one is permanent
+  until you actually mean to lose it.
 - Fixed a real multiplayer bug: any player can open any shop block's GUI (no owner check on
   opening), but `ShopBlockEntity.trySell`'s GUI-driven sale path unconditionally credited the
   block's `ownerUUID`, not whoever actually dropped the item in - anyone selling at someone
