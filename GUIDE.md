@@ -4,7 +4,7 @@ You start on a single block with an iron pickaxe and a Drakonix Block Shop. Plac
 
 If you just spawned, I highly recommend going on an expedition. Place the Drakonix Block Shop, select "Explore", and click "Open Portal" - a portal appears above the shop for 30 seconds, and walking into it is what actually sends you off. If a friend walks in with you, you go together to the same spot. Prefer digging to wandering? "Open Portal (Cave Only)" guarantees you land underground instead of on the surface.
 
-Dying on an expedition doesn't end it. You'll respawn normally and find a potion in your inventory - drink it whenever you're ready and it teleports you back to exactly where you died (with a stretch of near-total damage resistance, so you're not just handed straight back to whatever killed you) so you can pick up where you left off. Ignore it and you're still auto-returned home once your expedition timer is up either way.
+Dying on an expedition doesn't end it. You'll respawn normally and find an Expedition Resume Scroll in your inventory - use it whenever you're ready and it teleports you back to exactly where you died (with a stretch of near-total damage resistance, so you're not just handed straight back to whatever killed you) so you can pick up where you left off. Ignore it and you're still auto-returned home once your expedition timer is up either way.
 
 Keep Inventory is on by default in this world. A 1-block start means you can land somewhere rough - lava, void, whatever's below spawn - and that's not a risk you signed up for. Dying still costs you the run, just not your items. Mob griefing is off too, so a stray creeper or enderman can't undo your building.
 

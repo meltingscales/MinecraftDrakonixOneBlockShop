@@ -70,6 +70,13 @@ public class OneBlockShopMod
     // to distinguish tiers.
     public static final DeferredItem<Item> BORDER_TROPHY = ITEMS.registerSimpleItem("border_trophy");
 
+    // Expedition-tab items (see Expedition.java) - stackable custom items rather than vanilla
+    // potions (which were stuck at a stack size of 1).
+    public static final DeferredItem<Item> RETURN_HOME_SCROLL = ITEMS.registerItem(
+            "return_home_scroll", Expedition.ReturnHomeScrollItem::new);
+    public static final DeferredItem<Item> EXPEDITION_RESUME_SCROLL = ITEMS.registerItem(
+            "expedition_resume_scroll", Expedition.ExpeditionResumeScrollItem::new);
+
     // Data-driven (see data/drakonixoneblockshop/enchantment/unsellable.json) - not registered
     // in code, just referenced by key and resolved against registry access where needed.
     public static final ResourceKey<Enchantment> UNSELLABLE = ResourceKey.create(
@@ -141,6 +148,8 @@ public class OneBlockShopMod
             for (DeferredItem<Item> tokenItem : TOKEN_ITEMS.values())
                 event.accept(tokenItem);
             event.accept(BORDER_TROPHY);
+            event.accept(RETURN_HOME_SCROLL);
+            event.accept(EXPEDITION_RESUME_SCROLL);
         }
     }
 

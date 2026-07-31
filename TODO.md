@@ -38,6 +38,12 @@ Tracked against README.md's feature list.
 
 ## Known shortcuts (fine for now, revisit if they bite)
 
+- The new Return Home Scroll / Expedition Resume Scroll items (`Expedition.java`'s
+  `ReturnHomeScrollItem`/`ExpeditionResumeScrollItem`) boot-test clean (register, load a model,
+  no errors) but their actual right-click `use()` behavior hasn't been interactively verified -
+  no computer-use tool for the game window to start a real expedition, die, and click the items.
+  Worth a real playtest to confirm before trusting it fully, same caveat as the Settings tab
+  below.
 - The new Settings tab (Randomize Prices / expedition-minutes stepper / Permanent Hard Mode) and
   the word-wrapped info/warning lines added right after it (`ShopScreen.drawWrapped`, covering
   every tab's description/warning text, not just Settings') boot-test clean but haven't been
@@ -56,12 +62,13 @@ Tracked against README.md's feature list.
   tool for the game window to actually click "Claim: EnderIO" and inspect the resulting item.
   Should read as a properly-typed conduit (Energy/Item/Fluid/Redstone Conduit) rather than a
   blank "<MISSING> Conduit" - worth a real playtest to confirm before trusting it fully.
-- Dying more than once on the same expedition before drinking any Expedition Resume Potion
-  leaves the older potions in inventory pointing at the *newest* death spot, not the one they
-  were handed at (`DEATH_X/Y/Z` is a single per-player attachment overwritten by each death, not
-  baked into the potion item itself at creation time) - harmless (arguably the more useful
-  behavior anyway, and the old potions just become redundant duplicates), just not literally
-  "the spot each specific potion promised."
+- Dying more than once on the same expedition before using any Expedition Resume Scroll means
+  every scroll in the stack points at the *newest* death spot, not the one each was handed at
+  (`DEATH_X/Y/Z` is a single per-player attachment overwritten by each death, not baked into a
+  scroll at creation time) - harmless (arguably the more useful behavior anyway), just not
+  literally "the spot each specific scroll promised." Less visible a shortcut than it used to be
+  now that scrolls stack (`OneBlockShopMod.EXPEDITION_RESUME_SCROLL`) instead of piling up as
+  separate stack-of-1 potion items.
 - Buy tab button labels ("Mangrove Propagule (3)", "Dark Oak Sapling (3)") are longer than the
   ~88px button width comfortably fits - vanilla `Button` just center-clips long text rather than
   erroring, so it's cosmetic, not broken. Would need shorter labels (icons instead of full names?)

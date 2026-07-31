@@ -3,6 +3,20 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Replaced the two Explore-tab potions (vanilla `Items.POTION` with a custom `PotionContents`
+  effect, stuck at a stack size of 1) with real stackable custom items: Return Home Scroll
+  (`OneBlockShopMod.RETURN_HOME_SCROLL`, ends the expedition early) and Expedition Resume Scroll
+  (`EXPEDITION_RESUME_SCROLL`, teleports back to your death spot). Each is a small `Item`
+  subclass overriding `use()` directly (`Expedition.ReturnHomeScrollItem`/
+  `ExpeditionResumeScrollItem`) instead of routing through an instantaneous `MobEffect` triggered
+  by drinking - `RETURN_EFFECT`/`RESUME_EFFECT` are gone, `PORTAL_IMMUNITY_EFFECT` (a real timed
+  marker effect, unrelated to how it's triggered) is unchanged. Also now front-loads 2 Expedition
+  Resume Scrolls at expedition start (previously only ever earned one at a time, on death) so a
+  player always has some in hand even before their first death; still hands out one more on every
+  actual death, on top of that. Textures generated via
+  `tools/generate_expedition_scroll_textures.py` (`just expedition-scroll-textures-sync`), same
+  PPM->PNG pipeline as the Border Expansion Trophy, using each old effect's original color
+  (blue/green) as the seal accent so the visual language carries over.
 - New recipe: 1x `minecraft:amethyst_block` -> 4x `minecraft:amethyst_shard`
   (`data/drakonixoneblockshop/recipe/amethyst_shard_uncraft.json`) - vanilla only has the forward
   direction (4 shards -> 1 block); this un-crafts a block back down for players who bought/farmed

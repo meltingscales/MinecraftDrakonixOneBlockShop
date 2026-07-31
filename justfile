@@ -63,6 +63,11 @@ expedition-icon-sync:
 border-trophy-sync:
     python3 tools/generate_border_trophy_texture.py
 
+# Regenerates the Return Home / Expedition Resume Scroll item textures/models/lang entries (see
+# tools/generate_expedition_scroll_textures.py). Rerun if either scroll's design changes.
+expedition-scroll-textures-sync:
+    python3 tools/generate_expedition_scroll_textures.py
+
 # Regenerates GeOre cluster loot table overrides (see tools/generate_geore_overrides.py) so
 # every geode cluster drops its full item with or without Silk Touch. Rerun after bumping the
 # pinned GeOre version in build.gradle in case its ore list changed.

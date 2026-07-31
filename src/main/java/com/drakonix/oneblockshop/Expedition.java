@@ -1,13 +1,9 @@
 package com.drakonix.oneblockshop;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.mojang.serialization.Codec;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -15,17 +11,17 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.effect.InstantenousMobEffect;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -64,9 +60,9 @@ public final class Expedition
     private static final long PORTAL_INACTIVE = Long.MIN_VALUE;
     // Deliberately equal to PORTAL_DURATION_TICKS: returnHome puts the player right back where
     // they teleported from, which is often still inside (or right next to) the very portal that's
-    // still open - without immunity lasting at least that long, walking away from a drunk return
-    // potion could immediately suck them right back through it. See RETURN_EFFECT/
-    // PORTAL_IMMUNITY_EFFECT and the onLevelTick walk-in check below.
+    // still open - without immunity lasting at least that long, using a Return Home Scroll could
+    // immediately suck them right back through it. See ReturnHomeScrollItem/PORTAL_IMMUNITY_EFFECT
+    // and the onLevelTick walk-in check below.
     private static final long PORTAL_IMMUNITY_TICKS = 30L * 20L;
     private static final long RESUME_INVINCIBILITY_TICKS = 30L * 20L;
 
@@ -89,7 +85,7 @@ public final class Expedition
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Integer>> NEXT_WARNING = ATTACHMENTS.register(
             "expedition_next_warning", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).copyOnDeath().build());
     // Where the player actually died - captured by onPlayerDeath (fires on the *old*, still-valid
-    // entity) so RESUME_EFFECT can send them back there later. Deliberately separate from
+    // entity) so ExpeditionResumeScrollItem can send them back there later. Deliberately separate from
     // RETURN_X/Y/Z (the expedition's *origin*, at home) - resuming should mean "back to where I
     // died", not "back to base".
     private static final DeferredHolder<AttachmentType<?>, AttachmentType<Double>> DEATH_X = ATTACHMENTS.register(
@@ -123,56 +119,79 @@ public final class Expedition
     public static final DeferredHolder<MobEffect, MobEffect> EFFECT = EFFECTS.register(
             "expedition", () -> new MobEffect(MobEffectCategory.NEUTRAL, 0x55FFFF) {});
     // Just a marker, same idiom as EFFECT above - checked in onLevelTick's portal walk-in test so
-    // a player who just drank a return potion can't be immediately sucked back through the still-
-    // open portal they may still be standing in/next to.
+    // a player who just used a Return Home Scroll can't be immediately sucked back through the
+    // still-open portal they may still be standing in/next to.
     public static final DeferredHolder<MobEffect, MobEffect> PORTAL_IMMUNITY_EFFECT = EFFECTS.register(
             "portal_immunity", () -> new MobEffect(MobEffectCategory.BENEFICIAL, 0xAAAAFF) {});
-    // Instantaneous (applies once, immediately, like vanilla's Instant Health) rather than a
-    // regular timed effect - drinking the return potion should end the expedition right away, not
-    // over time. Real vanilla base class (Instant Health/Harm use the same one), not guessed.
-    public static final DeferredHolder<MobEffect, MobEffect> RETURN_EFFECT = EFFECTS.register(
-            "expedition_return", () -> new InstantenousMobEffect(MobEffectCategory.BENEFICIAL, 0x55AAFF)
+
+    // Right-click to end the expedition immediately and come home - the scroll equivalent of
+    // "/drakonixoneblockshop expedition end". Stackable (plain Item.Properties default of 64,
+    // unlike the vanilla-potion item this replaced, which was stuck at a stack size of 1).
+    public static class ReturnHomeScrollItem extends Item
+    {
+        public ReturnHomeScrollItem(Properties properties)
+        {
+            super(properties);
+        }
+
+        @Override
+        public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand)
+        {
+            ItemStack stack = player.getItemInHand(hand);
+            if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
             {
-                @Override
-                public boolean applyEffectTick(LivingEntity livingEntity, int amplifier)
+                if (isAway(serverPlayer))
                 {
-                    if (livingEntity instanceof ServerPlayer player && isAway(player))
-                        returnHome(player, true);
-                    return true;
+                    returnHome(serverPlayer, true);
+                    serverPlayer.addEffect(new MobEffectInstance(PORTAL_IMMUNITY_EFFECT, (int) PORTAL_IMMUNITY_TICKS, 0));
+                    stack.consume(1, player);
                 }
-            });
-    // Also instantaneous - drinking this sends the player back to exactly where they died, so
-    // they can carry on the same expedition instead of it silently ending. Checks isAway() at
-    // drink time (not just at death) since the expedition may have since expired on its own
-    // (onPlayerTick's normal timeout) or been ended manually (/expedition end, the return
-    // potion) - in either case there's nothing to resume, so this just says so and does nothing,
-    // rather than teleporting into a stale/out-of-sync state.
-    public static final DeferredHolder<MobEffect, MobEffect> RESUME_EFFECT = EFFECTS.register(
-            "expedition_resume", () -> new InstantenousMobEffect(MobEffectCategory.BENEFICIAL, 0x55FFAA)
+                else
+                    serverPlayer.sendSystemMessage(Component.literal(
+                            "You're not on an expedition.").withStyle(ChatFormatting.RED));
+            }
+            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+        }
+    }
+
+    // Right-click to teleport back to exactly where you died, so you can carry on the same
+    // expedition instead of it silently ending. Checks isAway() at use time (not just at death)
+    // since the expedition may have since expired on its own (onPlayerTick's normal timeout) or
+    // been ended manually (/expedition end, a Return Home Scroll) - in either case there's
+    // nothing to resume, so this just says so and doesn't consume the scroll, rather than
+    // teleporting into a stale/out-of-sync state.
+    public static class ExpeditionResumeScrollItem extends Item
+    {
+        public ExpeditionResumeScrollItem(Properties properties)
+        {
+            super(properties);
+        }
+
+        @Override
+        public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand)
+        {
+            ItemStack stack = player.getItemInHand(hand);
+            if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
             {
-                @Override
-                public boolean applyEffectTick(LivingEntity livingEntity, int amplifier)
+                if (isAway(serverPlayer))
                 {
-                    if (livingEntity instanceof ServerPlayer player)
-                    {
-                        if (isAway(player))
-                        {
-                            player.teleportTo(player.getData(DEATH_X), player.getData(DEATH_Y), player.getData(DEATH_Z));
-                            // Landing right back where they just died is otherwise a near-guaranteed
-                            // repeat death (still in the mob/fall/lava that killed them) - amplifier 4
-                            // is Resistance V, which zeroes out damage entirely per vanilla's own
-                            // getDamageAfterMagicAbsorb (confirmed in decompiled source: reduction
-                            // is (amplifier+1)*5%, capped at 100% at amplifier 4) for anything not
-                            // tagged BYPASSES_RESISTANCE (void, starvation, etc. still apply).
-                            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, (int) RESUME_INVINCIBILITY_TICKS, 4, false, true));
-                        }
-                        else
-                            player.sendSystemMessage(Component.literal(
-                                    "That expedition has already ended.").withStyle(ChatFormatting.RED));
-                    }
-                    return true;
+                    serverPlayer.teleportTo(serverPlayer.getData(DEATH_X), serverPlayer.getData(DEATH_Y), serverPlayer.getData(DEATH_Z));
+                    // Landing right back where they just died is otherwise a near-guaranteed
+                    // repeat death (still in the mob/fall/lava that killed them) - amplifier 4 is
+                    // Resistance V, which zeroes out damage entirely per vanilla's own
+                    // getDamageAfterMagicAbsorb (confirmed in decompiled source: reduction is
+                    // (amplifier+1)*5%, capped at 100% at amplifier 4) for anything not tagged
+                    // BYPASSES_RESISTANCE (void, starvation, etc. still apply).
+                    serverPlayer.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, (int) RESUME_INVINCIBILITY_TICKS, 4, false, true));
+                    stack.consume(1, player);
                 }
-            });
+                else
+                    serverPlayer.sendSystemMessage(Component.literal(
+                            "That expedition has already ended.").withStyle(ChatFormatting.RED));
+            }
+            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+        }
+    }
 
     private Expedition() {}
 
@@ -346,7 +365,7 @@ public final class Expedition
         double destZ = overworld.getData(PORTAL_DEST_Z);
         for (ServerPlayer player : overworld.players())
         {
-            // A player who just drank their return potion carries PORTAL_IMMUNITY_EFFECT for a
+            // A player who just used their Return Home Scroll carries PORTAL_IMMUNITY_EFFECT for a
             // while specifically so this check can't immediately grab them again - returnHome
             // puts them right back where they teleported from, often still inside this very
             // portal's hitbox.
@@ -385,48 +404,24 @@ public final class Expedition
         // Duration matches durationTicks so the vanilla potion-icon countdown and this class's
         // own GUI/chat countdown always agree.
         player.addEffect(new MobEffectInstance(EFFECT, (int) durationTicks, 0, false, true));
-        player.getInventory().add(returnPotion(player));
+        player.getInventory().add(cursedUnsellable(new ItemStack(OneBlockShopMod.RETURN_HOME_SCROLL.get()), player));
+        // Front-loaded rather than only ever earned on death, so a player never finds themselves
+        // stuck mid-expedition with zero scrolls of either kind - stacks harmlessly with whatever
+        // onPlayerRespawn later adds on an actual death.
+        player.getInventory().add(cursedUnsellable(new ItemStack(OneBlockShopMod.EXPEDITION_RESUME_SCROLL.get(), 2), player));
 
         player.sendSystemMessage(Component.literal(
                 "Through the portal! You'll be returned to base in " + PlayerSettings.getExpeditionMinutes(player)
-                        + " minutes. Drink the potion in your inventory to come back early.").withStyle(ChatFormatting.AQUA));
+                        + " minutes. Use the Return Home Scroll in your inventory to come back early.").withStyle(ChatFormatting.AQUA));
     }
 
-    // A game-friendly alternative to typing "/drakonixoneblockshop expedition end": drinking this
-    // ends the expedition immediately (RETURN_EFFECT, instantaneous) and grants
-    // PORTAL_IMMUNITY_TICKS of immunity from re-entering a portal (PORTAL_IMMUNITY_EFFECT) so
-    // landing back next to a still-open one can't suck the player straight back through it.
-    // Unsellable, same curse as the starter kit's items, so it can't be sold/hoppered away by
-    // accident while it's still needed.
-    private static ItemStack returnPotion(ServerPlayer player)
+    // Unsellable, same curse as the starter kit's items, so a scroll can't be sold/hoppered away
+    // by accident while it's still needed.
+    private static ItemStack cursedUnsellable(ItemStack stack, ServerPlayer player)
     {
-        ItemStack potion = new ItemStack(Items.POTION);
-        potion.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.empty(), List.of(
-                new MobEffectInstance(RETURN_EFFECT, 1, 0),
-                new MobEffectInstance(PORTAL_IMMUNITY_EFFECT, (int) PORTAL_IMMUNITY_TICKS, 0))));
-        // Without this, an empty PotionContents.potion() falls back to vanilla's own
-        // "item.minecraft.potion.effect.empty" ("Uninteresting Potion") - ITEM_NAME (not
-        // CUSTOM_NAME, which renders italic like a real anvil rename) is the supported way to
-        // give a vanilla-item-based stack its own plain localized display name.
-        potion.set(DataComponents.ITEM_NAME, Component.translatable("item.drakonixoneblockshop.expedition_return_potion"));
-        EnchantmentHelper.updateEnchantments(potion, mutable ->
+        EnchantmentHelper.updateEnchantments(stack, mutable ->
                 mutable.set(player.level().registryAccess().holderOrThrow(OneBlockShopMod.UNSELLABLE), 1));
-        return potion;
-    }
-
-    // Given on death instead of forcing a teleport (a forced respawn-time teleport turned out
-    // unreliable in practice - see TODO.md). The player just respawns normally; drinking this
-    // sends them back to their death spot (RESUME_EFFECT), checking the expedition's still valid
-    // at that moment rather than assuming it still is.
-    private static ItemStack resumePotion(ServerPlayer player)
-    {
-        ItemStack potion = new ItemStack(Items.POTION);
-        potion.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.empty(), List.of(
-                new MobEffectInstance(RESUME_EFFECT, 1, 0))));
-        potion.set(DataComponents.ITEM_NAME, Component.translatable("item.drakonixoneblockshop.expedition_resume_potion"));
-        EnchantmentHelper.updateEnchantments(potion, mutable ->
-                mutable.set(player.level().registryAccess().holderOrThrow(OneBlockShopMod.UNSELLABLE), 1));
-        return potion;
+        return stack;
     }
 
     // For /drakonixoneblockshop devcheat expedition teleport - skips the portal (roll + walk-in)
@@ -547,8 +542,8 @@ public final class Expedition
     }
 
     // Captures exactly where a player died (their own bounding position, still valid here - this
-    // fires on the *old* entity before it's replaced) so RESUME_EFFECT can send them back to it
-    // later. Deliberately doesn't touch isAway()/END_TICK/Border.EXPEDITIONS_ACTIVE at all - the
+    // fires on the *old* entity before it's replaced) so ExpeditionResumeScrollItem can send them
+    // back to it later. Deliberately doesn't touch isAway()/END_TICK/Border.EXPEDITIONS_ACTIVE at all - the
     // expedition just keeps running in the background exactly as if the player were still there,
     // same as if they'd logged out (except onPlayerLogout still applies if they then disconnect
     // instead of respawning).
@@ -563,7 +558,7 @@ public final class Expedition
     }
 
     // A forced teleport straight out of the respawn event turned out unreliable in practice (see
-    // TODO.md) - instead, just let vanilla's normal respawn stand, and hand the player a potion
+    // TODO.md) - instead, just let vanilla's normal respawn stand, and hand the player a scroll
     // that sends them back to their death spot on demand. isAway() still reads correctly here
     // thanks to END_TICK's .copyOnDeath() - the expedition itself was never touched by dying, so
     // there's nothing to "resume" in the data model, only in where the player physically is.
@@ -572,10 +567,10 @@ public final class Expedition
     {
         if (event.getEntity() instanceof ServerPlayer player && isAway(player))
         {
-            player.getInventory().add(resumePotion(player));
+            player.getInventory().add(cursedUnsellable(new ItemStack(OneBlockShopMod.EXPEDITION_RESUME_SCROLL.get()), player));
             player.sendSystemMessage(Component.literal(
-                    "You died on your expedition. Drink the potion in your inventory to go back to"
-                            + " where you died, or wait it out - you'll be auto-returned when your"
+                    "You died on your expedition. Use the Expedition Resume Scroll in your inventory to go"
+                            + " back to where you died, or wait it out - you'll be auto-returned when your"
                             + " time runs out either way.").withStyle(ChatFormatting.AQUA));
         }
     }

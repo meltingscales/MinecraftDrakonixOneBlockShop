@@ -52,11 +52,12 @@ expand the border.
     portal while you're still away. The normal button lands on the surface most of the time with
     a chance of dropping you into a (dry - never underwater) cave instead; the Cave Only button
     always finds one. An "Expedition" status effect for the trip's duration (hover it for a
-    tooltip explaining why) blocks placing a new shop block while you're away. You also get an
-    unsellable potion on arrival - drink it any time to come back early instead of typing a
-    command; it also grants 30 seconds of immunity to being pulled back through a still-open
-    portal, since it returns you to right where you left from. Dying on an expedition doesn't end
-    it - you just respawn normally and get handed a second potion that teleports you back to
+    tooltip explaining why) blocks placing a new shop block while you're away. You also get a
+    stackable, unsellable Return Home Scroll and two Expedition Resume Scrolls on arrival - use
+    the Return Home Scroll any time to come back early instead of typing a command; it also
+    grants 30 seconds of immunity to being pulled back through a still-open portal, since it
+    returns you to right where you left from. Dying on an expedition doesn't end it - you just
+    respawn normally and get handed another Expedition Resume Scroll that teleports you back to
     exactly where you died (with 30 seconds of near-total damage resistance, so you're not just
     dropped straight back into whatever killed you) so you can pick up where you left off - or
     wait it out; either way you're still auto-returned to base once your timer is up.
