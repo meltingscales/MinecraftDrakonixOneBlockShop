@@ -15,7 +15,7 @@ import net.neoforged.neoforge.client.event.GatherEffectScreenTooltipsEvent;
 // hover tooltip only ever shows name + duration. This event (fired from
 // EffectRenderingInventoryScreen.renderEffects, confirmed in decompiled source) is NeoForge's
 // hook for appending extra lines to that tooltip.
-@EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = OneBlockShopMod.MODID, value = Dist.CLIENT)
 public final class ExpeditionClientEvents
 {
     private ExpeditionClientEvents() {}

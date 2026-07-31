@@ -3,6 +3,26 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- Bumped `neo_version` 21.1.176 -> 21.1.247 (latest per NeoForge's own maven-metadata.xml at
+  time of writing) to add Capture Nets (below) - every one of its released builds needs
+  neoforge>=21.1.234. Tried Mob Lassos first as an alternative (richer feature set - tiered
+  lassos, hostile-mob capture, villager capture) but its hard dependency Puzzles Lib 21.1.52
+  crashed with a `NoSuchElementException` in its own attachment-registration code even after the
+  bump - a real bug in that combination, not a version-range gate, so dropped in favor of
+  Capture Nets instead. The bump itself surfaced one real regression across the whole existing
+  mod list: `@EventBusSubscriber`'s `bus =` parameter is now deprecated-for-removal (NeoForge
+  auto-detects the bus from the subscribed event type instead) - removed `bus = ...` from all 7
+  occurrences across the codebase (`Border`, `Expedition`, `ExpeditionClientEvents`,
+  `HopperSalesTracker`, `StarterKit`, `AdminCommands`, `OneBlockShopMod`). Full existing mod list
+  (30+ mods, versions otherwise unchanged) re-verified via a real boot-test before adding
+  anything new - none of the deliberately-pinned-below-latest mods (Mekanism, EnderIO, Create)
+  were touched, even though some of their "held back because latest needs a higher neoforge"
+  reasoning is now stale headroom that could be freshened later if it's ever worth revisiting.
+- [Capture Nets](https://modrinth.com/mod/capture-nets) added as a dev playtesting mod (see
+  above for the `neo_version` bump this needed) - a reusable net that catches any
+  passive/neutral mob (including modded ones) with a right-click, no charges or durability loss,
+  released again with a right-click on a block. Answers "how do you get a mob back to your
+  1-block base."
 - Replaced the two Explore-tab potions (vanilla `Items.POTION` with a custom `PotionContents`
   effect, stuck at a stack size of 1) with real stackable custom items: Return Home Scroll
   (`OneBlockShopMod.RETURN_HOME_SCROLL`, ends the expedition early) and Expedition Resume Scroll

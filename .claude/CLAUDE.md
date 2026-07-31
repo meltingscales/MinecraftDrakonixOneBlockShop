@@ -56,6 +56,16 @@ After changing `build.gradle`'s `localRuntime` mods, run `just modpack-sync`
 `build.gradle` is the single source of truth the modpack mirrors, and CI (`build.yml`'s
 `modpack` job) fails if the two drift apart. Requires the `packwiz` CLI on PATH.
 
+Bumping `gradle.properties`' `neo_version` (a real NeoForge version upgrade, not a routine mod
+pin) also needs `modpack/pack.toml`'s own `[versions] neoforge` field updated to match - run
+`packwiz migrate loader <version> -y` from `modpack/` (packwiz's own command for this, updates
+the field and its index hash together). `generate_modpack.py`'s regeneration doesn't touch this
+field at all, and CI's drift check won't catch it being stale either - it's on you to remember.
+Re-verify every already-pinned `localRuntime` mod still boots at the new version before adding
+anything new that needed the bump in the first place; some mods deliberately pinned below latest
+specifically because latest needed a higher neoforge than the old pin may now have new headroom
+worth revisiting, but don't bump those without cause of their own.
+
 ## Economy / pricing
 
 Every item is sellable - never add a hardcoded per-item price map. `Pricing.priceOf` prices raw

@@ -32,7 +32,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 // First-login kit: iron pickaxe, one shop block to place, and a guide book paginated from
 // GUIDE.md (bundled into the jar - see the processResources block in build.gradle).
-@EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = OneBlockShopMod.MODID)
 public final class StarterKit
 {
     private static final Logger LOGGER = LogUtils.getLogger();

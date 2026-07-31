@@ -46,7 +46,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 // they individually were, same as before. See Border.beginExpeditionHold for how the shared
 // WorldBorder is temporarily grown so vanilla doesn't push/damage a traveler for being "outside"
 // the real border while away.
-@EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = OneBlockShopMod.MODID)
 public final class Expedition
 {
     private static final long PORTAL_DURATION_TICKS = 30L * 20L;

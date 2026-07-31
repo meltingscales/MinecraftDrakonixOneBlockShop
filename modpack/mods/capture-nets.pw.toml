@@ -1,0 +1,13 @@
+name = "Capture Nets"
+filename = "capturenet-neoforge-0.3.2.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/RshVWSvI/versions/k4TlctPD/capturenet-neoforge-0.3.2.jar"
+hash-format = "sha512"
+hash = "2c03cd90ac10274ac32c5054cded91eff6445ca093fb0339b708e80ff0ea7746e08202cbeec6f26e46b2a0a53eac394ab06a4ec2ab14e1d985bc93b930d95e8a"
+
+[update]
+[update.modrinth]
+mod-id = "RshVWSvI"
+version = "k4TlctPD"

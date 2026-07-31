@@ -18,7 +18,7 @@ Sell enough and your border expands outward, giving you more room to build farms
 
 Don't want to build up a tech mod's automation chain by hand? The shop's Packs tab gives free starter kits for AE2, Mekanism, and EnderIO - blocks, machines, power, and conduits to jumpstart with. No cost, just a 1-hour cooldown per pack. Lost your guide book? The Packs tab has a "Drakonix Guide" entry too - same cooldown, free replacement.
 
-Good early farms: a simple mob farm for drops, an AFK fishing spot for enchanted loot, sugarcane on a redstone clock, and cactus on a redstone clock. All four can run untouched into a hopper feeding the shop. Keep an eye out for GeOre's geode-style ore clusters too - a denser way to gather raw resources, and they drop their full item whether or not you're using Silk Touch.
+Good early farms: a simple mob farm for drops, an AFK fishing spot for enchanted loot, sugarcane on a redstone clock, and cactus on a redstone clock. All four can run untouched into a hopper feeding the shop. Keep an eye out for GeOre's geode-style ore clusters too - a denser way to gather raw resources, and they drop their full item whether or not you're using Silk Touch. Found a cow, villager, or other passive mob out on an expedition and want it back at your tiny base? Capture Nets lets you right-click it into a reusable net (no charges, works on modded mobs too) and release it wherever you land.
 
 Your Explorer's Compass points you at the nearest structure of whatever type you pick, and When Dungeons Arise scatters real ones worth finding. Chests out there might turn up an Artifacts treasure - accessories with real effects, wearable in a Curios slot once you find one.
 

@@ -30,7 +30,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 // The requires(level 2) check is on each admin subcommand's own literal, not the root - a
 // Brigadier parent's requires() would gate every child under it, including the player-facing
 // ones, which is why it can't just sit on "drakonixoneblockshop" itself.
-@EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = OneBlockShopMod.MODID)
 public final class AdminCommands
 {
     private AdminCommands() {}

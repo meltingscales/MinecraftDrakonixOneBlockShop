@@ -16,7 +16,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 // Every 5 minutes, chat each online player a summary of what their shop block(s) sold via
 // hopper since the last report - separate from manual GUI sales, see ShopBlockEntity's
 // WorldlyContainer.canPlaceItemThroughFace override (only hoppers/droppers call that).
-@EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = OneBlockShopMod.MODID)
 public final class HopperSalesTracker
 {
     private static final int REPORT_INTERVAL_TICKS = 20 * 60 * 5;

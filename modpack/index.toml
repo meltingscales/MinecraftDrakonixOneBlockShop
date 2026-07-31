@@ -46,6 +46,11 @@ hash = "98de570e4873e332455e5526ed5b62779cdb23c217efac51ad864ae510861456"
 metafile = true
 
 [[files]]
+file = "mods/capture-nets.pw.toml"
+hash = "f432c5fae349d7222222fc25f7d6689d53997716307b5508711412422e946ed4"
+metafile = true
+
+[[files]]
 file = "mods/cloth-config.pw.toml"
 hash = "75181b55e0407d1fca1e2f346c6501f919f5109545990ddfb66db9cd1b771f8a"
 metafile = true

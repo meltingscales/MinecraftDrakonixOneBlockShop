@@ -339,6 +339,14 @@ dependencies {
     // version id instead.
     localRuntime "maven.modrinth:controlling:FaNppCJJ"
 
+    // Dev-only, answers "how do you get a mob back to your 1-block base" - a reusable net that
+    // catches any passive/neutral mob (including modded ones) with a right-click, no charges or
+    // durability loss, released again with a right-click on a block. Needed a neo_version bump
+    // (176 -> 247) to unblock this - every NeoForge build needs neoforge>=21.1.234. Version
+    // number "0.3.2+mc1.21.1" collides across fabric/neoforge - pinned to the neoforge release's
+    // Modrinth version id instead. No declared hard dependencies.
+    localRuntime "maven.modrinth:capture-nets:k4TlctPD"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"

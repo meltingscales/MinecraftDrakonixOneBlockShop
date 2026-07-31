@@ -38,7 +38,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 // borders need mixins this mod doesn't have (attempted once and reverted, see TODO.md). Instead,
 // once a second player's ever been online (see clampForMultiplayer), the shared border is just
 // guaranteed to never be smaller than a fair starting size - simpler than managing several.
-@EventBusSubscriber(modid = OneBlockShopMod.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = OneBlockShopMod.MODID)
 public final class Border
 {
     private static final double MAX_STRAY_BLOCKS = 5.0;
