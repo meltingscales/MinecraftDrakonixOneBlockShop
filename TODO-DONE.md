@@ -3,6 +3,11 @@
 Finished items, split out of `TODO.md` to keep that file focused on what's still open. Newest
 entries at the top; oldest (original MVP build-out) at the bottom.
 
+- New recipe: 1x `minecraft:amethyst_block` -> 4x `minecraft:amethyst_shard`
+  (`data/drakonixoneblockshop/recipe/amethyst_shard_uncraft.json`) - vanilla only has the forward
+  direction (4 shards -> 1 block); this un-crafts a block back down for players who bought/farmed
+  blocks in bulk (e.g. via the new Budding Amethyst recipe above) and need loose shards instead
+  (spectral arrows, tinted glass, ...).
 - New recipe: 9x `minecraft:amethyst_block` -> 1x `minecraft:budding_amethyst`
   (`data/drakonixoneblockshop/recipe/budding_amethyst.json`) - same idea as the Flawless Budding
   Certus Quartz recipe above, vanilla's own budding block is otherwise geode-only with no crafting
