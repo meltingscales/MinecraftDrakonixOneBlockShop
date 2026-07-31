@@ -38,6 +38,8 @@ version-pinning rationale next to each line; this file is just the quick-referen
 | [FTB Library](https://www.curseforge.com/minecraft/mc-mods/ftb-library-forge) | `curse.maven:ftb-library-forge-404465:8519365` | Hard dependency of FTB Quests below. No Modrinth listing - CurseForge-exclusive, pulled via cursemaven (see note below). |
 | [FTB Teams](https://www.curseforge.com/minecraft/mc-mods/ftb-teams-forge) | `curse.maven:ftb-teams-forge-404468:7878281` | Hard dependency of FTB Quests below. Also CurseForge-exclusive, cursemaven. |
 | [FTB Quests](https://www.curseforge.com/minecraft/mc-mods/ftb-quests-forge) | `curse.maven:ftb-quests-forge-289412:8534556` | Questing mod, for writing light progression quests pointed at this mod's own features (border expansions, Explore-tab trips, starter packs). Its third hard dependency, Architectury API, is already above for Building Wands. CurseForge-exclusive, cursemaven. |
+| [Searchables](https://modrinth.com/mod/searchables) | `iEE85X0w` (1.0.2) | Hard dependency of Controlling below (its search-bar widget library) - not obvious from Controlling's own page, only surfaced by a "requires searchables 1.0.1 or above" boot crash without it. |
+| [Controlling](https://modrinth.com/mod/controlling) | `FaNppCJJ` (19.0.5) | Adds a search bar and a conflict-highlighting filter to vanilla's own Controls screen - genuinely useful given how many mods in this table bind keys (VeinMiner, ParCool, Building Wands, Xaero's Minimap, Jade, ...). |
 
 Not added: IC2 (no NeoForge/1.21.1 release exists for any IC2-lineage mod as of writing) and
 Thermal Expansion (last release is 1.20.1 Forge-only). Re-check Modrinth if either ships one.

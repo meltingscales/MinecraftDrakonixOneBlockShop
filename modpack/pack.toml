@@ -1,12 +1,12 @@
 name = "Drakonix One Block Shop"
 author = "Henry Post,meltingscales"
-version = "1.0.10"
+version = "1.0.11"
 pack-format = "packwiz:1.1.0"
 
 [index]
 file = "index.toml"
 hash-format = "sha256"
-hash = "550258e81a80d64c07ea5cb76047d58f0cc277ad2ed05649d5b7d81e1ef4e1c1"
+hash = "14354b978abf7887af0d9e1921b8949f7fecc12d2df81550c3eadbb151d4871b"
 
 [versions]
 minecraft = "1.21.1"

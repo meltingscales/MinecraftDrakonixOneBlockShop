@@ -325,6 +325,20 @@ dependencies {
     localRuntime "curse.maven:ftb-teams-forge-404468:7878281"
     localRuntime "curse.maven:ftb-quests-forge-289412:8534556"
 
+    // Hard-required by Controlling below (its own search-bar widget library) - not obvious from
+    // Controlling's own page, only surfaced by the "Mod controlling requires searchables 1.0.1
+    // or above" boot crash without it. Version number "1.0.2" collides heavily (reused across
+    // fabric/forge/neoforge AND across several Minecraft versions per loader) - pinned to the
+    // neoforge+1.21.1 release's Modrinth version id instead.
+    localRuntime "maven.modrinth:searchables:iEE85X0w"
+
+    // Dev-only, adds a search bar and a conflict-highlighting filter to vanilla's own Controls
+    // screen - genuinely useful given how many of the above mods bind keys (VeinMiner, ParCool,
+    // Building Wands, Xaero's Minimap, Jade, ...). Version number "19.0.5" collides across
+    // fabric/forge/neoforge (all three share it) - pinned to the neoforge release's Modrinth
+    // version id instead.
+    localRuntime "maven.modrinth:controlling:FaNppCJJ"
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
