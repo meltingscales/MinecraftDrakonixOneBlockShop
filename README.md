@@ -137,6 +137,12 @@ Every [release](#releasing) attaches a ready-to-use `drakonix-one-block-shop-<ve
 alongside the mod jar - download it and use Prism Launcher's "Import from zip" (or drag-and-drop
 onto the instance list) to get the mod plus every dependency in one step, no manual mod-hunting.
 
+This pack (30+ mods, several of them heavy tech mods) runs best with **at least 6-8 GB** of RAM
+allocated. Neither `pack.toml` nor the exported `.mrpack` format (`modrinth.index.json`) has a
+memory field at all - it's a per-instance launcher setting, not something a modpack file can
+specify, so set it by hand after importing: in Prism, right-click the instance -> Edit -> Settings
+-> Java -> check "Memory" and set Maximum to 8192 MB (or your launcher's equivalent).
+
 ## Releasing
 
 `gradle.properties`' `mod_version` is the single source of truth for the mod's version. To cut
